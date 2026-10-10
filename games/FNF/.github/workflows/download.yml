@@ -1,0 +1,38 @@
+name: Auto Update FNF HTML5 Build
+
+on:
+  workflow_dispatch: # only runs when you manually trigger it
+
+jobs:
+  update-html5:
+    runs-on: ubuntu-latest
+    steps:
+      # 1️⃣ Checkout the repo
+      - uses: actions/checkout@v3
+
+      # 2️⃣ Get latest release download URL via GitHub API
+      - name: Get latest HTML5 release URL
+        id: get_url
+        run: |
+          LATEST_URL=$(curl -s https://api.github.com/repos/FunkinCrew/Funkin/releases/latest \
+            | jq -r '.assets[] | select(.name=="funkin-html5.zip") | .browser_download_url')
+          echo "LATEST_URL=$LATEST_URL" >> $GITHUB_ENV
+
+      # 3️⃣ Download the latest HTML5 zip
+      - name: Download latest HTML5 build
+        run: |
+          curl -L $LATEST_URL -o fnf_latest.zip
+
+      # 4️⃣ Extract the build (overwrite existing files)
+      - name: Extract HTML5 build
+        run: |
+          mkdir -p html5_build
+          unzip -o fnf_latest.zip -d html5_build
+
+      # 5️⃣ Commit & push only if changes exist
+      - name: Commit and push if updated
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add html5_build
+          git diff --cached --quiet || (git commit -m "Auto-update HTML5 build" && git push)

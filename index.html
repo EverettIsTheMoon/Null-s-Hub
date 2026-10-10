@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Null's Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    },
+                    colors: {
+                        darkBg: '#07090e',
+                        cardBg: 'rgba(18, 24, 38, 0.65)',
+                    }
+                }
+            }
+        }
+    </script>
+                <style>
+@font-face {
+        font-family: "Pusab";
+        src: url("./PUSAB___.otf") format("opentype");
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: "Kornucopia";
+        src: url("./kornucopia.ttf") format("truetype");
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: "Creepster";
+        src: url("./Creepster-Regular.ttf") format("truetype");
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+    }
+    body, body * {
+        font-family:"Pusab", sans-serif !important;
+        font-weight:400 !important;
+        letter-spacing:.06em !important;
+    }
+:root {
+        --bg: #171815;
+        --panel: #20211e;
+        --line: #3c3b35;
+        --amber: #ca7253;
+        --teal: #78968d;
+        --muted: #aaa394;
+    }
+    body {
+        background: var(--bg);
+        color: #e9e2d5;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        overflow-x: hidden;
+    }
+    .grain {
+        position: fixed; inset: 0; z-index: 0; pointer-events: none;
+        opacity: .06; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+        mix-blend-mode: overlay;
+    }
+    body::before, .ambient-glow, .grain { display:none; }
+    .site-note {
+        position:relative; z-index:11; margin:0; padding:7px max(16px, calc((100vw - 1200px) / 2));
+        background:#11120f; color:#b8b09f; font:600 11px/1.3 ui-monospace, "SFMono-Regular", Consolas, monospace;
+        letter-spacing:.04em;
+    }
+    .marquee {
+        position: relative; z-index: 10;
+        background:#20211e;
+        border-bottom:2px solid var(--amber);
+    }
+    .brand { display:flex; align-items:center; gap:11px; }
+    .logo-mark {
+        width:30px; height:30px; border-radius:3px; color:#f3ede1;
+        background:#a74430; box-shadow:none;
+        display:grid; place-items:center; font:700 17px/1 Georgia, serif;
+    }
+    .brand-name { font:700 18px/1 Georgia, "Times New Roman", serif; letter-spacing:-.02em; }
+    .brand-tag {
+        font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted);
+    }
+    .tagline {
+        margin-left:2px; font-size:12px; letter-spacing:0; text-transform:none;
+        color:var(--muted); border:0; padding:0;
+    }
+    .nav { display:flex; align-items:center; gap:14px; }
+    .nav a, .nav button {
+        font-size:12px; font-weight:600; letter-spacing:0; text-transform:none;
+        color:#514b41; background:none; border:0; cursor:pointer; padding:6px 2px;
+        border-bottom:1px solid transparent; transition: color .15s, border-color .15s;
+    }
+    .nav a:hover, .nav button:hover { color:var(--amber); border-bottom-color:var(--amber); }
+    header nav a, header nav button {
+        color:#c7c0b3 !important; text-transform:none !important; letter-spacing:0 !important;
+        font-size:12px !important; font-weight:600 !important;
+    }
+    header nav a:hover, header nav button:hover { color:#f0e7d8 !important; }
+    .pill {
+        display:inline-block; padding:3px 9px; border-radius:999px;
+        background: rgba(245,179,66,.14); color: var(--amber);
+        border:1px solid rgba(245,179,66,.18); margin-left:2px;
+    }
+    .category-pill {
+        border-radius:0 !important; padding:7px 9px !important; font-size:12px !important;
+        font-weight:400 !important; letter-spacing:0 !important; text-transform:none !important;
+        color:var(--muted) !important; background:transparent !important;
+        border:0 !important; border-bottom:2px solid transparent !important; transition:color .15s, border-color .15s !important;
+    }
+    .category-pill:hover { color:#eee6d9 !important; border-color:#5c574e !important; }
+    .category-pill.active {
+        color:var(--amber) !important; border-color:var(--amber) !important;
+        background:transparent !important;
+    }
+    .search-wrap { position:relative; width:100%; max-width:280px; margin-left:auto; }
+    .search-wrap svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); width:15px; height:15px; color: var(--muted); pointer-events:none; }
+    .search-input {
+        width:100%; padding:8px 13px 8px 36px; background:#171815;
+        border:1px solid #47443c; border-radius:3px; color:#e9e2d5; font-size:13px;
+        outline:none; transition: border-color .15s;
+    }
+    .search-input:focus { border-color:var(--amber); }
+    .search-input::placeholder { color: var(--muted); }
+    .content { position: relative; z-index: 1; }
+    .catalog-card {
+        position: relative; overflow: hidden; display: flex; flex-direction: column;
+        background:var(--panel); border:1px solid #3c3b35;
+        border-top:2px solid #6b6254; border-radius:4px;
+        aspect-ratio:1;
+        box-shadow:0 2px 8px rgba(0,0,0,.14);
+        transition:transform .18s ease, border-color .18s, box-shadow .18s;
+    }
+    .catalog-card:hover {
+        transform:translateY(-2px);
+        border-color:#a85e46;
+        box-shadow:0 5px 14px rgba(0,0,0,.24);
+    }
+    .card-thumb {
+        position:absolute; inset:0; width:100%; height:100%; display:block; border-radius:0; overflow:hidden;
+        background:#282923;
+    }
+    .card-thumb::after {
+        content:""; position:absolute; inset:0; pointer-events:none;
+        background:none; box-shadow:inset 0 0 0 1px rgba(255,255,255,.11);
+    }
+    .card-thumb svg { display:block; width:100%; height:100%; transition:transform .25s ease; }
+    .catalog-card:hover .card-thumb svg { transform:scale(1.025); }
+    .card-thumb .game-logo { display:block; width:100%; height:100%; object-fit:cover; }
+    .card-thumb .game-logo[hidden] { display:none; }
+    .sandbox-thumb .catalog-logo { display:none; }
+    .card-body {
+        position:absolute; inset:0; z-index:3; display:flex; align-items:center; justify-content:center;
+        padding:10px; background:rgba(8,9,14,.76); text-align:center;
+        opacity:0; visibility:hidden; pointer-events:none;
+        transition:opacity .18s ease, visibility .18s ease;
+    }
+    .catalog-card:hover .card-body, .catalog-card:focus-within .card-body { opacity:1; visibility:visible; }
+    .card-title {
+        margin:0; color:#eee7da; font:700 14px/1.25 Georgia, "Times New Roman", serif;
+        letter-spacing:-.02em; overflow-wrap:anywhere;
+    }
+    .card-title.scp-title {
+        font-family:"Kornucopia", sans-serif !important;
+        font-size:44px !important;
+        font-weight:400 !important;
+    }
+    .card-title.zombie-title {
+        font-family:"Creepster", sans-serif !important;
+        font-weight:400 !important;
+    }
+    .card-cat {
+        display:inline-block; font-size:10px; font-weight:700; letter-spacing:.06em;
+        text-transform:uppercase; color:#aaa394; background:transparent;
+        border:0; border-radius:0; padding:0; margin-top:7px;
+    }
+    .card-body .card-cat, .card-body .card-tag { display:none; }
+    .card-play {
+        position:absolute; inset:0; z-index:2; display:block; margin:0; padding:0;
+        background:transparent; color:transparent !important; border:0;
+        border-radius:0; font:inherit; font-size:12px; font-weight:700;
+        letter-spacing:.02em; text-transform:none; cursor:pointer;
+        box-shadow:none; transition:background .15s, color .15s;
+    }
+    .card-play:hover { transform:none; background:transparent; color:transparent !important; box-shadow:none; }
+    .card-play:focus-visible { outline:3px solid #f0b092; outline-offset:-4px; }
+    .card-foot {
+        display:flex; justify-content:space-between; align-items:center;
+        margin-top:10px; padding-top:10px; border-top:1px solid var(--line);
+        font-size:11px; color: var(--muted);
+    }
+    .catalog-num {
+        font-family: ui-monospace, 'SF Mono', monospace; font-weight:700; letter-spacing:.08em;
+    }
+    .hl { color: var(--amber); }
+    .catalog-hero {
+        display:grid; grid-template-columns: 1.15fr .85fr; gap: 28px; align-items:center;
+        padding:30px 0 32px; margin:0 0 25px; border-bottom:1px solid #3b3a34;
+    }
+    .eyebrow {
+        margin:0 0 11px; font:700 11px/1.4 ui-monospace, "SFMono-Regular", Consolas, monospace;
+        letter-spacing:.08em; text-transform:uppercase; color:var(--amber);
+    }
+    .hero-title {
+        margin:0 0 12px; font:700 clamp(34px, 4.4vw, 54px)/.99 Georgia, "Times New Roman", serif;
+        letter-spacing:-.045em; color:#eee7da; max-width:640px;
+    }
+    .hero-copy-text {
+        margin:0 0 20px; max-width:440px; color:#bcb4a5; line-height:1.65; font-size:15px;
+    }
+    .hero-actions { display:flex; gap:10px; flex-wrap:wrap; }
+    .btn {
+        padding:10px 14px; border-radius:3px; font:inherit; font-size:13px; font-weight:600; line-height:1.2;
+        letter-spacing:0; text-transform:none; cursor:pointer;
+        border:1px solid #575248; background:transparent; color:#e1d9ca;
+        transition:background .15s, border-color .15s, color .15s;
+    }
+    .btn:hover { border-color:#ca7253; background:#282822; color:#f2e9db; }
+    .btn-amber { background:#a74430; color:#fff1e6; border-color:#a74430; }
+    .btn-amber:hover { background:#883a2c; color:#fff1e6; border-color:#883a2c; }
+    .hero-art {
+        position:relative; min-height:190px; padding:22px 24px;
+        background:#252620; border-left:3px solid #a74430; color:#eee7da;
+        display:flex; flex-direction:column; justify-content:center;
+    }
+    .shelf-note-kicker { margin:0 0 9px; font:700 10px/1.4 ui-monospace, "SFMono-Regular", Consolas, monospace; letter-spacing:.1em; color:#d28a70; text-transform:uppercase; }
+    .shelf-note-title { margin:0 0 7px; font:700 25px/1.1 Georgia, "Times New Roman", serif; letter-spacing:-.025em; }
+    .shelf-note-copy { max-width:280px; margin:0; color:#bcb4a5; font-size:13px; line-height:1.5; }
+    .shelf-note-count { position:absolute; right:18px; top:17px; color:#a69b86; font:700 11px/1 ui-monospace, "SFMono-Regular", Consolas, monospace; }
+    #gameGrid {
+        width:100%; max-width:1050px; margin-inline:auto;
+        grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px;
+    }
+    #categories { margin-bottom:17px; padding-bottom:8px; border-bottom:1px solid #3b3a34; }
+    #gameCount { color:#aaa394; font:600 12px/1 ui-monospace, "SFMono-Regular", Consolas, monospace; letter-spacing:0; text-transform:none; }
+    #noResults { color:#bcb4a5; }
+    footer { color:#aaa394 !important; background:#1d1e1b !important; border-color:#3b3a34 !important; }
+    #scrollMessage {
+        position:fixed; left:50%; bottom:24px; z-index:60;
+        width:max-content; max-width:min(560px, calc(100vw - 32px));
+        padding:12px 18px; color:#eee7da; background:#20211e;
+        border:1px solid #6b6254; border-left:3px solid var(--amber);
+        box-shadow:0 8px 28px rgba(0,0,0,.38);
+        opacity:0; visibility:hidden; transform:translate(-50%, 12px);
+        transition:opacity .2s ease, transform .2s ease, visibility .2s;
+        pointer-events:none; text-align:center;
+    }
+    #scrollMessage.is-visible {
+        opacity:1; visibility:visible; transform:translate(-50%, 0);
+    }
+
+    @media (max-width: 900px) {
+        #gameGrid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+        .catalog-hero { grid-template-columns:1fr .8fr; gap:20px; }
+        .tagline { display:none; }
+    }
+    @media (max-width: 640px) {
+        .catalog-hero { grid-template-columns:1fr; gap:18px; }
+        .hero-art { min-height:145px; }
+        #gameGrid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+        .card-title { font-size:14px; }
+        .card-tag { font-size:9px !important; line-height:1.45; }
+        .brand-tag { display:none; }
+    }
+    @media (hover:none) {
+        .card-body {
+            justify-content:flex-end; padding:9px;
+            background:linear-gradient(transparent 35%, rgba(8,9,14,.88));
+            opacity:1; visibility:visible;
+        }
+        .card-title { width:100%; text-align:left; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior:auto !important; transition-duration:.01ms !important; animation-duration:.01ms !important; }
+    }
+    </style>
+
+
+
+</head>
+<body class="min-h-screen flex flex-col antialiased relative">
+
+    <p class="site-note">EVERETT &nbsp; / &nbsp; Moon</p>
+
+    <div class="ambient-glow"></div>
+
+    <header class="marquee sticky top-0 z-50 border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-[62px] flex items-center justify-between gap-4">
+            <a href="inddex.html" class="flex items-center gap-2.5 shrink-0 group">
+                <span class="logo-mark" aria-hidden="true">N</span>
+                <span class="brand-name">Null's Arcade</span>
+                <span class="tagline">A few things I made.</span>
+            </a>
+            <nav class="hidden sm:flex items-center gap-5 text-xs font-bold uppercase tracking-wide text-slate-300">
+                <a href="#games-section">The games</a>
+                <a href="#categories">Browse by type</a>
+                <button onclick="pickRandomGame()">Surprise me</button>
+            </nav>
+            <label class="relative w-full max-w-[280px]">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">⌕</span>
+                <input type="search" id="searchBar" oninput="filterGames()" placeholder="Search games..." aria-label="Search games" class="search-input w-full rounded-lg py-2 pl-9 pr-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-slate-500">
+            </label>
+        </div>
+    </header>
+
+    <main class="flex-grow z-10">
+        <section class="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full pt-8 pb-16">
+            <div id="games-section">
+                <div id="categories" class="flex flex-wrap items-center gap-2 mb-5">
+                    <button type="button" class="category-pill active rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="all" onclick="setCategory('all',this)">All</button>
+                    <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="platformer" onclick="setCategory('platformer',this)">Platformer</button>
+                    <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="survival" onclick="setCategory('survival',this)">Survival</button>
+                    <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="sandbox" onclick="setCategory('sandbox',this)">Sandbox</button>
+                    <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="horror" onclick="setCategory('horror',this)">Horror</button>
+                    <span class="ml-auto text-[10px] font-bold uppercase tracking-widest text-slate-500"><span id="gameCount">4 games</span></span>
+                </div>
+
+                <div id="hero" class="catalog-hero">
+                        <div class="hero-copy">
+                            <p class="eyebrow">IF YOU LIKE IT, GIVE CREDITS TO ME</p>
+                            <h1 class="hero-title">Made   with   a   randomizing   ip.   have  fun.</h1>
+                            <p class="hero-copy-text">:)</p>
+                            <div class="hero-actions">
+                                <button class="btn btn-amber" onclick="pickRandomGame()">Surprise me ↗</button>
+                                <a href="#gameGrid" class="btn">Browse the games</a>
+                            </div>
+                        </div>
+                        <div class="hero-art">
+                            <span class="shelf-note-count">NO. 04</span>
+                            <p class="shelf-note-kicker">Currently on the shelf</p>
+                            <h2 class="shelf-note-title">idk what to say<br> </h2>
+                            <p class="shelf-note-copy">sup G</p>
+                        </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-2.5" id="gameGrid">
+                    
+                    <!-- Geometry Dash Card -->
+                    <div class="game-card catalog-card" data-name="Geometry Dash" data-category="platformer">
+                        <div class="card-thumb">
+                            <svg class="catalog-logo" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Neon geometric cube logo for Geometry Dash">
+                                <defs>
+                                    <radialGradient id="gd-bg" cx="0" cy="0" r="1" gradientTransform="matrix(0 142 -142 0 100 64)" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#293b52"/>
+                                        <stop offset="1" stop-color="#10151e"/>
+                                    </linearGradient>
+                                    <linearGradient id="gd-cube" x1="57" y1="42" x2="144" y2="151" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#fff1a8"/>
+                                        <stop offset=".38" stop-color="#ffbd55"/>
+                                        <stop offset="1" stop-color="#f26b45"/>
+                                    </linearGradient>
+                                    <linearGradient id="gd-side" x1="101" y1="80" x2="150" y2="145" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#f79043"/>
+                                        <stop offset="1" stop-color="#b83343"/>
+                                    </linearGradient>
+                                    <filter id="gd-glow" x="31" y="28" width="138" height="144" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+                                        <feGaussianBlur stdDeviation="9"/>
+                                    </filter>
+                                </defs>
+                                <rect width="200" height="200" rx="18" fill="url(#gd-bg)"/>
+                                <path d="M0 150 200 50M0 180 200 80M0 120 200 20M24 0v200m38-200v200m38-200v200m38-200v200m38-200v200" stroke="#8bb8de" stroke-opacity=".09"/>
+                                <circle cx="100" cy="98" r="61" stroke="#ffb955" stroke-opacity=".18"/>
+                                <circle cx="100" cy="98" r="48" stroke="#ffb955" stroke-opacity=".12" stroke-dasharray="2 7"/>
+                                <path d="m100 39 52 30v61l-52 30-52-30V69l52-30Z" fill="#ff8a4e" opacity=".75" filter="url(#gd-glow)"/>
+                                <path d="m100 48 43 25v51l-43 25-43-25V73l43-25Z" fill="url(#gd-cube)" stroke="#fff1c1" stroke-width="2"/>
+                                <path d="m100 48 43 25-43 25-43-25 43-25Z" fill="#ffe6a3"/>
+                                <path d="M57 73v51l43 25V98L57 73Z" fill="#f6a24f"/>
+                                <path d="m100 98 43-25v51l-43 25V98Z" fill="url(#gd-side)"/>
+                                <path d="m82 82 18 10 18-10m-37 20 19 11 20-11" stroke="#572b37" stroke-width="5" stroke-linejoin="round"/>
+                                <path d="m94 56 6-3 6 3" stroke="#fff" stroke-opacity=".7" stroke-width="2" stroke-linecap="round"/>
+                                <path d="m30 58 4 9 9 4-9 4-4 9-4-9-9-4 9-4 4-9Zm137 73 3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z" fill="#ffe9ad"/>
+                            </svg>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Geometry Dash</h3>
+                            <span class="card-cat">Platformer</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Jump fast. Expect retries.</p>
+                        </div>
+                        <a href="games/Geometry Dash/geometry-dash.html" aria-label="Play Geometry Dash" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Zombie Survival Card -->
+                    <div class="game-card catalog-card" data-name="Zombie Survival Dead Zone Last Stand" data-category="survival">
+                        <div class="card-thumb">
+                            <svg class="catalog-logo" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Hazard-green zombie survival logo">
+                                <defs>
+                                    <radialGradient id="zd-bg" cx="0" cy="0" r="1" gradientTransform="matrix(0 135 -135 0 100 76)" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#244544"/>
+                                        <stop offset="1" stop-color="#101719"/>
+                                    </linearGradient>
+                                    <linearGradient id="zd-green" x1="61" y1="48" x2="143" y2="152" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#d2f29a"/>
+                                        <stop offset=".5" stop-color="#78c488"/>
+                                        <stop offset="1" stop-color="#368681"/>
+                                    </linearGradient>
+                                    <filter id="zd-glow" x="26" y="25" width="148" height="150" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+                                        <feGaussianBlur stdDeviation="10"/>
+                                    </filter>
+                                </defs>
+                                <rect width="200" height="200" rx="18" fill="url(#zd-bg)"/>
+                                <circle cx="100" cy="99" r="68" stroke="#9de6aa" stroke-opacity=".16"/>
+                                <circle cx="100" cy="99" r="54" stroke="#9de6aa" stroke-opacity=".12" stroke-dasharray="3 6"/>
+                                <path d="M24 148h152M34 160h132" stroke="#9de6aa" stroke-opacity=".17"/>
+                                <circle cx="100" cy="99" r="41" fill="#7ec78c" opacity=".42" filter="url(#zd-glow)"/>
+                                <path d="M69 119c-5-11-4-26 1-39l13-17 29-5 18 14 3 24-11 17 4 22-13 12H82l-15-12v-16Z" fill="url(#zd-green)" stroke="#d6f3bd" stroke-width="2"/>
+                                <path d="m80 81 16 9-14 6-8-5 6-10Zm31 2-11 9 15 4 7-6-11-7Z" fill="#182522"/>
+                                <path d="m82 84 7 4m27-2-7 5" stroke="#eaffbf" stroke-width="3" stroke-linecap="round"/>
+                                <path d="m86 108 14 7 16-9-4 16-12 5-13-7-1-12Z" fill="#25352c"/>
+                                <path d="m94 114 1 8m8-7v8m8-12 1 7" stroke="#d8efb6" stroke-width="3"/>
+                                <path d="m75 122-18 15 10 7 21-13m34-12 18 13-8 9-18-11" fill="#5caa79" stroke="#c8e9a9" stroke-width="2" stroke-linejoin="round"/>
+                                <path d="M39 47h19M48.5 37.5v19m94 89h19m-9.5-9.5v19" stroke="#d9eea7" stroke-opacity=".7" stroke-width="2"/>
+                                <circle cx="100" cy="99" r="3" fill="#d9eea7"/>
+                            </svg>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title zombie-title">Zombie Survival</h3>
+                            <span class="card-cat">Survival</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Scavenge what you can. Keep moving.</p>
+                        </div>
+                        <a href="games/zombie-survival.html" aria-label="Play Zombie Survival" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Sandbox Galore Card -->
+                    <div class="game-card catalog-card" data-name="Sandbox Galore 3D Town Action" data-category="sandbox">
+                        <div class="card-thumb sandbox-thumb">
+                            <svg class="catalog-logo" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cinematic Sandbox Galore scene with a suited character confronting another character in a city">
+                                <defs>
+                                    <linearGradient id="sg-sky" x1="100" y1="0" x2="100" y2="200" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#12243b"/>
+                                        <stop offset=".55" stop-color="#4b5968"/>
+                                        <stop offset="1" stop-color="#c17755"/>
+                                    </linearGradient>
+                                    <linearGradient id="sg-jacket" x1="39" y1="88" x2="77" y2="169" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#3a4c61"/>
+                                        <stop offset=".5" stop-color="#202b3a"/>
+                                        <stop offset="1" stop-color="#111923"/>
+                                    </linearGradient>
+                                    <linearGradient id="sg-target-jacket" x1="145" y1="100" x2="169" y2="174" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#c95c48"/>
+                                        <stop offset="1" stop-color="#74353a"/>
+                                    </linearGradient>
+                                    <linearGradient id="sg-shirt" x1="59" y1="95" x2="70" y2="139" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#fff3dd"/>
+                                        <stop offset="1" stop-color="#aebbc3"/>
+                                    </linearGradient>
+                                    <radialGradient id="sg-lamp" cx="0" cy="0" r="1" gradientTransform="matrix(0 67 -67 0 151 87)" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#ffc477" stop-opacity=".6"/>
+                                        <stop offset="1" stop-color="#ffc477" stop-opacity="0"/>
+                                    </radialGradient>
+                                    <filter id="sg-soft-glow" x="86" y="20" width="112" height="145" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+                                        <feGaussianBlur stdDeviation="8"/>
+                                    </filter>
+                                    <clipPath id="sg-clip"><rect width="200" height="200" rx="18"/></clipPath>
+                                </defs>
+                                <g clip-path="url(#sg-clip)">
+                                    <rect width="200" height="200" fill="url(#sg-sky)"/>
+                                    <circle cx="151" cy="81" r="68" fill="url(#sg-lamp)"/>
+                                    <circle cx="161" cy="38" r="17" fill="#ffcf8b" opacity=".78"/>
+                                    <circle cx="161" cy="38" r="28" fill="#ffcf8b" opacity=".12" filter="url(#sg-soft-glow)"/>
+                                    <path d="M0 92 24 67h21v39H0m48-57h20v59H48m86-29h20v35h-20m24-55h23v59h-23m28-38h21v41h-21" fill="#182431" opacity=".8"/>
+                                    <path d="M0 121h200v79H0z" fill="#252d32"/>
+                                    <path d="m0 157 200-31v5L0 170v-13Z" fill="#e2a16f" opacity=".12"/>
+                                    <path d="m116 200 29-79h12l43 79h-84Z" fill="#c28a65" opacity=".16"/>
+                                    <path d="M11 137h178M23 153h154M43 174h115" stroke="#e7b987" stroke-opacity=".13"/>
+
+                                    <g opacity=".98">
+                                        <ellipse cx="155" cy="169" rx="39" ry="6" fill="#0e141b" opacity=".45"/>
+                                        <path d="m143 143-4 31h12l8-30m5-1 9 31 11-3-5-32" fill="#242833"/>
+                                        <path d="m140 171 14-1 5 5-1 4h-21l3-8Zm25 3 13-5 8 4 1 5-19 3-3-7Z" fill="#111923"/>
+                                        <path d="M139 101c0-11 7-19 17-19s18 8 18 19v11h-35v-11Z" fill="#d6aa87"/>
+                                        <path d="M137 100c1-14 8-23 19-23 9 0 15 5 18 15-11-2-23 0-37 8Z" fill="#26232a"/>
+                                        <path d="m136 117 18-6 20 6 10 40-15 8h-34l-14-10 15-38Z" fill="url(#sg-target-jacket)"/>
+                                        <path d="m137 120-13-18-2-20 6-1 8 16 14 14m22 1 12-17 1-19 6-1 5 22-12 23" fill="none" stroke="#d6aa87" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="m127 83-4-9 1-9m65 9 4-9-1-9" stroke="#e4bd9b" stroke-width="3.5" stroke-linecap="round"/>
+                                        <path d="m133 120 20 8 20-9" stroke="#f0b197" stroke-opacity=".55" stroke-width="2"/>
+                                    </g>
+
+                                    <ellipse cx="55" cy="174" rx="43" ry="7" fill="#0b1118" opacity=".55"/>
+                                    <path d="m37 139-6 38h16l10-36m7 0 5 38h17l-2-42" fill="#18212d"/>
+                                    <path d="m29 173 18 1 5 6H26l3-7Zm39 0h18l7 6H69l-1-6Z" fill="#111721" stroke="#667486" stroke-opacity=".35"/>
+                                    <path d="M39 92c0-17 10-29 25-29s25 12 25 29v14H39V92Z" fill="#d9a47e"/>
+                                    <path d="M37 87c2-19 13-31 28-31 12 0 21 8 24 23-16-4-34-1-52 8Z" fill="#171c26"/>
+                                    <path d="m47 67 13-11m-3 15 16-15" stroke="#36404d" stroke-width="3" stroke-linecap="round"/>
+                                    <path d="M29 108c8-9 20-13 34-13 13 0 24 4 32 13l10 39-16 10H32l-15-11 12-38Z" fill="url(#sg-jacket)" stroke="#617087" stroke-opacity=".5"/>
+                                    <path d="m48 100 13 5 14-5 9 9-11 37H49l-9-37 8-9Z" fill="url(#sg-shirt)"/>
+                                    <path d="m61 105 7 2-3 10 6 22-8 9-8-9 6-22-3-10 3-2Z" fill="#ad4d49"/>
+                                    <path d="m26 114-11 10-3 24 11 4 12-23m60-18 11-13 18-7 10-9 6 5-8 13-20 9-12 20" fill="none" stroke="#202a37" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="m98 104 11-11 17-7 12-11 7 5-9 14-19 8-12 16" fill="none" stroke="#3b4a5d" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="m132 82 5-7 7 1 5 5-4 5-8 1-5-5Z" fill="#d9a47e"/>
+                                    <path d="m133 78 7-10 11 1 2 5-8 2-5 7" fill="#1a2029" stroke="#aebac4" stroke-width="1.4" stroke-linejoin="round"/>
+                                    <path d="m151 70 12 1 1 4-12 1" fill="#242b33" stroke="#aebac4" stroke-width="1"/>
+                                    <path d="m150 69 9 1" stroke="#f0d8b5" stroke-opacity=".75" stroke-width="1"/>
+                                    <path d="M18 26h25m-25 0v20m164-20h-25m25 0v20M18 174v-20m0 20h25m139 0h-25m25 0v-20" stroke="#efc18b" stroke-opacity=".48" stroke-width="1.5"/>
+                                </g>
+                            </svg>
+                            <img class="game-logo" src="games/Sandbox%20Galore/sandbox-galore-cover.png" alt="Sandbox Galore logo with a game controller and red splatter">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Sandbox Galore</h3>
+                            <span class="card-cat">Sandbox</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">A little city. Plenty to get into.</p>
+                        </div>
+                        <a href="games/Sandbox Galore/sandbox-galore.html" aria-label="Play Sandbox Galore" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- SCP-096 Monster Maze Card -->
+                    <div class="game-card catalog-card" data-name="SCP-096 Monster Maze Horror Multiplayer" data-category="horror">
+                        <div class="card-thumb">
+                            <svg class="catalog-logo" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A gaunt, screaming SCP-096 looming in a blood-red maze">
+                                <defs>
+                                    <radialGradient id="scp-glow" cx="0" cy="0" r="1" gradientTransform="matrix(0 145 -145 0 100 80)" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#521c25"/>
+                                        <stop offset=".52" stop-color="#211316"/>
+                                        <stop offset="1" stop-color="#080909"/>
+                                    </radialGradient>
+                                    <linearGradient id="scp-skin" x1="72" y1="34" x2="137" y2="178" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#eee4d2"/>
+                                        <stop offset=".5" stop-color="#b3a69a"/>
+                                        <stop offset="1" stop-color="#554847"/>
+                                    </linearGradient>
+                                    <linearGradient id="scp-shadow" x1="99" y1="90" x2="101" y2="182" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#171415"/>
+                                        <stop offset="1" stop-color="#050505"/>
+                                    </linearGradient>
+                                    <filter id="scp-red-glow" x="22" y="24" width="156" height="164" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+                                        <feGaussianBlur stdDeviation="13"/>
+                                    </filter>
+                                </defs>
+                                <rect width="200" height="200" rx="18" fill="url(#scp-glow)"/>
+                                <path d="M0 0h200v200H0z" fill="#080808" fill-opacity=".18"/>
+                                <path d="M0 0h200M0 200h200M0 0v200m200-200v200M0 42h45v26H18v30h28v29H0m200-85h-45v26h27v30h-28v29h46M0 165h65v-21h-28m163 21h-65v-21h28" stroke="#9d3c3c" stroke-opacity=".34" stroke-width="3"/>
+                                <path d="M30 0 76 58m94-58-46 58M0 105l69-16m131 16-69-16M0 200l76-52m94 52-46-52" stroke="#d25a4e" stroke-opacity=".16" stroke-width="2"/>
+                                <ellipse cx="103" cy="98" rx="67" ry="77" fill="#a81f2d" opacity=".42" filter="url(#scp-red-glow)"/>
+                                <path d="m81 112-23 35-13 27 10 8 21-19 18-26m25-25 21 37 15 25-11 8-21-19-20-27" fill="url(#scp-skin)" stroke="#332a29" stroke-width="3" stroke-linejoin="round"/>
+                                <path d="m58 169-13 16 8 7 19-13m72-10 15 16-8 7-19-13" fill="#a99b8d" stroke="#282020" stroke-width="2" stroke-linejoin="round"/>
+                                <path d="m77 94-10 39 7 35 26 16 28-17 6-37-12-38-22-10-23 12Z" fill="url(#scp-shadow)" stroke="#443536" stroke-width="2"/>
+                                <path d="m87 111 8 4 7-2 8-5 4 8-4 18-8 10-9-7-7-17 1-9Z" fill="#070607" stroke="#5d292d" stroke-width="2"/>
+                                <path d="m89 116 4 8m8-8-2 8m-7 10 6 3 5-5" stroke="#b84d50" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M100 15c-16 0-27 12-28 31l4 31 11 22 15 7 15-9 11-24 2-29c-1-18-14-29-30-29Z" fill="url(#scp-skin)" stroke="#33292a" stroke-width="2"/>
+                                <path d="m75 52 13 3-5 5-10-2m39-6 13-2 2 7-11 3" fill="#21191a"/>
+                                <path d="M88 67c3-4 7-5 11-2m5 0c4-4 8-3 11 1" stroke="#4c2025" stroke-width="3" stroke-linecap="round"/>
+                                <path d="m85 42 9-4m14 1 10 5m-38 42 8 7m32-5 9-9" stroke="#776461" stroke-opacity=".8" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M99 75c-7 3-11 12-10 22 1 11 6 18 13 19 8-1 13-9 13-20 0-10-5-18-12-21h-4Z" fill="#120809" stroke="#67232b" stroke-width="2"/>
+                                <path d="m94 86 4 3m9-4-3 5m-9 11 5 2 6-3" stroke="#d16c67" stroke-opacity=".75" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="m69 113-8 22m73-27 8 22M81 154l-5 14m42-15 7 14" stroke="#eee0cb" stroke-opacity=".65" stroke-width="2"/>
+                                <path d="M17 18h22M17 18v22m166-22h-22m22 0v22M17 182v-22m0 22h22m144 0h-22m22 0v-22" stroke="#dc655b" stroke-opacity=".66" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title scp-title">SCP-096</h3>
+                            <span class="card-cat">Horror</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Find the keys. Don't let it catch you.</p>
+                        </div>
+                        <a href="games/SCP-096/monster-maze.html" aria-label="Play SCP-096: Monster Maze" class="card-play">▶ Play</a>
+                    </div>
+
+                </div>
+
+                <div id="noResults" class="hidden text-center py-20">
+                    <div class="w-16 h-16 rounded-2xl bg-slate-800/60 border border-slate-700/60 flex items-center justify-center mx-auto mb-4 text-2xl">🔍</div>
+                    <p class="text-slate-300 font-semibold mb-1">No games found</p>
+                    <p class="text-slate-500 text-sm">Try searching for something else.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-slate-800/80 py-8 text-center text-xs text-slate-500 z-10 bg-slate-950/40">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:px-6 lg:px-8 sm:flex-row items-center justify-between gap-4">
+            <p>&copy; Null's Arcade · AI helped me</p>
+            <p>Still a work in progress.</p>
+        </div>
+    </footer>
+
+    <div id="scrollMessage" role="status" aria-live="polite"></div>
+
+    <script>
+        // Edit this sentence to change the message shown after scrolling down.
+        const scrollMessageText = "made by taking a web proxy, making it randomize the ip, then making it show up.";
+
+        function adjustTextSizes() {
+            document.querySelectorAll('body *').forEach(element => {
+                const hasText = Array.from(element.childNodes).some(node =>
+                    node.nodeType === Node.TEXT_NODE && node.textContent.trim()
+                );
+                if (!hasText && !element.matches('input, textarea, select')) return;
+
+                const size = parseFloat(getComputedStyle(element).fontSize);
+                element.style.setProperty('font-size', `${size}px`, 'important');
+            });
+        }
+
+        adjustTextSizes();
+
+        function launchGameInBlankTab(url) {
+            const gameUrl = new URL(url, window.location.href);
+            const currentUrl = new URL(window.location.href);
+            const proxyOrigin = currentUrl.searchParams.get('__cpo');
+            if (proxyOrigin && gameUrl.origin === currentUrl.origin) {
+                gameUrl.searchParams.set('__cpo', proxyOrigin);
+            }
+
+            const blankTab = window.open('about:blank', '_blank');
+            if (!blankTab) {
+                alert('Your browser blocked the new tab. Allow pop-ups for this page and try again.');
+                return;
+            }
+
+            blankTab.document.title = 'Null\'s Arcade · Game';
+            blankTab.document.documentElement.style.cssText = 'height:100%;margin:0;background:#080909';
+            blankTab.document.body.style.cssText = 'height:100%;margin:0;overflow:hidden';
+
+            const frame = blankTab.document.createElement('iframe');
+            frame.title = 'Arcade game';
+            frame.allow = 'autoplay; fullscreen; gamepad; pointer-lock';
+            frame.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;border:0;display:block;background:#080909';
+            frame.src = gameUrl.href;
+            blankTab.document.body.append(frame);
+            blankTab.opener = null;
+        }
+
+        document.getElementById('gameGrid').addEventListener('click', event => {
+            const target = event.target;
+            if (!(target instanceof Element)) return;
+            const gameLink = target.closest('a.card-play');
+            if (!gameLink) return;
+
+            event.preventDefault();
+            launchGameInBlankTab(gameLink.href);
+        });
+
+        const scrollMessage = document.getElementById('scrollMessage');
+        scrollMessage.textContent = scrollMessageText;
+
+        function updateScrollMessage() {
+            scrollMessage.classList.toggle('is-visible', window.scrollY > 100);
+        }
+
+        window.addEventListener('scroll', updateScrollMessage, { passive: true });
+        updateScrollMessage();
+
+        let activeCategory = 'all';
+
+        function setCategory(category, button) {
+            activeCategory = category;
+            document.querySelectorAll('.category-pill').forEach(pill => pill.classList.remove('active'));
+            button.classList.add('active');
+            filterGames();
+        }
+
+        function filterGames() {
+            let input = document.getElementById('searchBar').value.toLowerCase().trim();
+            let cards = document.getElementsByClassName('game-card');
+            let noResults = document.getElementById('noResults');
+            let gameCount = document.getElementById('gameCount');
+            let visibleCount = 0;
+
+            for (let i = 0; i < cards.length; i++) {
+                let name = cards[i].getAttribute('data-name').toLowerCase();
+                let category = cards[i].getAttribute('data-category');
+                if (name.includes(input) && (activeCategory === 'all' || category === activeCategory)) {
+                    cards[i].style.display = "";
+                    visibleCount++;
+                } else {
+                    cards[i].style.display = "none";
+                }
+            }
+
+            gameCount.innerText = `${visibleCount} ${visibleCount === 1 ? 'game' : 'games'}`;
+            if (visibleCount === 0) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+            }
+        }
+
+        function pickRandomGame() {
+            const visibleCards = Array.from(document.querySelectorAll('.game-card')).filter(card => card.style.display !== 'none');
+            if (!visibleCards.length) {
+                document.getElementById('searchBar').value = '';
+                setCategory('all', document.querySelector('.category-pill[data-category="all"]'));
+                return;
+            }
+            const link = visibleCards[Math.floor(Math.random() * visibleCards.length)].querySelector('a');
+            launchGameInBlankTab(link.href);
+        }
+    </script>
+</body>
+</html>

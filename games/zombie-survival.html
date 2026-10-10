@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Dead Zone: Last Stand</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101815;color:#f2f1df;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+canvas{display:block;width:100%;height:100%;cursor:crosshair;touch-action:none;outline:none;image-rendering:pixelated}
+#screen{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at center,rgba(15,25,20,.55),rgba(5,10,9,.88));padding:22px}
+#screen.hidden{display:none}
+.panel{width:min(570px,94vw);padding:clamp(24px,5vw,42px);border:1px solid #79927b66;border-radius:18px;background:linear-gradient(145deg,#202b25f5,#111915f7);box-shadow:0 24px 90px #0009;text-align:center}
+.eyebrow{color:#c4a969;letter-spacing:.24em;text-transform:uppercase;font-size:12px;font-weight:800}
+h1{font-size:clamp(34px,8vw,62px);line-height:.94;margin:14px 0;color:#f5edcf;text-transform:uppercase;letter-spacing:.02em;text-shadow:0 4px 0 #59634b}
+.panel p{line-height:1.6;color:#bac4b8;margin:18px auto 22px;max-width:440px}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:22px auto;text-align:left;font-size:13px;color:#d9dfd5}
+.controls span{padding:10px 12px;background:#ffffff0b;border-radius:8px}.controls b{color:#dfc67f}
+button{border:0;border-radius:10px;background:#d0b66e;color:#17180f;padding:13px 24px;font:inherit;font-weight:900;font-size:15px;cursor:pointer;transition:transform .12s,filter .12s}
+button:hover{filter:brightness(1.1);transform:translateY(-1px)}
+#start{min-width:190px}
+#menuButton{display:none;margin-left:10px;background:#3c4840;color:#f2f1df}
+#menuButton.show{display:inline-block}
+#settingsButton{margin:8px 8px 0;background:#3c4840;color:#f2f1df}
+#settingsPanel,#upgradePanel{position:fixed;inset:0;z-index:5;display:none;place-items:center;background:#070c0bdd;padding:18px}
+#settingsPanel.on,#upgradePanel.on{display:grid}
+.modalPanel{width:min(680px,95vw);max-height:92vh;overflow:auto;padding:clamp(20px,4vw,34px);border:1px solid #79927b77;border-radius:18px;background:linear-gradient(145deg,#202b25,#111915);box-shadow:0 24px 90px #000a}
+.modalPanel h2{margin:0 0 8px;color:#f5edcf;text-transform:uppercase;letter-spacing:.07em}
+.modalPanel>p{margin:0 0 18px;color:#bac4b8;line-height:1.5}
+.settingsRows{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.settingRow,.upgradeCard{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:#ffffff0b;border:1px solid #ffffff12;border-radius:10px}
+.settingRow button{padding:8px 12px;background:#52634f;color:#fff;font-size:12px}
+.settingRow button.waiting{background:#d0b66e;color:#17180f}
+.volumeRow{display:grid;grid-template-columns:auto 1fr 42px;align-items:center;gap:12px;margin:16px 0;color:#d9dfd5}
+.volumeRow input{width:100%;accent-color:#d0b66e}
+.upgradeList{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.upgradeCard{align-items:flex-start;flex-direction:column}
+.upgradeCard p{margin:0;color:#bac4b8;font-size:13px;line-height:1.4}
+.upgradeCard button{width:100%;padding:9px 12px;font-size:13px}
+.modalActions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:18px}
+.modalActions .secondary{background:#3c4840;color:#f2f1df}
+#currencyText{color:#f0d88c;font-weight:900}
+#hud{position:fixed;inset:0;pointer-events:none;padding:18px;display:none}
+#hud.on{display:block}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.card{background:#101813c9;border:1px solid #a7b29b35;border-radius:12px;padding:10px 14px;backdrop-filter:blur(5px);box-shadow:0 4px 18px #0003}
+.healthBox{width:min(250px,45vw)}
+.label{font-size:10px;font-weight:900;letter-spacing:.15em;color:#d9d9c2;text-transform:uppercase}
+.healthTrack{height:11px;background:#482b28;border-radius:8px;overflow:hidden;margin-top:7px}
+#healthFill{height:100%;width:100%;background:linear-gradient(90deg,#b34235,#e6975d);transition:width .18s}
+#healthText{font-size:12px;color:#e7e3d2;margin-top:4px}
+.stage{font-size:14px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;text-align:center}
+#waveText{font-size:11px;color:#bac4b8;margin-top:3px}
+.weaponHud{min-width:160px;text-align:right}
+#weaponName{font-size:16px;font-weight:1000;color:#f0d88c;text-transform:uppercase}
+#ammoText{font-size:13px;color:#e1e4d8;margin-top:2px}
+#bottomHint{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);white-space:nowrap;color:#e8e8d7;background:#111a16bd;padding:8px 14px;border-radius:20px;font-size:11px;letter-spacing:.03em}
+#toast{position:absolute;left:50%;top:22%;transform:translate(-50%,-10px);opacity:0;transition:.2s;background:#111a16e8;border:1px solid #d0b66e88;color:#f3e6b9;padding:11px 17px;border-radius:12px;font-weight:800;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#crosshair{position:fixed;width:18px;height:18px;border:1px solid #eee8;border-radius:50%;pointer-events:none;display:none;transform:translate(-50%,-50%);z-index:2}
+#crosshair:before,#crosshair:after{content:"";position:absolute;background:#f5f2d9bb}
+#crosshair:before{width:1px;height:26px;left:8px;top:-5px}
+#crosshair:after{height:1px;width:26px;top:8px;left:-5px}
+@media(max-width:600px){#hud{padding:10px}.card{padding:8px 10px}.stage{font-size:11px}.weaponHud{min-width:120px}#weaponName{font-size:13px}.controls{font-size:11px}.controls span{padding:8px}}
+</style>
+</head>
+<body>
+<canvas id="game" tabindex="0" aria-label="Side-view pixel-art zombie survival game"></canvas>
+<div id="crosshair"></div>
+<div id="hud">
+  <div class="topbar">
+    <div class="card healthBox"><div class="label">Health</div><div class="healthTrack"><div id="healthFill"></div></div><div id="healthText">100 / 100</div></div>
+    <div class="card stage"><div id="stageText">Stage 1</div><div id="waveText">Zombies: 0</div></div>
+    <div class="card weaponHud"><div id="weaponName">Pistol</div><div id="ammoText">12 / 48</div></div>
+  </div>
+  <div id="toast"></div>
+  <div id="bottomHint">A/D move · W jump · S crouch · W/S climb cave ladders · F flashlight · Mouse aim/fire · 1–4 weapons · R reload · Esc pause</div>
+</div>
+<div id="screen">
+  <div class="panel">
+    <div class="eyebrow" id="screenEyebrow">Main menu · Sector 09</div>
+    <h1 id="screenTitle">Dead Zone<br>Last Stand</h1>
+    <p id="screenCopy">The town has fallen. Search the streets for weapons and ammo, keep moving, and survive each stage. The infected are coming.</p>
+    <div class="controls">
+      <span><b>A / D</b> &nbsp; Move · <b>W</b> Jump · <b>S</b> Crouch</span><span><b>Mouse</b> &nbsp; Aim / fire · move to swing machete</span>
+      <span><b>1 / 2 / 3</b> &nbsp; Pistol / AK / RPG</span><span><b>4</b> Machete · <b>F</b> Flashlight</span>
+    </div>
+    <button id="start">PLAY</button><button id="menuButton">MAIN MENU</button><br><button id="settingsButton">SETTINGS</button>
+  </div>
+</div>
+<div id="settingsPanel">
+  <div class="modalPanel">
+    <h2>Settings</h2><p>Customize your controls and sound level.</p>
+    <div class="settingsRows" id="settingsRows"></div>
+    <label class="volumeRow"><b>Sound volume</b><input id="volumeSlider" type="range" min="0" max="1" step=".01"><span id="volumeLabel"></span></label>
+    <div class="modalActions"><span>Click a control, then press a key.</span><button id="settingsClose" class="secondary">CLOSE</button></div>
+  </div>
+</div>
+<div id="upgradePanel">
+  <div class="modalPanel">
+    <div class="eyebrow">Safehouse · Intermission</div><h2 id="upgradeTitle">Stage cleared</h2>
+    <p id="upgradeCopy">Spend your round reward on permanent upgrades for this run.</p>
+    <div id="currencyText">0 scrap</div>
+    <div class="upgradeList">
+      <div class="upgradeCard"><b>Harder Hits</b><p id="damageUpgradeText">Increase all weapon damage.</p><button data-upgrade="damage"></button></div>
+      <div class="upgradeCard"><b>Field Medic</b><p id="healthUpgradeText">Increase max health and heal.</p><button data-upgrade="health"></button></div>
+      <div class="upgradeCard"><b>Quick Feet</b><p id="speedUpgradeText">Move faster through the streets.</p><button data-upgrade="speed"></button></div>
+      <div class="upgradeCard"><b>Razor Edge</b><p id="meleeUpgradeText">Extend machete reach and swing faster.</p><button data-upgrade="melee"></button></div>
+    </div>
+    <div class="modalActions"><span id="roundReward"></span><button id="continueButton">NEXT STAGE</button></div>
+  </div>
+</div>
+<script>
+(()=>{"use strict";
+const canvas=document.querySelector("#game"),ctx=canvas.getContext("2d"),lightCanvas=document.createElement("canvas"),lightCtx=lightCanvas.getContext("2d");
+const screen=document.querySelector("#screen"),startButton=document.querySelector("#start"),menuButton=document.querySelector("#menuButton"),settingsButton=document.querySelector("#settingsButton"),settingsPanel=document.querySelector("#settingsPanel"),upgradePanel=document.querySelector("#upgradePanel"),hud=document.querySelector("#hud"),crosshair=document.querySelector("#crosshair");
+const healthFill=document.querySelector("#healthFill"),healthText=document.querySelector("#healthText"),stageText=document.querySelector("#stageText"),waveText=document.querySelector("#waveText"),weaponName=document.querySelector("#weaponName"),ammoText=document.querySelector("#ammoText"),toastEl=document.querySelector("#toast");
+let W=innerWidth,H=innerHeight,dpr=1,lastTime=0,clock=0,toastTimer=0,audioCtx=null,bindingAction="",currency=0,intermission=false,roundReward=0;
+const controlDefaults={up:"KeyW",down:"KeyS",left:"KeyA",right:"KeyD",pistol:"Digit1",ak:"Digit2",rpg:"Digit3",machete:"Digit4",reload:"KeyR",pause:"Escape",flashlight:"KeyF"};
+let controls={...controlDefaults},soundVolume=.65;
+try{const saved=JSON.parse(localStorage.getItem("deadZoneSettings")||"{}");if(saved.controls)controls={...controlDefaults,...saved.controls};if(Number.isFinite(saved.soundVolume))soundVolume=Math.max(0,Math.min(1,saved.soundVolume))}catch(error){console.warn("Could not load saved game settings:",error)}
+const WORLD={w:6000,h:1100},GROUND=760,CAVE_FLOOR=1050,CAVE_ENTRANCES=[{x:365,w:130},{x:1820,w:135},{x:3370,w:140},{x:4920,w:135}],keys=new Set(),mouse={x:W/2,y:H/2,down:false,lastX:W/2,lastY:H/2};
+const weaponSpecs={
+ pistol:{name:"Pistol",damage:30,rate:.32,magSize:12,reload:1.05,speed:870,spread:.035,shots:1,ammo:"light"},
+ ak:{name:"AK-47",damage:19,rate:.105,magSize:30,reload:1.45,speed:980,spread:.09,shots:1,ammo:"rifle"},
+ rpg:{name:"RPG",damage:100,rate:.78,magSize:1,reload:1.7,speed:540,spread:.025,shots:1,ammo:"rocket",blast:115}
+};
+const player={x:WORLD.w/2,y:GROUND-15,r:15,vx:0,vy:0,grounded:true,surfaceExit:false,hp:100,maxHp:100,speed:235,angle:0,facing:1,weapon:"pistol",flashlight:false,weapons:{pistol:{unlocked:true,mag:12,reserve:48},ak:{unlocked:false,mag:0,reserve:0},rpg:{unlocked:false,mag:0,reserve:0}},fire:0,reload:0,invuln:0};
+let houses=[],trees=[],platforms=[],zombies=[],bullets=[],particles=[],pickups=[],keysDown=new Set(),stage=1,spawnLeft=0,spawnClock=0,breakClock=0,started=false,paused=false,dead=false,shake=0,slashTime=0,slashCooldown=0,wasInCave=false,upgradeLevels={damage:0,health:0,speed:0,melee:0};
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rand=(a,b)=>a+Math.random()*(b-a),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+function resize(){W=innerWidth;H=innerHeight;dpr=Math.min(2,devicePixelRatio||1);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);lightCanvas.width=canvas.width;lightCanvas.height=canvas.height;ctx.setTransform(dpr,0,0,dpr,0,0);lightCtx.setTransform(dpr,0,0,dpr,0,0)}
+addEventListener("resize",resize);resize();
+function makeTown(){
+ houses=[];platforms=[];
+ for(let x=240;x<WORLD.w-250;x+=rand(410,660)){
+  const w=rand(145,240),h=rand(105,190),y=GROUND-h;
+  houses.push({x,y,w,h,c:["#78664c","#6f705a","#76614d","#6c7257"][Math.floor(rand(0,4))],roof:["#8d4835","#87503c","#786644"][Math.floor(rand(0,3))]});
+  platforms.push({x:x+20,y:y-8,w:w-40,h:12});
+ }
+ for(let x=350;x<WORLD.w-160;x+=rand(280,470))if(Math.random()<.68)platforms.push({x,y:GROUND-rand(100,190),w:rand(70,140),h:20});
+ trees=[];for(let i=0;i<90;i++){trees.push({x:rand(0,WORLD.w),y:rand(GROUND-350,GROUND-45),r:rand(12,27),tone:Math.floor(rand(0,3))})}
+}
+function landOnPlatforms(body,oldBottom){
+ let landed=false;for(const p of platforms)if(body.x+body.r>p.x&&body.x-body.r<p.x+p.w&&oldBottom<=p.y&&body.y+body.r>=p.y&&body.vy>=0){body.y=p.y-body.r;body.vy=0;body.grounded=true;landed=true;break}
+ const atCaveEntrance=CAVE_ENTRANCES.some(c=>body.x+body.r>c.x&&body.x-body.r<c.x+c.w)&&!body.surfaceExit;
+ if(!landed&&!atCaveEntrance&&oldBottom<=GROUND&&body.y+body.r>=GROUND&&body.vy>=0){body.y=GROUND-body.r;body.vy=0;body.grounded=true;landed=true}
+ if(!landed&&body.y+body.r>=CAVE_FLOOR){body.y=CAVE_FLOOR-body.r;body.vy=0;body.grounded=true}
+}
+function ladderAt(x){return CAVE_ENTRANCES.find(c=>x>c.x+28&&x<c.x+c.w-28)}
+function moveSideBody(body,dt,{jump=false,gravity=1250,climb=0}={}){
+ if(body===player&&climb){
+  const ladder=ladderAt(body.x);if(ladder){const center=ladder.x+ladder.w/2;body.x+=(center-body.x)*Math.min(1,dt*12);body.vx=0;body.vy=0;body.grounded=false;if(climb>0)body.surfaceExit=false;body.y+=climb*body.speed*.85*dt;
+   if(body.y<=GROUND-body.r){body.y=GROUND-body.r;body.grounded=true;body.surfaceExit=true}
+   if(body.y>=CAVE_FLOOR-body.r){body.y=CAVE_FLOOR-body.r;body.grounded=true}
+   return
+  }
+ }
+ if(jump&&body.grounded){body.vy=-465;body.grounded=false}
+ const oldBottom=body.y+body.r,oldTop=body.y-body.r;body.grounded=false;body.vy=Math.min(820,body.vy+gravity*dt);body.y+=body.vy*dt;
+ if(oldTop>=GROUND&&body.vy<0&&body.y-body.r<GROUND+44&&!CAVE_ENTRANCES.some(c=>body.x>c.x&&body.x<c.x+c.w)){body.y=GROUND+44+body.r;body.vy=0}
+ body.x=clamp(body.x+body.vx*dt,body.r,WORLD.w-body.r);landOnPlatforms(body,oldBottom)
+}
+function spotFree(x,y,r=20){return x>r&&x<WORLD.w-r&&Math.abs(x-player.x)>260}
+function randomSpot(r=22){for(let i=0;i<80;i++){const x=rand(60,WORLD.w-60),y=GROUND-r; if(spotFree(x,y,r))return{x,y}}return{x:clamp(player.x+rand(300,700),r,WORLD.w-r),y:GROUND-r}}
+function seedPickups(){
+ pickups=[];for(let i=0;i<20;i++){const p=randomSpot(16);pickups.push({...p,type:"ammo",ammo:["light","rifle","rocket"][i%3],amount:i%3===2?1:rand(12,25)|0})}
+ for(const [type,count] of [["ak",3],["rpg",2]])for(let i=0;i<count;i++){const p=randomSpot(20);pickups.push({...p,type})}
+}
+function resetGame(){player.x=240;player.y=GROUND-player.r;player.vx=player.vy=0;player.grounded=true;player.surfaceExit=false;player.hp=100;player.maxHp=100;player.speed=235;player.weapon="pistol";player.flashlight=false;player.fire=0;player.reload=0;player.invuln=0;player.weapons={pistol:{unlocked:true,mag:12,reserve:48},ak:{unlocked:false,mag:0,reserve:0},rpg:{unlocked:false,mag:0,reserve:0}};zombies=[];bullets=[];particles=[];stage=1;spawnLeft=0;spawnClock=0;breakClock=0;slashTime=0;slashCooldown=0;wasInCave=false;currency=0;intermission=false;upgradeLevels={damage:0,health:0,speed:0,melee:0};dead=false;paused=false;seedPickups();beginStage()}
+function beginStage(){spawnLeft=5*2**(stage-1);spawnClock=.5;breakClock=0;intermission=false;showToast("STAGE "+stage+" — "+spawnLeft+" INFECTED");updateHud()}
+function startGame(){if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(AC)audioCtx=new AC()}if(audioCtx?.state==="suspended")audioCtx.resume();makeTown();resetGame();started=true;paused=false;dead=false;screen.classList.add("hidden");hud.classList.add("on");crosshair.style.display="block";canvas.focus({preventScroll:true});lastTime=performance.now()}
+function showToast(text){toastEl.textContent=text;toastEl.classList.add("show");toastTimer=1.6}
+function updateHud(){healthFill.style.width=(player.hp/player.maxHp*100)+"%";healthText.textContent=Math.ceil(player.hp)+" / "+player.maxHp;stageText.textContent="Stage "+stage;waveText.textContent=(player.y>GROUND+player.r?"CAVE · ":"")+"Zombies: "+(zombies.length+spawnLeft)+(player.flashlight?" · LIGHT ON":" · LIGHT OFF");if(player.weapon==="machete"){weaponName.textContent="Machete";ammoText.textContent=slashCooldown>0?"SWINGING…":"MELEE · READY";return}const spec=weaponSpecs[player.weapon],w=player.weapons[player.weapon];weaponName.textContent=spec.name;ammoText.textContent=player.reload>0?"RELOADING…":w.mag+" / "+w.reserve+(w.mag===0&&w.reserve===0?" · FIND AMMO":"")}
+function sound(type){
+ if(!audioCtx||soundVolume===0)return;
+ const t=audioCtx.currentTime,g=audioCtx.createGain(),o=audioCtx.createOscillator();g.connect(audioCtx.destination);
+ const volume=(type==="rpg"?.11:type==="ak"?.055:.075)*soundVolume;
+ if(type==="rpg"){o.type="sawtooth";o.frequency.setValueAtTime(95,t);o.frequency.exponentialRampToValueAtTime(34,t+.27);g.gain.setValueAtTime(volume,t);g.gain.exponentialRampToValueAtTime(.001,t+.29);o.connect(g);o.start(t);o.stop(t+.3)}
+ else{const buffer=audioCtx.createBuffer(1,Math.floor(audioCtx.sampleRate*(type==="ak"?.075:.11)),audioCtx.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*(1-i/data.length);const noise=audioCtx.createBufferSource(),filter=audioCtx.createBiquadFilter();filter.type="lowpass";filter.frequency.value=type==="ak"?2100:1300;noise.buffer=buffer;noise.connect(filter);filter.connect(g);g.gain.setValueAtTime(volume,t);g.gain.exponentialRampToValueAtTime(.001,t+(type==="ak"?.075:.11));noise.start(t);noise.stop(t+.12);o.type="triangle";o.frequency.setValueAtTime(type==="ak"?125:90,t);o.frequency.exponentialRampToValueAtTime(35,t+.06);o.connect(g);o.start(t);o.stop(t+.07)}
+}
+function selectWeapon(n){const id={1:"pistol",2:"ak",3:"rpg",4:"machete"}[n];if(!id)return;if(id!=="machete"&&!player.weapons[id].unlocked){showToast("Find a "+weaponSpecs[id].name+" first");return}player.weapon=id;player.reload=0;updateHud()}
+function reload(){
+ const w=player.weapons[player.weapon],spec=weaponSpecs[player.weapon];if(player.reload>0||w.mag>=spec.magSize||w.reserve<=0)return;
+ player.reload=spec.reload;showToast("Reloading "+spec.name)
+}
+function finishReload(){const w=player.weapons[player.weapon],s=weaponSpecs[player.weapon],take=Math.min(s.magSize-w.mag,w.reserve);w.mag+=take;w.reserve-=take;player.reload=0;updateHud()}
+function fire(){
+ if(player.fire>0||player.reload>0)return;
+ const w=player.weapons[player.weapon],spec=weaponSpecs[player.weapon];if(w.mag<=0){if(w.reserve>0)reload();else showToast("Out of ammo — search the streets");player.fire=.18;return}
+ w.mag--;player.fire=spec.rate;sound(player.weapon);shake=player.weapon==="rpg"?7:player.weapon==="ak"?2.4:1.4;
+ const cam=camera(),mx=mouse.x+cam.x,my=mouse.y+cam.y;player.angle=Math.atan2(my-player.y,mx-player.x);
+ for(let i=0;i<spec.shots;i++){const a=player.angle+rand(-spec.spread,spec.spread);bullets.push({x:player.x+Math.cos(a)*22,y:player.y+Math.sin(a)*22,vx:Math.cos(a)*spec.speed,vy:Math.sin(a)*spec.speed,life:player.weapon==="rpg"?2.1:.9,damage:spec.damage*(1+upgradeLevels.damage*.2),weapon:player.weapon,blast:spec.blast||0})}
+ if(player.weapon==="rpg")w.mag=0;
+ updateHud()
+}
+function swingMachete(){
+ if(slashCooldown>0)return;
+ slashCooldown=Math.max(.22,.72-upgradeLevels.melee*.08);slashTime=.34;shake=2.2;updateHud();
+ if(audioCtx&&soundVolume>0){const t=audioCtx.currentTime,buffer=audioCtx.createBuffer(1,Math.floor(audioCtx.sampleRate*.2),audioCtx.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*(1-i/data.length);const source=audioCtx.createBufferSource(),filter=audioCtx.createBiquadFilter(),gain=audioCtx.createGain();source.buffer=buffer;filter.type="highpass";filter.frequency.value=650;gain.gain.setValueAtTime(.06*soundVolume,t);gain.gain.exponentialRampToValueAtTime(.001,t+.2);source.connect(filter);filter.connect(gain);gain.connect(audioCtx.destination);source.start(t);source.stop(t+.2)}
+ const range=138+upgradeLevels.melee*24;let killed=0;
+ for(const z of [...zombies])if(Math.hypot(z.x-player.x,(z.y-player.y)*.85)<=range&&Math.sign(z.x-player.x||player.facing)===player.facing){addBurst(z.x,z.y,"#a83b31",9,120);killZombie(z);killed++}
+ if(killed)showToast("MACHETE — "+killed+" DOWN")
+}
+function camera(){return{x:clamp(player.x-W/2,0,Math.max(0,WORLD.w-W)),y:clamp(player.y-H/2,0,Math.max(0,WORLD.h-H))}}
+function spawnZombie(){
+ const speedScale=1+(stage-1)*.12;
+ const side=player.x<WORLD.w-W*.8?1:-1,x=clamp(player.x+side*rand(W*.7,W*.95),24,WORLD.w-24),zGround=player.y>GROUND?CAVE_FLOOR:GROUND;
+ zombies.push({x,y:zGround-16,r:16,vx:0,vy:0,grounded:true,hp:stage>3?70:50,speed:rand(50,66)*speedScale,attack:rand(.3,1),flash:0,anim:rand(0,7)})
+}
+function addBurst(x,y,color,count,speed=140){for(let i=0;i<count;i++){const a=rand(0,Math.PI*2),v=rand(speed*.2,speed);particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rand(.25,.75),max:.75,color,r:rand(1.5,4)})}}
+function killZombie(z){
+ const ix=zombies.indexOf(z);if(ix<0)return;zombies.splice(ix,1);addBurst(z.x,z.y,"#922e2b",18,160);addBurst(z.x,z.y,"#d6b58a",5,80);
+ if(Math.random()<.32)pickups.push({x:z.x,y:z.y,type:"health",amount:25});
+ if(Math.random()<.23)pickups.push({x:z.x+rand(-12,12),y:z.y+rand(-12,12),type:"ammo",ammo:player.weapon==="rpg"?"rocket":player.weapon==="ak"?"rifle":"light",amount:player.weapon==="rpg"?1:20});
+}
+function explode(x,y,damage,radius){
+ addBurst(x,y,"#f6bc63",26,230);addBurst(x,y,"#614c3e",18,150);shake=10;
+ for(const z of [...zombies]){const d=Math.hypot(z.x-x,z.y-y);if(d<radius){z.hp-=damage*(1-d/radius*.45);z.flash=.15;if(z.hp<=0)killZombie(z)}}
+}
+function update(dt){
+ if(!started||paused||dead||settingsPanel.classList.contains("on")||upgradePanel.classList.contains("on"))return;clock+=dt;player.fire=Math.max(0,player.fire-dt);player.invuln=Math.max(0,player.invuln-dt);slashCooldown=Math.max(0,slashCooldown-dt);slashTime=Math.max(0,slashTime-dt);shake=Math.max(0,shake-dt*22);
+ if(player.reload>0){player.reload-=dt;if(player.reload<=0)finishReload()}
+ let dx=(keysDown.has(controls.right)?1:0)-(keysDown.has(controls.left)?1:0);if(dx)player.facing=Math.sign(dx);
+ const ladder=ladderAt(player.x),verticalInput=(keysDown.has(controls.down)?1:0)-(keysDown.has(controls.up)?1:0);
+ const climbing=ladder&&((player.y>GROUND-player.r-2&&player.y<CAVE_FLOOR-player.r+2)||verticalInput>0);
+ const crouching=keysDown.has(controls.down)&&!climbing;player.vx=dx*player.speed*(1+upgradeLevels.speed*.1)*(crouching?.52:1);
+ const jump=!climbing&&(keysDown.has(controls.up)||keysDown.has("Space"))&&player.grounded;
+ moveSideBody(player,dt,{jump,climb:climbing?verticalInput:0});
+ const inCave=player.y>GROUND+player.r;if(inCave!==wasInCave){showToast(inCave?"ENTERED THE CAVES — PRESS F FOR LIGHT":"BACK TO THE SURFACE");wasInCave=inCave}
+ const cam=camera();player.angle=Math.atan2(mouse.y+cam.y-player.y,mouse.x+cam.x-player.x);if(mouse.down&&player.weapon!=="machete")fire();
+ spawnClock-=dt;if(spawnLeft>0&&spawnClock<=0){spawnZombie();spawnLeft--;spawnClock=Math.max(.3,.95-stage*.035)}
+ for(const z of [...zombies]){
+  z.attack-=dt;z.flash=Math.max(0,z.flash-dt);z.anim+=dt*4;
+  const dx=player.x-z.x,d=Math.hypot(dx,player.y-z.y);
+  if(d>z.r+player.r+3){z.vx=Math.sign(dx)*z.speed;moveSideBody(z,dt,{gravity:1350})}
+  else if(Math.abs(player.y-z.y)<45&&z.attack<=0&&player.invuln<=0){player.hp-=8;player.invuln=.48;shake=5;addBurst(player.x,player.y,"#bd5549",7,95);if(player.hp<=0){player.hp=0;endGame()}updateHud()}
+ }
+ for(const b of [...bullets]){
+  const ox=b.x,oy=b.y;b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;
+  const hitWall=houses.some(h=>b.x>h.x&&b.x<h.x+h.w&&b.y>h.y&&b.y<h.y+h.h);
+  if(b.weapon==="rpg"){
+   const target=zombies.find(z=>Math.hypot(z.x-b.x,z.y-b.y)<z.r+7);
+   if(target||hitWall||b.life<=0){explode(b.x,b.y,b.damage,b.blast);bullets.splice(bullets.indexOf(b),1);continue}
+  }else{
+   const z=zombies.find(q=>Math.hypot(q.x-b.x,q.y-b.y)<q.r+7);
+   if(z){z.hp-=b.damage;z.flash=.11;addBurst(b.x,b.y,"#a44436",4,72);bullets.splice(bullets.indexOf(b),1);if(z.hp<=0)killZombie(z);continue}
+  }
+  if(hitWall||b.life<=0||b.x<0||b.y<0||b.x>WORLD.w||b.y>WORLD.h){if(b.weapon!=="rpg")addBurst(ox,oy,"#d9bd82",2,40);bullets.splice(bullets.indexOf(b),1)}
+ }
+ for(const p of [...pickups]){
+  if(Math.hypot(player.x-p.x,player.y-p.y)>player.r+20)continue;
+  if(p.type==="health"){if(player.hp>=player.maxHp)continue;player.hp=Math.min(player.maxHp,player.hp+p.amount);showToast("+"+p.amount+" HEALTH")}
+  else if(p.type==="ammo"){const id=p.ammo==="rocket"?"rpg":p.ammo==="rifle"?"ak":"pistol",w=player.weapons[id];if(!w.unlocked&&id!=="pistol")continue;w.reserve+=p.amount;showToast("+"+p.amount+" "+weaponSpecs[id].name+" AMMO")}
+  else{const w=player.weapons[p.type];if(!w.unlocked){w.unlocked=true;w.mag=p.type==="rpg"?1:weaponSpecs[p.type].magSize;w.reserve=p.type==="rpg"?2:60;showToast(weaponSpecs[p.type].name+" FOUND — PRESS "+(p.type==="ak"?"2":"3"))}else{w.reserve+=p.type==="rpg"?1:30;showToast("+"+(p.type==="rpg"?1:30)+" "+weaponSpecs[p.type].name+" AMMO")}}
+  pickups.splice(pickups.indexOf(p),1);updateHud()
+ }
+ if(spawnLeft===0&&zombies.length===0&&!intermission){if(breakClock===0){breakClock=2;showToast("AREA CLEAR — SAFEHOUSE OPEN")}else{breakClock-=dt;if(breakClock<=0)openUpgradeScreen()}}
+ if(toastTimer>0){toastTimer-=dt;if(toastTimer<=0)toastEl.classList.remove("show")}
+ updateHud()
+ for(const p of [...particles]){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=Math.pow(.08,dt);p.vy*=Math.pow(.08,dt);p.life-=dt;if(p.life<=0)particles.splice(particles.indexOf(p),1)}
+}
+function drawWorld(cam){
+ const sky=ctx.createLinearGradient(0,0,0,GROUND);sky.addColorStop(0,"#26394a");sky.addColorStop(.62,"#78909a");sky.addColorStop(1,"#d4ae79");ctx.fillStyle=sky;ctx.fillRect(cam.x,cam.y,W,H);
+ ctx.fillStyle="#e4c987";ctx.fillRect(390,135,54,54);ctx.fillStyle="#f4dfa9";ctx.fillRect(398,143,38,38);
+ for(let layer=0;layer<3;layer++){const base=GROUND-110+layer*43;ctx.fillStyle=["#3a5050","#485b4c","#57634a"][layer];ctx.beginPath();ctx.moveTo(cam.x,GROUND);for(let x=Math.floor(cam.x/95)*95;x<=cam.x+W+95;x+=95){const y=base+Math.sin(x*.003+layer*2)*48+Math.sin(x*.009+layer)*22;ctx.lineTo(x,y)}ctx.lineTo(cam.x+W,GROUND);ctx.closePath();ctx.fill()}
+ for(let i=Math.max(0,Math.floor(cam.x/220)-1);i<Math.min(30,Math.ceil((cam.x+W)/220)+1);i++){const x=i*220,w=145+(i*37%65),h=70+(i*51%75);ctx.fillStyle=i%2?"#3d4848":"#424c4b";ctx.fillRect(x,GROUND-h,w,h);for(let wx=x+14;wx<x+w-8;wx+=28)for(let wy=GROUND-h+18;wy<GROUND-18;wy+=28){ctx.fillStyle=((wx+wy)%3)?"#c69b63":"#6c766b";ctx.fillRect(wx,wy,10,13)}}
+ ctx.fillStyle="#131719";ctx.fillRect(cam.x,GROUND,W,WORLD.h-GROUND);
+ ctx.fillStyle="#25302f";ctx.fillRect(cam.x,CAVE_FLOOR,W,WORLD.h-CAVE_FLOOR);
+ ctx.fillStyle="#31403d";for(let x=Math.floor(cam.x/48)*48;x<cam.x+W;x+=48){ctx.fillRect(x,GROUND+68,18+(Math.abs(x)%20),5);ctx.fillRect(x+11,GROUND+120,12+(Math.abs(x)%17),4);ctx.fillRect(x+27,CAVE_FLOOR-18,8+(Math.abs(x)%15),5)}
+ ctx.fillStyle="#39413a";for(let x=Math.floor(cam.x/62)*62;x<cam.x+W;x+=62){ctx.fillRect(x,GROUND+5,48,48);ctx.fillStyle="#424b42";ctx.fillRect(x+5,GROUND+10,22,7);ctx.fillStyle="#39413a"}
+ for(const cave of CAVE_ENTRANCES){if(cave.x+cave.w<cam.x-20||cave.x>cam.x+W+20)continue;ctx.fillStyle="#090d10";ctx.fillRect(cave.x,GROUND-5,cave.w,CAVE_FLOOR-GROUND+15);ctx.fillStyle="#4e5145";ctx.fillRect(cave.x-10,GROUND-11,cave.w+20,12);ctx.fillStyle="#93825e";ctx.fillRect(cave.x-6,GROUND-15,26,8);ctx.fillRect(cave.x+cave.w-20,GROUND-13,25,7);
+  ctx.fillStyle="#596058";for(let y=GROUND+58;y<CAVE_FLOOR-16;y+=46){ctx.fillRect(cave.x-7,y,18,20);ctx.fillRect(cave.x+cave.w-11,y+20,19,19)}
+  ctx.fillStyle="#725944";for(let y=GROUND+8;y<CAVE_FLOOR-15;y+=25){ctx.fillRect(cave.x+cave.w*.5-16,y,32,5);ctx.fillStyle="#ac8b5e";ctx.fillRect(cave.x+cave.w*.5-15,y,30,2);ctx.fillStyle="#725944"}
+  ctx.fillStyle="#799179";ctx.fillRect(cave.x+7,GROUND+15,5,5);ctx.fillRect(cave.x+cave.w-13,GROUND+37,5,5)
+ }
+ for(let x=Math.floor(cam.x/24)*24;x<cam.x+W;x+=24){const open=CAVE_ENTRANCES.some(c=>x+24>c.x&&x<c.x+c.w);if(!open){ctx.fillStyle="#526044";ctx.fillRect(x,GROUND-4,13,4);ctx.fillStyle="#4b5a3e";ctx.fillRect(x+7,GROUND+11,3,4)}}
+ for(const t of trees){if(t.x<cam.x-40||t.x>cam.x+W+40)continue;const trunk=t.r*.35;ctx.fillStyle="#493c2b";ctx.fillRect(t.x-trunk,GROUND-t.r*2,trunk*2,t.r*2);ctx.fillStyle=["#304c3a","#36533d","#3e593d"][t.tone];ctx.fillRect(t.x-t.r,GROUND-t.r*3,t.r*2,t.r);ctx.fillRect(t.x-t.r*.65,GROUND-t.r*3.55,t.r*1.3,t.r*.72);ctx.fillStyle="#547046";ctx.fillRect(t.x-t.r*.5,GROUND-t.r*3.2,t.r*.5,t.r*.4)}
+ for(const h of houses){if(h.x+h.w<cam.x-20||h.x>cam.x+W+20)continue;ctx.fillStyle="#212a2b";ctx.fillRect(h.x+8,h.y+9,h.w,h.h);ctx.fillStyle="#453e34";ctx.fillRect(h.x,h.y,h.w,h.h);ctx.fillStyle=h.c;ctx.fillRect(h.x+5,h.y+5,h.w-10,h.h-5);ctx.fillStyle="#96835d";ctx.fillRect(h.x-8,h.y-14,h.w+16,16);ctx.fillStyle=h.roof;ctx.beginPath();ctx.moveTo(h.x-13,h.y-14);ctx.lineTo(h.x+h.w*.5,h.y-47);ctx.lineTo(h.x+h.w+13,h.y-14);ctx.closePath();ctx.fill();ctx.fillStyle="#3e4b48";ctx.fillRect(h.x+12,h.y+23,h.w-24,h.h-36);
+  for(let wx=h.x+20;wx<h.x+h.w-20;wx+=58){ctx.fillStyle="#352f29";ctx.fillRect(wx,h.y+33,25,32);ctx.fillStyle="#c39762";ctx.fillRect(wx+3,h.y+36,19,25);ctx.fillStyle="#e0bb7f";ctx.fillRect(wx+4,h.y+38,6,7)}
+  ctx.fillStyle="#322c27";ctx.fillRect(h.x+h.w*.46,h.y+h.h-43,30,43);ctx.fillStyle="#b58c58";ctx.fillRect(h.x+h.w*.46+4,h.y+h.h-39,22,36);ctx.fillStyle="#d2b274";ctx.fillRect(h.x-3,h.y-12,h.w+6,5);ctx.fillStyle="#33352f";ctx.fillRect(h.x-3,h.y-7,h.w+6,5)
+ }
+ for(const p of platforms){if(p.x+p.w<cam.x-10||p.x>cam.x+W+10)continue;ctx.fillStyle="#40382d";ctx.fillRect(p.x,p.y,p.w,p.h);ctx.fillStyle="#927247";ctx.fillRect(p.x,p.y,p.w,6);ctx.fillStyle="#bb9560";for(let x=p.x+8;x<p.x+p.w;x+=24)ctx.fillRect(x,p.y+8,4,Math.max(2,p.h-10))}
+ ctx.fillStyle="#27362e";for(let x=Math.floor(cam.x/135)*135;x<cam.x+W;x+=135)ctx.fillRect(x,GROUND+30,11+(x%7),4)
+}
+function drawPickups(){
+ for(const p of pickups){ctx.save();ctx.translate(Math.round(p.x),Math.round(p.y+Math.sin(clock*4+p.x)*2));ctx.shadowColor="#0008";ctx.shadowBlur=7;ctx.shadowOffsetY=3;
+  if(p.type==="health"){ctx.fillStyle="#e6dfc5";ctx.fillRect(-10,-14,20,20);ctx.fillStyle="#a7473b";ctx.fillRect(-3,-11,6,14);ctx.fillRect(-7,-7,14,6)}
+  else if(p.type==="ammo"){ctx.fillStyle=p.ammo==="rocket"?"#b87950":p.ammo==="rifle"?"#879055":"#bb9b55";ctx.fillRect(-12,-11,24,13);ctx.fillStyle="#403b2a";ctx.fillRect(-8,-9,4,9);ctx.fillRect(0,-9,4,9);ctx.fillRect(7,-9,3,9)}
+  else{ctx.rotate(-.08);ctx.fillStyle=p.type==="ak"?"#514b3b":"#6b5640";ctx.fillRect(-15,-7,30,8);ctx.fillStyle="#c3ad73";ctx.fillRect(3,-6,10,4);ctx.fillStyle="#eee0ae";ctx.font="bold 10px system-ui";ctx.textAlign="center";ctx.fillText(p.type==="ak"?"AK":"RPG",0,-14)}
+  ctx.restore()
+ }
+}
+function drawZombie(z){
+ const dir=Math.sign(player.x-z.x)||1,run=Math.sin(z.anim*3)*3;
+ ctx.save();ctx.translate(Math.round(z.x),Math.round(z.y));ctx.scale(dir,1);ctx.fillStyle="#0006";ctx.fillRect(-13,z.r-1,27,6);
+ ctx.fillStyle=z.flash>0?"#d9c39c":"#536a49";ctx.fillRect(-10,-18,20,24);ctx.fillStyle=z.flash>0?"#e9c2a0":"#718453";ctx.fillRect(-9,-31,18,15);ctx.fillStyle="#7d8a56";ctx.fillRect(-7,-37,13,9);
+ ctx.fillStyle="#292f27";ctx.fillRect(1,-33,3,3);ctx.fillRect(6,-33,3,3);ctx.fillStyle="#a23e34";ctx.fillRect(1,-32,2,2);ctx.fillRect(6,-32,2,2);
+ ctx.fillStyle="#394332";ctx.fillRect(-9,4,7,11+run);ctx.fillRect(2,4,7,11-run);ctx.fillStyle="#65724c";ctx.fillRect(-15,-14,7,15+run);ctx.fillRect(8,-14,7,15-run);ctx.fillStyle="#8c392f";ctx.fillRect(-5,-14,5,4);ctx.fillRect(4,-22,4,4);ctx.restore()
+}
+function drawPlayer(){
+ ctx.save();ctx.translate(Math.round(player.x),Math.round(player.y));ctx.fillStyle="#0007";ctx.fillRect(-15,player.r-2,31,7);
+ const walk=player.grounded?Math.sin(clock*13)*3:0;ctx.fillStyle="#34362e";ctx.fillRect(-8,3,7,player.r+walk);ctx.fillRect(2,3,7,player.r-walk);ctx.fillStyle="#20231f";ctx.fillRect(-10,player.r+walk,10,5);ctx.fillRect(1,player.r-walk,11,5);
+ ctx.fillStyle="#394943";ctx.fillRect(-12,-18,24,24);ctx.fillStyle="#52644f";ctx.fillRect(-10,-17,20,18);ctx.fillStyle="#d0a77a";ctx.fillRect(-8,-34,17,17);ctx.fillStyle="#382f2b";ctx.fillRect(-10,-38,20,8);ctx.fillRect(-8,-31,3,3);ctx.fillStyle="#30332e";ctx.fillRect(5,-29,3,3);
+ ctx.save();ctx.rotate(player.angle);ctx.fillStyle="#77705b";ctx.fillRect(-2,-14,7,15);ctx.fillStyle="#31332e";ctx.fillRect(5,-12,20,7);ctx.fillStyle="#171a18";ctx.fillRect(21,-10,13,3);ctx.fillStyle="#94744c";ctx.fillRect(8,-5,7,7);
+ if(player.weapon==="machete"){ctx.fillStyle="#735138";ctx.fillRect(7,-8,6,15);ctx.fillStyle="#d9dfd4";ctx.fillRect(12,-15,27,4);ctx.fillStyle="#f4ead0";ctx.fillRect(36,-17,6,3)}
+ ctx.restore();
+ if(player.invuln>0&&Math.floor(clock*18)%2===0){ctx.strokeStyle="#f3e8ce";ctx.lineWidth=2;ctx.strokeRect(-15,-40,31,player.r+46)}
+ ctx.restore()
+}
+function drawMacheteSlash(){
+ if(slashTime<=0)return;const progress=1-slashTime/.34,center=player.angle-1+progress*2*Math.PI/3,fade=Math.min(1,slashTime/.09,(.34-slashTime)/.08+0.2);
+ ctx.save();ctx.translate(Math.round(player.x),Math.round(player.y-8));ctx.lineCap="square";
+ for(let i=5;i>=0;i--){const a=center-i*.1;ctx.globalAlpha=fade*(1-i/7)*.48;ctx.strokeStyle=i<2?"#fff0c9":"#b9d8d6";ctx.lineWidth=10-i;ctx.beginPath();ctx.arc(0,0,56,a-.24,a+.24);ctx.stroke()}
+ ctx.globalAlpha=fade;ctx.rotate(center);ctx.fillStyle="#875d39";ctx.fillRect(8,-3,25,7);ctx.fillStyle="#e2e5d8";ctx.fillRect(29,-4,42,6);ctx.fillStyle="#fff4d4";ctx.fillRect(67,-3,8,4);ctx.restore()
+}
+function drawCaveDarkness(cam){
+ if(player.y<=GROUND+player.r)return;
+ const px=player.x-cam.x,py=player.y-cam.y;
+ lightCtx.setTransform(dpr,0,0,dpr,0,0);lightCtx.clearRect(0,0,W,H);lightCtx.globalCompositeOperation="source-over";lightCtx.fillStyle="rgba(2,4,8,.95)";lightCtx.fillRect(0,0,W,H);
+ if(player.flashlight){lightCtx.globalCompositeOperation="destination-out";const light=lightCtx.createRadialGradient(px,py,18,px,py,320);light.addColorStop(0,"rgba(0,0,0,1)");light.addColorStop(.48,"rgba(0,0,0,.96)");light.addColorStop(.78,"rgba(0,0,0,.77)");light.addColorStop(1,"rgba(0,0,0,0)");lightCtx.fillStyle=light;lightCtx.fillRect(0,0,W,H)}
+ lightCtx.globalCompositeOperation="source-over";ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.drawImage(lightCanvas,0,0,W,H);ctx.restore()
+ if(player.flashlight){ctx.save();ctx.globalAlpha=.28;ctx.fillStyle="#f2dba1";ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fill();ctx.restore()}
+}
+function render(){
+ ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);const cam=camera(),sx=shake?rand(-shake,shake):0,sy=shake?rand(-shake,shake):0;
+ ctx.save();ctx.translate(-cam.x+sx,-cam.y+sy);drawWorld(cam);drawPickups();for(const z of zombies)drawZombie(z);
+ for(const b of bullets){ctx.fillStyle=b.weapon==="rpg"?"#f3a153":"#f2d38a";ctx.beginPath();ctx.arc(b.x,b.y,b.weapon==="rpg"?5:3,0,Math.PI*2);ctx.fill();if(b.weapon==="rpg"){ctx.fillStyle="#fff5cf";ctx.beginPath();ctx.arc(b.x,b.y,2,0,Math.PI*2);ctx.fill()}}
+ for(const p of particles){ctx.globalAlpha=clamp(p.life/p.max,0,1);ctx.fillStyle=p.color;ctx.fillRect(Math.round(p.x),Math.round(p.y),Math.ceil(p.r),Math.ceil(p.r))}ctx.globalAlpha=1;drawPlayer();drawMacheteSlash();ctx.restore();drawCaveDarkness(cam)
+}
+function upgradeCost(type){const base={damage:100,health:100,speed:85,melee:90}[type];return base*(upgradeLevels[type]+1)}
+function refreshUpgradePanel(){
+ document.querySelector("#currencyText").textContent=currency+" scrap";
+ document.querySelector("#upgradeTitle").textContent="Stage "+stage+" cleared";
+ document.querySelector("#upgradeCopy").textContent="Spend your round reward on upgrades. Your next stage will have twice as many, faster infected.";
+ document.querySelector("#roundReward").textContent="+"+roundReward+" scrap earned this round";
+ document.querySelector("#damageUpgradeText").textContent="Weapon damage +20% per level · owned "+upgradeLevels.damage;
+ document.querySelector("#healthUpgradeText").textContent="Max health +25 and restore 25 · owned "+upgradeLevels.health;
+ document.querySelector("#speedUpgradeText").textContent="Movement speed +10% · owned "+upgradeLevels.speed;
+ document.querySelector("#meleeUpgradeText").textContent="Machete reach +24 and swing faster · owned "+upgradeLevels.melee;
+ document.querySelectorAll("[data-upgrade]").forEach(button=>{const type=button.dataset.upgrade,cost=upgradeCost(type);button.textContent="BUY · "+cost+" SCRAP";button.disabled=currency<cost;button.style.opacity=button.disabled?".48":"1"})
+}
+function openUpgradeScreen(){
+ if(intermission)return;intermission=true;paused=true;roundReward=stage*100+zombies.length*10;currency+=roundReward;refreshUpgradePanel();upgradePanel.classList.add("on");hud.classList.remove("on");crosshair.style.display="none"
+}
+document.querySelectorAll("[data-upgrade]").forEach(button=>button.addEventListener("click",()=>{
+ const type=button.dataset.upgrade,cost=upgradeCost(type);if(currency<cost)return;
+ currency-=cost;upgradeLevels[type]++;
+ if(type==="health"){player.maxHp+=25;player.hp=Math.min(player.maxHp,player.hp+25)}
+ if(type==="speed")player.speed*=1.1;
+ refreshUpgradePanel();updateHud()
+}));
+document.querySelector("#continueButton").addEventListener("click",()=>{
+ upgradePanel.classList.remove("on");paused=false;intermission=false;stage++;
+ if(stage%2===0)pickups.push({...randomSpot(15),type:"ak"});
+ beginStage();hud.classList.add("on");crosshair.style.display="block";canvas.focus({preventScroll:true});lastTime=performance.now()
+});
+function keyLabel(code){return({Escape:"Esc",Space:"Space"}[code]||code.replace(/^(Key|Digit)/,""))}
+function saveSettings(){try{localStorage.setItem("deadZoneSettings",JSON.stringify({controls,soundVolume}))}catch(error){console.error("Could not save settings:",error);showToast("Settings could not be saved")}}
+function renderSettings(){
+ const rows=document.querySelector("#settingsRows");rows.innerHTML="";
+ const labels={up:"Jump",down:"Crouch",left:"Move left",right:"Move right",pistol:"Pistol",ak:"AK-47",rpg:"RPG",machete:"Machete",reload:"Reload",pause:"Pause",flashlight:"Flashlight"};
+ Object.entries(labels).forEach(([action,label])=>{const row=document.createElement("div");row.className="settingRow";const text=document.createElement("b");text.textContent=label;const button=document.createElement("button");button.textContent=bindingAction===action?"PRESS A KEY":keyLabel(controls[action]);if(bindingAction===action)button.classList.add("waiting");button.addEventListener("click",()=>{bindingAction=action;renderSettings()});row.append(text,button);rows.append(row)});
+ const slider=document.querySelector("#volumeSlider");slider.value=String(soundVolume);document.querySelector("#volumeLabel").textContent=Math.round(soundVolume*100)+"%"
+}
+settingsButton.addEventListener("click",()=>{renderSettings();settingsPanel.classList.add("on")});
+document.querySelector("#settingsClose").addEventListener("click",()=>{bindingAction="";settingsPanel.classList.remove("on")});
+document.querySelector("#volumeSlider").addEventListener("input",e=>{soundVolume=Number(e.target.value);document.querySelector("#volumeLabel").textContent=Math.round(soundVolume*100)+"%";saveSettings()});
+function showMainMenu(){started=false;paused=false;dead=false;intermission=false;upgradePanel.classList.remove("on");screen.classList.remove("hidden");hud.classList.remove("on");crosshair.style.display="none";document.querySelector("#screenEyebrow").textContent="Main menu · Sector 09";document.querySelector("#screenTitle").innerHTML="Dead Zone<br>Last Stand";document.querySelector("#screenCopy").textContent="The town has fallen. Search the streets for weapons and ammo, keep moving, and survive each stage. The infected are coming.";document.querySelector(".controls").style.display="grid";startButton.textContent="PLAY";menuButton.classList.remove("show")}
+function endGame(){dead=true;paused=false;screen.classList.remove("hidden");document.querySelector("#screenEyebrow").textContent="Signal lost · Sector 09";document.querySelector("#screenTitle").innerHTML="You Were<br>Overrun";document.querySelector("#screenCopy").textContent="You reached Stage "+stage+". The streets are still crawling. Catch your breath, re-arm, and head back in.";startButton.textContent="TRY AGAIN";menuButton.classList.add("show");document.querySelector(".controls").style.display="none";hud.classList.remove("on");crosshair.style.display="none"}
+function togglePause(){if(!started||dead)return;paused=!paused;if(paused){screen.classList.remove("hidden");document.querySelector("#screenEyebrow").textContent="Game paused";document.querySelector("#screenTitle").textContent="PAUSED";document.querySelector("#screenCopy").textContent="The infected are waiting out there. Take a moment, then get back to the fight.";startButton.textContent="RESUME";menuButton.classList.add("show");document.querySelector(".controls").style.display="none";hud.classList.remove("on");crosshair.style.display="none"}else{screen.classList.add("hidden");menuButton.classList.remove("show");document.querySelector(".controls").style.display="grid";hud.classList.add("on");crosshair.style.display="block";canvas.focus({preventScroll:true});lastTime=performance.now()}}
+startButton.addEventListener("click",()=>{if(paused){togglePause();return}document.querySelector(".controls").style.display="grid";document.querySelector("#screenEyebrow").textContent="Emergency broadcast · Sector 09";startGame()});
+menuButton.addEventListener("click",showMainMenu);
+addEventListener("keydown",e=>{
+ const code=e.code;
+ if(bindingAction){e.preventDefault();e.stopImmediatePropagation();controls[bindingAction]=code;bindingAction="";saveSettings();renderSettings();return}
+ if(settingsPanel.classList.contains("on")){if(code==="Escape"){e.preventDefault();bindingAction="";settingsPanel.classList.remove("on")}return}
+ keysDown.add(code);if(e.repeat)return;
+ if(code===controls.pause){e.preventDefault();togglePause();return}
+ if(!started||paused||dead||settingsPanel.classList.contains("on"))return;
+ if(code===controls.flashlight){player.flashlight=!player.flashlight;showToast(player.flashlight?"FLASHLIGHT ON":"FLASHLIGHT OFF");updateHud();return}
+ const weaponNumber=Object.entries(controls).find(([action,bound])=>["pistol","ak","rpg","machete"].includes(action)&&bound===code)?.[0];
+ if(weaponNumber)selectWeapon(({pistol:1,ak:2,rpg:3,machete:4})[weaponNumber]);
+ if(code===controls.reload)reload()
+},{capture:true});
+addEventListener("keyup",e=>keysDown.delete(e.code),{capture:true});addEventListener("blur",()=>{keysDown.clear();mouse.down=false});
+canvas.addEventListener("pointermove",e=>{
+ const r=canvas.getBoundingClientRect(),dx=e.clientX-mouse.lastX,dy=e.clientY-mouse.lastY;
+ mouse.lastX=e.clientX;mouse.lastY=e.clientY;mouse.x=e.clientX-r.left;mouse.y=e.clientY-r.top;crosshair.style.left=e.clientX+"px";crosshair.style.top=e.clientY+"px";
+ if(started&&!paused&&!dead&&player.weapon==="machete"&&Math.hypot(dx,dy)>=8){const cam=camera();player.angle=Math.atan2(mouse.y+cam.y-player.y,mouse.x+cam.x-player.x);swingMachete()}
+});
+canvas.addEventListener("pointerdown",e=>{canvas.focus({preventScroll:true});if(e.button===0){mouse.down=true;if(started&&!paused&&!dead&&player.weapon!=="machete")fire();canvas.setPointerCapture(e.pointerId)}});
+addEventListener("pointerup",e=>{if(e.button===0)mouse.down=false});
+canvas.addEventListener("contextmenu",e=>e.preventDefault());
+function frame(now){const dt=Math.min(.04,Math.max(0,(now-lastTime)/1000));lastTime=now;update(dt);render();requestAnimationFrame(frame)}
+makeTown();seedPickups();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

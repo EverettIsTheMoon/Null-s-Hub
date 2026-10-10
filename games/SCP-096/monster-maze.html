@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monster Maze</title>
+    <style>
+      :root {
+        --bg: #070d14;
+        --panel: rgba(10, 16, 24, 0.71);
+        --panel-border: rgba(219, 255, 255, 0.16);
+        --text: #e7f6ff;
+        --muted: #9bb7c6;
+        --accent: #66d9ff;
+        --danger: #ff5d73;
+        --gold: #ffc857;
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      canvas {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      #hud {
+        position: fixed;
+        top: 18px;
+        left: 18px;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        pointer-events: none;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        padding: 10px 14px;
+        border-radius: 12px;
+        backdrop-filter: blur(4px);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+      }
+
+      #title {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      #status {
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      #hint {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      #threatHud {
+        position: fixed;
+        top: 18px;
+        right: 18px;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        pointer-events: none;
+      }
+
+      #monsterReadout {
+        min-width: 190px;
+        text-align: right;
+        transition: border-color 180ms ease, box-shadow 180ms ease;
+      }
+
+      #monsterLabel {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.2em;
+      }
+
+      #monsterDistance {
+        display: block;
+        margin-top: 4px;
+        color: #ff5268;
+        font-size: 15px;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        text-shadow: 0 0 10px rgba(255, 45, 75, 0.32);
+        max-width: min(72vw, 520px);
+        overflow-wrap: anywhere;
+      }
+
+      #monsterReadout[data-threat="uneasy"] {
+        border-color: rgba(255, 82, 104, 0.42);
+      }
+
+      #monsterReadout[data-threat="close"] {
+        border-color: rgba(255, 54, 82, 0.72);
+        box-shadow: 0 0 18px rgba(255, 32, 63, 0.22);
+      }
+
+      #monsterReadout[data-threat="critical"] {
+        border-color: rgba(255, 25, 53, 0.95);
+        box-shadow: 0 0 28px rgba(255, 20, 48, 0.45);
+        animation: readout-haunt 300ms steps(2, end) infinite;
+      }
+
+      #monsterReadout[data-threat="close"] #monsterDistance {
+        animation: distance-glitch 720ms steps(2, end) infinite;
+      }
+
+      #monsterReadout[data-threat="critical"] #monsterDistance {
+        color: #ff253f;
+        text-shadow: 2px 0 #72f5ff, -2px 0 #ff1744, 0 0 18px #ff173d;
+        animation: distance-glitch 180ms steps(2, end) infinite;
+      }
+
+      #flashlightStatus {
+        color: var(--accent);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-align: right;
+      }
+
+      #flashlightStatus[data-on="false"] {
+        color: var(--muted);
+        opacity: 0.72;
+      }
+
+      @keyframes distance-glitch {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(1px) skewX(-2deg); }
+        50% { transform: translateX(-2px); }
+        75% { transform: translateX(1px) skewX(2deg); }
+      }
+
+      @keyframes readout-haunt {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(1px, -1px); }
+      }
+
+      #crosshair {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        width: 18px;
+        height: 18px;
+        transform: translate(-50%, -50%);
+        z-index: 5;
+        pointer-events: none;
+      }
+
+      #crosshair::before,
+      #crosshair::after {
+        content: "";
+        position: absolute;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 999px;
+      }
+
+      #crosshair::before {
+        left: 8px;
+        top: 0;
+        width: 2px;
+        height: 18px;
+      }
+
+      #crosshair::after {
+        left: 0;
+        top: 8px;
+        width: 18px;
+        height: 2px;
+      }
+
+      #atmosphere {
+        position: fixed;
+        inset: 0;
+        z-index: 2;
+        pointer-events: none;
+        background:
+          radial-gradient(ellipse at center, transparent 18%, rgba(18, 0, 3, 0.38) 58%, rgba(0, 0, 0, 0.96) 110%),
+          linear-gradient(180deg, rgba(34, 0, 5, 0.12), transparent 35%, rgba(28, 0, 4, 0.18));
+        transition: background 160ms ease;
+      }
+
+      #atmosphere::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0.11;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(255, 255, 255, 0.08) 0,
+          rgba(255, 255, 255, 0.08) 1px,
+          transparent 1px,
+          transparent 4px
+        );
+      }
+
+      #atmosphere[data-threat="close"],
+      #atmosphere[data-threat="critical"] {
+        background:
+          radial-gradient(ellipse at center, transparent 12%, rgba(75, 0, 8, 0.52) 52%, rgba(0, 0, 0, 0.98) 110%),
+          linear-gradient(180deg, rgba(100, 0, 10, 0.18), transparent 35%, rgba(88, 0, 9, 0.24));
+      }
+
+      #atmosphere[data-threat="critical"] {
+        animation: dread-pulse 480ms ease-in-out infinite alternate;
+      }
+
+      @keyframes dread-pulse {
+        from { opacity: 0.65; }
+        to { opacity: 1; }
+      }
+
+      #fearMessage {
+        position: fixed;
+        left: 50%;
+        top: 39%;
+        z-index: 8;
+        transform: translate(-50%, -50%);
+        color: #d9c9c5;
+        font: 900 clamp(14px, 2.4vw, 24px)/1.2 monospace;
+        letter-spacing: 0.3em;
+        text-align: center;
+        text-shadow: 0 0 18px #c0001b, 0 2px 3px #000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 120ms ease;
+      }
+
+      #fearMessage.visible {
+        opacity: 0.88;
+        animation: fear-glitch 120ms steps(2, end) 5;
+      }
+
+      @keyframes fear-glitch {
+        0%, 100% { transform: translate(-50%, -50%); }
+        50% { transform: translate(calc(-50% + 3px), calc(-50% - 1px)); }
+      }
+
+      #flashPanic {
+        position: fixed;
+        inset: 0;
+        z-index: 4;
+        pointer-events: none;
+        opacity: 0;
+        background: rgba(110, 0, 12, 0.34);
+      }
+
+      #flashPanic[data-active="true"] {
+        animation: panic-flash 180ms steps(2, end) infinite;
+      }
+
+      @keyframes panic-flash {
+        0%, 100% { opacity: 0; }
+        50% { opacity: 0.75; }
+      }
+
+      #overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        display: grid;
+        place-items: center;
+        background: rgba(2, 5, 10, 0.72);
+      }
+
+      #overlay.hidden {
+        display: none;
+      }
+
+      #jumpscare {
+        position: fixed;
+        inset: 0;
+        z-index: 30;
+        overflow: hidden;
+        background: #000;
+      }
+
+      #jumpscare.hidden {
+        display: none;
+      }
+
+      #jumpscareCanvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      #jumpscareMessage {
+        position: absolute;
+        left: 50%;
+        bottom: 9vh;
+        transform: translateX(-50%);
+        color: #fff;
+        font-size: clamp(18px, 4vw, 38px);
+        font-weight: 900;
+        letter-spacing: 0.28em;
+        text-align: center;
+        text-shadow: 0 0 18px #ff173d;
+        opacity: 0;
+        transition: opacity 100ms linear;
+        white-space: nowrap;
+      }
+
+      #jumpscare[data-active="true"] #jumpscareMessage {
+        opacity: 1;
+      }
+
+      #jumpscare[data-active="true"] {
+        animation: scare-shake 75ms steps(2, end) infinite;
+      }
+
+      @keyframes scare-shake {
+        0%, 100% { transform: translate(0, 0); }
+        25% { transform: translate(-4px, 3px); }
+        50% { transform: translate(3px, -3px); }
+        75% { transform: translate(-2px, -2px); }
+      }
+
+      .card {
+        width: min(80vw, 520px);
+        background: rgba(9, 17, 23, 0.88);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 18px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+        padding: 28px 24px;
+        text-align: center;
+      }
+
+      #overlay h1 {
+        margin: 0 0 10px;
+        font-size: clamp(28px, 5vw, 44px);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      #overlay p {
+        margin: 0 0 18px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      #startButton {
+        appearance: none;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--accent), #80f0ff);
+        color: #071218;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 14px 24px;
+        cursor: pointer;
+        box-shadow: 0 10px 25px rgba(102, 217, 255, 0.35);
+      }
+
+      #startButton:hover {
+        filter: brightness(1.06);
+      }
+
+      @media (max-width: 640px) {
+        #hud {
+          top: 12px;
+          left: 12px;
+        }
+
+        #threatHud {
+          top: 126px;
+          right: 12px;
+        }
+
+        .panel {
+          padding: 9px 12px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #monsterReadout[data-threat="critical"],
+        #monsterReadout[data-threat="close"] #monsterDistance,
+        #monsterReadout[data-threat="critical"] #monsterDistance,
+        #jumpscare[data-active="true"],
+        #atmosphere[data-threat="critical"],
+        #fearMessage.visible,
+        #flashPanic[data-active="true"] {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="hud">
+      <div id="title" class="panel">Monster Maze</div>
+      <div id="status" class="panel">Keys: 0 / 3</div>
+      <div id="hint" class="panel">Collect all keys, escape, F: flashlight, hold Space: look behind.</div>
+    </div>
+
+    <div id="threatHud">
+      <div id="monsterReadout" class="panel" data-threat="distant" aria-live="off">
+        <span id="monsterLabel">MONSTER:</span>
+        <span id="monsterDistance"><span id="monsterDistanceValue">--</span> <span id="monsterDistanceUnits">METERS AWAY</span></span>
+      </div>
+      <div id="flashlightStatus" class="panel" data-on="true">FLASHLIGHT: ON (F)</div>
+    </div>
+
+    <div id="crosshair"></div>
+    <div id="atmosphere" data-threat="distant"></div>
+    <div id="fearMessage" aria-live="polite"></div>
+    <div id="flashPanic" aria-hidden="true"></div>
+
+    <div id="overlay">
+      <div class="card">
+        <h1 id="overlayTitle">Monster Maze</h1>
+        <p id="overlayText">
+          Use WASD to move, Shift to sprint, and your mouse to look around. Hold Space to look behind without changing movement direction. Press F to toggle your flashlight. Collect all three keys and reach the glowing exit before the creature finds you.
+        </p>
+        <button id="startButton">Start</button>
+      </div>
+    </div>
+
+    <div id="jumpscare" class="hidden" aria-hidden="true">
+      <canvas id="jumpscareCanvas"></canvas>
+      <div id="jumpscareMessage">IT FOUND YOU</div>
+    </div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import * as THREE from 'three';
+      import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+      import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x080204);
+      scene.fog = new THREE.Fog(0x080204, 5, 29);
+
+      const camera = new THREE.PerspectiveCamera(78, window.innerWidth / window.innerHeight, 0.1, 200);
+      camera.position.set(0, 1.8, 0);
+      camera.rotation.order = 'YXZ';
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      document.body.appendChild(renderer.domElement);
+
+      const ambient = new THREE.HemisphereLight(0x351116, 0x080203, 0.22);
+      scene.add(ambient);
+
+      const flashlight = new THREE.SpotLight(0xffddd0, 85, 40, Math.PI / 3, 0.38, 1.6);
+      flashlight.visible = true;
+      scene.add(flashlight, flashlight.target);
+
+      const keyLight = new THREE.DirectionalLight(0x260b10, 0.12);
+      keyLight.position.set(6, 16, 8);
+      keyLight.castShadow = true;
+      keyLight.shadow.mapSize.set(1024, 1024);
+      keyLight.shadow.camera.left = -30;
+      keyLight.shadow.camera.right = 30;
+      keyLight.shadow.camera.top = 30;
+      keyLight.shadow.camera.bottom = -30;
+      scene.add(keyLight);
+
+      const floorMat = new THREE.MeshStandardMaterial({
+        color: 0x0d1823,
+        roughness: 0.92,
+        metalness: 0.05
+      });
+
+      const wallMat = new THREE.MeshStandardMaterial({
+        color: 0x1d2a36,
+        roughness: 0.82,
+        metalness: 0.3
+      });
+
+      const exitMat = new THREE.MeshStandardMaterial({
+        color: 0x6af7cb,
+        emissive: 0x2dd4a0,
+        emissiveIntensity: 0.9,
+        roughness: 0.24,
+        metalness: 0.45
+      });
+
+      const keyMat = new THREE.MeshStandardMaterial({
+        color: 0xffd166,
+        emissive: 0xff9f1c,
+        emissiveIntensity: 0.8,
+        metalness: 0.2,
+        roughness: 0.55
+      });
+      const rustMat = new THREE.MeshStandardMaterial({
+        color: 0x241013,
+        roughness: 0.92,
+        metalness: 0.08
+      });
+      const boneMat = new THREE.MeshStandardMaterial({
+        color: 0x73645a,
+        roughness: 0.96
+      });
+      const darkMaterial = new THREE.MeshStandardMaterial({ color: 0x090405, roughness: 1 });
+      const bloodMat = new THREE.MeshStandardMaterial({
+        color: 0x31070c,
+        roughness: 0.82,
+        metalness: 0.04,
+        transparent: true,
+        opacity: 0.88,
+        side: THREE.DoubleSide
+      });
+      const emberMat = new THREE.MeshStandardMaterial({
+        color: 0x4b1017,
+        emissive: 0x8f101e,
+        emissiveIntensity: 0.8,
+        roughness: 0.65
+      });
+
+      const hintEl = document.getElementById('hint');
+      const statusEl = document.getElementById('status');
+      const monsterReadoutEl = document.getElementById('monsterReadout');
+      const monsterDistanceValueEl = document.getElementById('monsterDistanceValue');
+      const monsterDistanceUnitsEl = document.getElementById('monsterDistanceUnits');
+      const flashlightStatusEl = document.getElementById('flashlightStatus');
+      const overlay = document.getElementById('overlay');
+      const overlayTitle = document.getElementById('overlayTitle');
+      const overlayText = document.getElementById('overlayText');
+      const startButton = document.getElementById('startButton');
+      const jumpscareElement = document.getElementById('jumpscare');
+      const jumpscareMessage = document.getElementById('jumpscareMessage');
+      const jumpscareCanvas = document.getElementById('jumpscareCanvas');
+      const atmosphereEl = document.getElementById('atmosphere');
+      const fearMessageEl = document.getElementById('fearMessage');
+      const flashPanicEl = document.getElementById('flashPanic');
+
+      const cellSize = 4;
+      const mazeSize = 33;
+      const wallMeshes = [];
+      const keyMeshes = [];
+      const horrorLights = [];
+      let horrorDetails = null;
+      let horrorLightClock = 0;
+      let fearAudioContext = null;
+      let fearDroneGain = null;
+      let nextHeartbeatAt = 0;
+      let fearMessageTimeout = null;
+      let nextFearMessageAt = 0;
+      let closeFlickerTimer = 0;
+      let maze = [];
+      let player = {
+        x: 0,
+        z: 0,
+        speed: 4.8,
+        sprint: 9.2,
+        radius: 0.38,
+        moving: false,
+        sprinting: false,
+        stepDistance: 0,
+        shakePhase: 0,
+        shakeStrength: 0
+      };
+      let playerYaw = 0;
+      let playerPitch = 0;
+      let backwardsLookHeld = false;
+      let keysCollected = 0;
+      let totalKeys = 3;
+      let exitCell = { x: 1, y: 1 };
+      let spawnCell = { x: 1, y: 1 };
+      let monster = {
+        mesh: null,
+        mixer: null,
+        clips: {},
+        currentAction: null,
+        speed: 11.8,
+        radius: 0.6,
+        path: [],
+        pathRefreshTimer: 0,
+        active: false
+      };
+      let gameRunning = false;
+      let gameEnded = false;
+      let flashlightEnabled = true;
+      let lastMonsterReadoutAt = 0;
+      let cursedTextIndex = -1;
+      const footstepSound = './Sounds/footstep.mp3';
+      const ambienceSounds = [
+        './Sounds/maze-ambience-01.mp3',
+        './Sounds/maze-ambience-02.mp3',
+        './Sounds/maze-ambience-03.mp3'
+      ];
+      const jumpscareAudio = new Audio('./Sounds/jumpscare-scream.mp3');
+      jumpscareAudio.preload = 'auto';
+      jumpscareAudio.volume = 0.9;
+      let ambienceAudio = null;
+      let jumpscareScene = null;
+      let jumpscareCamera = null;
+      let jumpscareRenderer = null;
+      let jumpscareMonster = null;
+      let jumpscareMixer = null;
+      let jumpscareStartedAt = 0;
+      let jumpscareActive = false;
+      let jumpscareCloseTimer = null;
+      const pressed = {};
+      const cursedMeterVariants = [
+        '(̸̘͖́̐̊͝͝M̸͇̖̟̃̑̃͒̓̒͂͗͝Ę̸̯̺̪̯̼̗͔͇̪͐̌̓̿̉̍͜Ţ̵͚̭̬̞̗̗̲̤̙̦͇̄̋̇̾͘̕͠͝E̷͉͍̰̭͆͋͆͆͑̋͌̂̆̕͘͘R̵̠͛̍́͂̒̈S̴̬͖͎̤͍͉̋̊̈́͆̕)̸̧̣̻̫͓̺̤̘̙̮̖́͐̃̈́̏̏̽͐̽̌̇͝ ̷͇̯̪͓̠͍̟̗̭̪̑̎̒͂̇̈́̅͜͝A̴̛̱͗̆W̷̡̡̮͚̝͎̼̌̌́͛̽̍̔̾̄͛̚ͅA̶̧̟̖͙̺̻̠̺̬͑͛ͅY̸̧̢͚̹̙̠̜̤͔̿̽̌͆̀̋̈̚̚̕̚',
+        '(̸̡͘Ḿ̶͍E̶̲̓Ţ̷̊E̶̩̿R̶̜̾S̵͖̿)̷̻̇ ̶͖̈́A̷̢̍W̴̱̒A̵͕͛Ȳ̴̰',
+        '(̷̡̤͈͖̖̙̆͊́̔͂̓͗̄̃̊M̴̗̦̑̔͂̀͂̓̀͌͛͐̈́̈́́̈͆̑͛͌̀͒͛̕̚͘͝E̸̛̛̮̪͕̫̱̳̙̩̩̗̺̦̠̹̩͙̟̅͋̋̉̇́̎̑̉̈͗͑̈̂̈͒̃̔͒̿̚̕̚͘T̶̬͕̺̳̰̞̎̈̒̂͝E̵̛̼̜̜̟̪̺̠̮͕̺͖̗̭̯̳͕̾̈͑̌̉̍̔̉̆̅͐͐́̔̌̐͌͛̾̊̀̕͝ͅȒ̷̡̫̠̫̲͓̟̫̱̖̭̅̀̓͊́͘͝Ş̸̧̛̗͖̟̖̥̩͖̳̱̪̪̪͇͙͉̞̱͖͖͌̍͛͆́̾̾̔̀̊͗̇̿̆͘͜͠͝ͅ)̵̨̡̞̹͍͖͓̻͔̮̩͓͎̳͖̼̳̖̣̦̭̈͆͌͒̿́ͅ ̴̡̛͂̄̍̉̒̓́̀̏̍̆͑̐̾̚A̷͇͍͙̣̣͙͈̗̖̖̗̲̬̒͒̕ͅͅW̷̡̡̨̨̛̱͖̱̫̟̖̯̭͔͖̖̝͎̳̟̅͗̑̆̌̾͋̂̓̎̈́̇̈́̓͂̽̓̈́̓͌̎̂͝͝ͅĄ̵̢̗͚̥̮̰̼͓̳͇̜̟̯̟̭͙̬̫̘̝͕̥̫́̈́͂́̅̄̉͗͜͝ͅY̸̨̨̧̗̖̺̹̖̖̗̥̜̘̖̥̮̞͉̍͋̃͊̌͛̊̽͋́̀̔̊̊͝͠'
+      ];
+
+      function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      function generateMaze() {
+        const grid = Array.from({ length: mazeSize }, () => Array(mazeSize).fill('#'));
+
+        function carve(x, y) {
+          grid[y][x] = '.';
+          const dirs = shuffle([
+            [2, 0], [-2, 0], [0, 2], [0, -2]
+          ]);
+
+          for (const [dx, dy] of dirs) {
+            const nx = x + dx;
+            const ny = y + dy;
+            const betweenX = x + dx / 2;
+            const betweenY = y + dy / 2;
+
+            if (nx > 0 && nx < mazeSize - 1 && ny > 0 && ny < mazeSize - 1 && grid[ny][nx] === '#') {
+              grid[betweenY][betweenX] = '.';
+              carve(nx, ny);
+            }
+          }
+        }
+
+        carve(1, 1);
+
+        const openCells = [];
+        for (let y = 1; y < mazeSize - 1; y++) {
+          for (let x = 1; x < mazeSize - 1; x++) {
+            if (grid[y][x] === '.') {
+              openCells.push({ x, y });
+            }
+          }
+        }
+
+        const start = { x: 1, y: 1 };
+        const farthest = openCells.reduce((best, cell) => {
+          const distance = Math.abs(cell.x - start.x) + Math.abs(cell.y - start.y);
+          return distance > best.distance ? { cell, distance } : best;
+        }, { cell: start, distance: 0 }).cell;
+
+        let exit = farthest;
+        if (exit.x === 1 && exit.y === 1) {
+          exit = { x: mazeSize - 2, y: mazeSize - 2 };
+        }
+
+        const spawn = { x: 1, y: 1 };
+        const keyCandidates = openCells.filter((cell) => {
+          const sameAsExit = cell.x === exit.x && cell.y === exit.y;
+          const sameAsSpawn = cell.x === spawn.x && cell.y === spawn.y;
+          return !sameAsExit && !sameAsSpawn;
+        });
+
+        const selectedKeys = shuffle(keyCandidates).slice(0, 3);
+
+        return { grid, spawn, exit, selectedKeys };
+      }
+
+      function cellToWorld(cellX, cellY) {
+        const half = (mazeSize - 1) / 2;
+        return {
+          x: (cellX - half) * cellSize,
+          z: (cellY - half) * cellSize
+        };
+      }
+
+      function worldToCell(x, z) {
+        const half = (mazeSize - 1) / 2;
+        return {
+          x: Math.round(x / cellSize + half),
+          y: Math.round(z / cellSize + half)
+        };
+      }
+
+      function isWallAtWorld(x, z, radius = 0.2) {
+        const samples = [
+          [x + radius, z],
+          [x - radius, z],
+          [x, z + radius],
+          [x, z - radius],
+          [x + radius * 0.7, z + radius * 0.7],
+          [x - radius * 0.7, z + radius * 0.7],
+          [x + radius * 0.7, z - radius * 0.7],
+          [x - radius * 0.7, z - radius * 0.7]
+        ];
+
+        for (const [sx, sz] of samples) {
+          const cell = worldToCell(sx, sz);
+          if (cell.x < 0 || cell.y < 0 || cell.x >= mazeSize || cell.y >= mazeSize) {
+            return true;
+          }
+          if (maze[cell.y][cell.x] === '#') {
+            return true;
+          }
+        }
+
+        return false;
+      }
+
+      function createFloor() {
+        const floor = new THREE.Mesh(
+          new THREE.PlaneGeometry(mazeSize * cellSize, mazeSize * cellSize),
+          floorMat
+        );
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+      }
+
+      function createHorrorDetails(reservedCells) {
+        if (horrorDetails) {
+          scene.remove(horrorDetails);
+          horrorDetails.traverse((object) => {
+            if (object.isMesh) object.geometry.dispose();
+          });
+        }
+
+        horrorDetails = new THREE.Group();
+        horrorDetails.name = 'horror-details';
+        horrorLights.length = 0;
+
+        const reserved = new Set(
+          [spawnCell, exitCell, { x: mazeSize - 2, y: mazeSize - 2 }, ...reservedCells]
+            .map((cell) => `${cell.x},${cell.y}`)
+        );
+        const openCells = [];
+        for (let y = 1; y < mazeSize - 1; y++) {
+          for (let x = 1; x < mazeSize - 1; x++) {
+            if (maze[y][x] === '.' && !reserved.has(`${x},${y}`)) {
+              openCells.push({ x, y });
+            }
+          }
+        }
+
+        const placements = shuffle(openCells).slice(0, 36);
+
+        for (let index = 0; index < 30; index++) {
+          const cell = placements[index];
+          if (!cell) break;
+
+          const position = cellToWorld(cell.x, cell.y);
+          const detail = new THREE.Group();
+          const side = index % 2 ? 1 : -1;
+          detail.position.set(position.x + side * 0.66, 0.025, position.z);
+          detail.rotation.y = Math.random() * Math.PI * 2;
+
+          if (index < 10) {
+            const stain = new THREE.Mesh(
+              new THREE.SphereGeometry(0.44 + Math.random() * 0.15, 12, 6),
+              bloodMat
+            );
+            stain.scale.set(1.35, 0.025, 0.7);
+            detail.add(stain);
+          } else if (index < 18) {
+            const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.055, 0.52, 7), boneMat);
+            shaft.rotation.z = Math.PI / 2;
+            detail.add(shaft);
+            for (const end of [-1, 1]) {
+              const joint = new THREE.Mesh(new THREE.SphereGeometry(0.085, 7, 5), boneMat);
+              joint.position.x = end * 0.24;
+              detail.add(joint);
+            }
+            detail.rotation.z = Math.random() * 0.35;
+          } else if (index < 24) {
+            const skull = new THREE.Mesh(new THREE.SphereGeometry(0.2, 10, 8), boneMat);
+            skull.scale.set(1, 0.82, 0.9);
+            skull.position.y = 0.12;
+            detail.add(skull);
+            for (const eyeX of [-0.075, 0.075]) {
+              const eye = new THREE.Mesh(new THREE.SphereGeometry(0.045, 6, 4), darkMaterial);
+              eye.position.set(eyeX, 0.15, 0.16);
+              detail.add(eye);
+            }
+          } else {
+            const candle = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.11, 0.32, 8), rustMat);
+            candle.position.y = 0.16;
+            detail.add(candle);
+            const flame = new THREE.Mesh(new THREE.SphereGeometry(0.045, 7, 5), emberMat);
+            flame.position.y = 0.37;
+            detail.add(flame);
+          }
+
+          horrorDetails.add(detail);
+        }
+
+        for (let index = 30; index < placements.length; index++) {
+          const position = cellToWorld(placements[index].x, placements[index].y);
+          const fixture = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.14, 0.18), emberMat);
+          fixture.position.set(position.x, 2.42, position.z);
+          fixture.rotation.y = Math.random() * Math.PI * 2;
+          horrorDetails.add(fixture);
+
+          const redLight = new THREE.PointLight(0xff182a, 0.9, 7, 2);
+          redLight.position.set(position.x, 2.2, position.z);
+          redLight.userData.baseIntensity = 0.9;
+          redLight.userData.flickerOffset = Math.random() * Math.PI * 2;
+          horrorLights.push(redLight);
+          horrorDetails.add(redLight);
+        }
+
+        scene.add(horrorDetails);
+      }
+
+      function updateHorrorLights(delta) {
+        horrorLightClock += delta;
+        for (const light of horrorLights) {
+          const pulse = Math.sin(horrorLightClock * 9 + light.userData.flickerOffset);
+          const sputter = Math.sin(horrorLightClock * 31 + light.userData.flickerOffset * 2) > 0.92
+            ? 0.18
+            : 0;
+          light.intensity = light.userData.baseIntensity * (0.68 + pulse * 0.2 - sputter);
+        }
+      }
+
+      function rebuildMaze() {
+        for (const wall of wallMeshes) {
+          scene.remove(wall);
+          wall.geometry.dispose?.();
+          wall.material.dispose?.();
+        }
+        wallMeshes.length = 0;
+
+        for (const key of keyMeshes) {
+          scene.remove(key);
+          key.geometry.dispose?.();
+          key.material.dispose?.();
+        }
+        keyMeshes.length = 0;
+
+        const formed = generateMaze();
+        maze = formed.grid;
+        spawnCell = formed.spawn;
+        exitCell = formed.exit;
+
+        for (let row = 0; row < maze.length; row++) {
+          for (let col = 0; col < maze[row].length; col++) {
+            if (maze[row][col] !== '#') continue;
+            const world = cellToWorld(col, row);
+            const wall = new THREE.Mesh(new THREE.BoxGeometry(cellSize * 0.9, 2.8, cellSize * 0.9), wallMat);
+            wall.position.set(world.x, 1.4, world.z);
+            wall.castShadow = true;
+            wall.receiveShadow = true;
+            wallMeshes.push(wall);
+            scene.add(wall);
+          }
+        }
+
+        const exitPos = cellToWorld(exitCell.x, exitCell.y);
+        const exitMesh = new THREE.Mesh(new THREE.BoxGeometry(0.9, 2.2, 0.9), exitMat);
+        exitMesh.position.set(exitPos.x, 1.1, exitPos.z);
+        exitMesh.name = 'exit';
+        scene.add(exitMesh);
+        wallMeshes.push(exitMesh);
+
+        formed.selectedKeys.forEach((cell, index) => {
+          const pos = cellToWorld(cell.x, cell.y);
+          const keyMesh = new THREE.Mesh(new THREE.TorusKnotGeometry(0.36, 0.11, 42, 12), keyMat);
+          keyMesh.position.set(pos.x, 1.1 + Math.sin(index * 2.2) * 0.2, pos.z);
+          keyMesh.rotation.x = Math.PI / 2;
+          keyMesh.castShadow = true;
+          keyMesh.userData = { cell, active: true };
+          keyMeshes.push(keyMesh);
+          scene.add(keyMesh);
+        });
+
+        createHorrorDetails(formed.selectedKeys);
+      }
+
+      function updateHUD() {
+        statusEl.textContent = `Keys: ${keysCollected} / ${totalKeys}`;
+        if (keysCollected >= totalKeys) {
+          const exitState = 'Exit: unlocked';
+          statusEl.textContent = `Keys: ${keysCollected} / ${totalKeys}  •  ${exitState}`;
+        }
+      }
+
+      function startFearAudio() {
+        if (!fearAudioContext) {
+          fearAudioContext = new window.AudioContext();
+          const lowPass = fearAudioContext.createBiquadFilter();
+          lowPass.type = 'lowpass';
+          lowPass.frequency.value = 115;
+          fearDroneGain = fearAudioContext.createGain();
+          fearDroneGain.gain.value = 0;
+          const drone = fearAudioContext.createOscillator();
+          drone.type = 'sine';
+          drone.frequency.value = 43;
+          drone.connect(lowPass);
+          lowPass.connect(fearDroneGain);
+          fearDroneGain.connect(fearAudioContext.destination);
+          drone.start();
+        }
+        if (fearAudioContext.state === 'suspended') {
+          fearAudioContext.resume().catch((error) => {
+            console.warn('Could not start the fear ambience:', error);
+          });
+        }
+      }
+
+      function playHeartbeatThump(when, strength, frequency) {
+        const oscillator = fearAudioContext.createOscillator();
+        const gain = fearAudioContext.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(frequency, when);
+        oscillator.frequency.exponentialRampToValueAtTime(31, when + 0.13);
+        gain.gain.setValueAtTime(0.0001, when);
+        gain.gain.exponentialRampToValueAtTime(strength, when + 0.018);
+        gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.17);
+        oscillator.connect(gain);
+        gain.connect(fearAudioContext.destination);
+        oscillator.start(when);
+        oscillator.stop(when + 0.18);
+      }
+
+      function updateFearEffects(delta) {
+        if (!fearAudioContext || !fearDroneGain) return;
+
+        const active = gameRunning && monster.mesh && monster.active;
+        const distance = active
+          ? Math.hypot(player.x - monster.mesh.position.x, player.z - monster.mesh.position.z)
+          : Infinity;
+        const proximity = active ? THREE.MathUtils.clamp((22 - distance) / 22, 0, 1) : 0;
+        const now = fearAudioContext.currentTime;
+        fearDroneGain.gain.setTargetAtTime(active ? 0.008 + proximity * 0.055 : 0, now, 0.35);
+
+        if (proximity > 0.12 && now >= nextHeartbeatAt) {
+          const interval = THREE.MathUtils.lerp(1.05, 0.42, proximity);
+          const strength = 0.025 + proximity * 0.12;
+          const pitch = 48 + proximity * 18;
+          playHeartbeatThump(now, strength, pitch);
+          playHeartbeatThump(now + 0.14, strength * 0.78, pitch * 0.82);
+          nextHeartbeatAt = now + interval;
+        }
+
+        const panic = active && distance < 5;
+        flashPanicEl.dataset.active = String(panic);
+        if (active && distance < 10) {
+          closeFlickerTimer += delta;
+          const flicker = Math.sin(closeFlickerTimer * 28) > 0.96 ? 0.12 : 1;
+          flashlight.intensity = flashlightEnabled ? 85 * flicker : 0;
+        } else {
+          closeFlickerTimer = 0;
+          flashlight.intensity = 85;
+        }
+      }
+
+      function showFearMessage(message) {
+        fearMessageEl.textContent = message;
+        fearMessageEl.classList.add('visible');
+        window.clearTimeout(fearMessageTimeout);
+        fearMessageTimeout = window.setTimeout(() => {
+          fearMessageEl.classList.remove('visible');
+        }, 1500);
+      }
+
+      function resetPlayer() {
+        const spawnPos = cellToWorld(spawnCell.x, spawnCell.y);
+        player.x = spawnPos.x;
+        player.z = spawnPos.z;
+        player.moving = false;
+        player.sprinting = false;
+        player.stepDistance = 0;
+        player.shakePhase = 0;
+        player.shakeStrength = 0;
+        camera.position.set(player.x, 1.8, player.z);
+        camera.rotation.set(0, 0, 0);
+        playerYaw = 0;
+        playerPitch = 0;
+        backwardsLookHeld = false;
+      }
+
+      function resetMonster() {
+        if (!monster.mesh) return;
+        const monsterSpawn = cellToWorld(mazeSize - 2, mazeSize - 2);
+        monster.mesh.position.set(monsterSpawn.x, 0, monsterSpawn.z);
+        monster.path = [];
+        monster.pathRefreshTimer = 0;
+        monster.active = true;
+        updateMonsterReadout(performance.now());
+      }
+
+      function startLevel() {
+        window.clearTimeout(jumpscareCloseTimer);
+        jumpscareCloseTimer = null;
+        jumpscareActive = false;
+        jumpscareElement.classList.add('hidden');
+        jumpscareElement.dataset.active = 'false';
+        jumpscareElement.setAttribute('aria-hidden', 'true');
+        jumpscareMessage.style.opacity = '0';
+        fearMessageEl.classList.remove('visible');
+        flashPanicEl.dataset.active = 'false';
+        nextFearMessageAt = performance.now() + 5000;
+        startFearAudio();
+        startAmbience();
+        rebuildMaze();
+        resetPlayer();
+        resetMonster();
+        keysCollected = 0;
+        updateHUD();
+        gameRunning = true;
+        gameEnded = false;
+        overlay.classList.add('hidden');
+      }
+
+      function showOverlay(title, message, buttonText) {
+        overlayTitle.textContent = title;
+        overlayText.textContent = message;
+        startButton.textContent = buttonText;
+        overlay.classList.remove('hidden');
+      }
+
+      function setPointerLock() {
+        renderer.domElement.requestPointerLock();
+      }
+
+      function setFlashlight(enabled) {
+        flashlightEnabled = enabled;
+        flashlight.visible = enabled;
+        flashlight.intensity = enabled ? 85 : 0;
+        flashlightStatusEl.textContent = `FLASHLIGHT: ${enabled ? 'ON' : 'OFF'} (F)`;
+        flashlightStatusEl.dataset.on = String(enabled);
+      }
+
+      function updateFlashlightDirection() {
+        flashlight.position.copy(camera.position);
+        const direction = camera.getWorldDirection(new THREE.Vector3());
+        flashlight.target.position.copy(camera.position).add(direction);
+      }
+
+      function updateMonsterReadout(now) {
+        if (!monster.mesh || now - lastMonsterReadoutAt < 50) return;
+        lastMonsterReadoutAt = now;
+
+        const distance = Math.hypot(
+          player.x - monster.mesh.position.x,
+          player.z - monster.mesh.position.z
+        );
+
+        monsterDistanceValueEl.textContent = distance.toFixed(1);
+        const isCursed = distance < 10;
+        if (isCursed) {
+          cursedTextIndex = (cursedTextIndex + 1) % cursedMeterVariants.length;
+          monsterDistanceUnitsEl.textContent = cursedMeterVariants[cursedTextIndex];
+        } else {
+          cursedTextIndex = -1;
+          monsterDistanceUnitsEl.textContent = 'METERS AWAY';
+        }
+        monsterReadoutEl.dataset.threat = distance < 5
+          ? 'critical'
+          : distance < 10
+            ? 'close'
+            : distance < 18
+              ? 'uneasy'
+              : 'distant';
+        atmosphereEl.dataset.threat = monsterReadoutEl.dataset.threat;
+        if (gameRunning && distance < 15 && now >= nextFearMessageAt) {
+          const warning = player.sprinting
+            ? 'IT HEARS YOU'
+            : ['DON’T LOOK BACK', 'IT KNOWS WHERE YOU ARE', 'KEEP MOVING'][Math.floor(Math.random() * 3)];
+          showFearMessage(warning);
+          nextFearMessageAt = now + 15000 + Math.random() * 7000;
+        }
+      }
+
+      startButton.addEventListener('click', () => {
+        if (!gameRunning || gameEnded) {
+          startLevel();
+          setPointerLock();
+        }
+      });
+
+      document.addEventListener('mousemove', (event) => {
+        if (document.pointerLockElement !== renderer.domElement || !gameRunning || gameEnded) return;
+
+        playerYaw -= event.movementX * 0.0022;
+        playerPitch -= event.movementY * 0.0018;
+        playerPitch = THREE.MathUtils.clamp(playerPitch, -1.3, 1.3);
+        camera.rotation.order = 'YXZ';
+        camera.rotation.y = playerYaw + (backwardsLookHeld ? Math.PI : 0);
+        camera.rotation.x = playerPitch;
+      });
+
+      document.addEventListener('pointerlockchange', () => {
+        if (document.pointerLockElement !== renderer.domElement) {
+          backwardsLookHeld = false;
+          camera.rotation.y = playerYaw;
+          pressed.Space = false;
+        }
+        if (document.pointerLockElement !== renderer.domElement && gameRunning && !gameEnded) {
+          showOverlay('Paused', 'Click the button to resume your run.', 'Resume');
+        }
+      });
+
+      window.addEventListener('keydown', (event) => {
+        pressed[event.code] = true;
+
+        if (event.code === 'Space') {
+          event.preventDefault();
+          if (gameRunning && !gameEnded && !backwardsLookHeld) {
+            backwardsLookHeld = true;
+            camera.rotation.y = playerYaw + Math.PI;
+          }
+        }
+
+        if (event.code === 'KeyF' && !event.repeat) {
+          event.preventDefault();
+          setFlashlight(!flashlightEnabled);
+        }
+
+        if (event.code === 'KeyR' && (!gameRunning || gameEnded)) {
+          startLevel();
+          setPointerLock();
+        }
+      });
+
+      window.addEventListener('keyup', (event) => {
+        pressed[event.code] = false;
+        if (event.code === 'Space') {
+          backwardsLookHeld = false;
+          camera.rotation.y = playerYaw;
+        }
+      });
+
+      function getMoveVector() {
+        const forward = new THREE.Vector3(
+          -Math.sin(playerYaw),
+          0,
+          -Math.cos(playerYaw)
+        );
+
+        const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+
+        let moveX = 0;
+        let moveZ = 0;
+
+        if (pressed.KeyW) moveZ += 1;
+        if (pressed.KeyS) moveZ -= 1;
+        if (pressed.KeyD) moveX += 1;
+        if (pressed.KeyA) moveX -= 1;
+
+        if (moveX === 0 && moveZ === 0) return new THREE.Vector3();
+
+        const move = new THREE.Vector3();
+        move.addScaledVector(forward, moveZ);
+        move.addScaledVector(right, moveX);
+        move.normalize();
+        return move;
+      }
+
+      function updatePlayer(delta) {
+        if (!gameRunning || gameEnded) return;
+
+        const move = getMoveVector();
+        player.moving = move.lengthSq() > 0;
+        player.sprinting = player.moving && (
+          pressed.Shift || pressed.ShiftLeft || pressed.ShiftRight
+        );
+        if (!player.moving) return;
+
+        const moveSpeed = player.sprinting ? player.sprint : player.speed;
+        const previousX = player.x;
+        const previousZ = player.z;
+        const futureX = player.x + move.x * moveSpeed * delta;
+        const futureZ = player.z + move.z * moveSpeed * delta;
+
+        if (!isWallAtWorld(futureX, player.z, player.radius)) {
+          player.x = futureX;
+        }
+        if (!isWallAtWorld(player.x, futureZ, player.radius)) {
+          player.z = futureZ;
+        }
+
+        player.stepDistance += Math.hypot(player.x - previousX, player.z - previousZ);
+        const stepInterval = player.sprinting ? 1.8 : 2.2;
+        if (player.stepDistance >= stepInterval) {
+          player.stepDistance %= stepInterval;
+          playFootstep(player.sprinting);
+        }
+
+        camera.position.set(player.x, 1.8, player.z);
+      }
+
+      function updateCameraShake(delta) {
+        if (!gameRunning || gameEnded) {
+          player.moving = false;
+          player.sprinting = false;
+        }
+
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const targetStrength = player.sprinting ? 1 : player.moving ? 0.28 : 0;
+        const smoothing = 1 - Math.exp(-delta * 10);
+        player.shakeStrength += (targetStrength - player.shakeStrength) * smoothing;
+        player.shakePhase += delta * (player.sprinting ? 21 : 8);
+
+        const motionScale = reducedMotion ? 0.25 : 1;
+        const verticalShake = Math.sin(player.shakePhase * 2) *
+          (player.sprinting ? 0.045 : 0.012) * player.shakeStrength * motionScale;
+        const rollShake = Math.sin(player.shakePhase) *
+          (player.sprinting ? 0.018 : 0.005) * player.shakeStrength * motionScale;
+
+        camera.position.set(player.x, 1.8 + verticalShake, player.z);
+        camera.rotation.z = rollShake;
+      }
+
+      function findPath(startCell, goalCell) {
+        const queue = [startCell];
+        const visited = new Set([`${startCell.x},${startCell.y}`]);
+        const previous = new Map();
+
+        while (queue.length) {
+          const current = queue.shift();
+          if (current.x === goalCell.x && current.y === goalCell.y) {
+            break;
+          }
+
+          const neighbors = [
+            { x: current.x + 1, y: current.y },
+            { x: current.x - 1, y: current.y },
+            { x: current.x, y: current.y + 1 },
+            { x: current.x, y: current.y - 1 }
+          ];
+
+          for (const nxt of neighbors) {
+            if (nxt.x < 0 || nxt.y < 0 || nxt.x >= mazeSize || nxt.y >= mazeSize) continue;
+            if (maze[nxt.y][nxt.x] === '#') continue;
+            const key = `${nxt.x},${nxt.y}`;
+            if (visited.has(key)) continue;
+            visited.add(key);
+            previous.set(key, current);
+            queue.push(nxt);
+          }
+        }
+
+        if (!visited.has(`${goalCell.x},${goalCell.y}`)) {
+          return [];
+        }
+
+        const path = [];
+        let currentKey = `${goalCell.x},${goalCell.y}`;
+
+        while (currentKey) {
+          const [x, y] = currentKey.split(',').map(Number);
+          path.push({ x, y });
+          const prev = previous.get(currentKey);
+          currentKey = prev ? `${prev.x},${prev.y}` : null;
+        }
+
+        path.reverse();
+        return path;
+      }
+
+      function updateMonster(delta) {
+        if (!monster.mesh || !monster.active || !gameRunning || gameEnded) return;
+
+        const playerCell = worldToCell(player.x, player.z);
+        const monsterCell = worldToCell(monster.mesh.position.x, monster.mesh.position.z);
+
+        monster.pathRefreshTimer -= delta;
+        if (monster.pathRefreshTimer <= 0) {
+          monster.path = findPath(monsterCell, playerCell);
+          monster.pathRefreshTimer = 0.25;
+        }
+
+        if (monster.path.length > 1) {
+          const nextCell = monster.path[1];
+          const nextWorld = cellToWorld(nextCell.x, nextCell.y);
+
+          const direction = new THREE.Vector3(
+            nextWorld.x - monster.mesh.position.x,
+            0,
+            nextWorld.z - monster.mesh.position.z
+          );
+
+          if (direction.lengthSq() > 0.001) {
+            direction.normalize();
+            const step = monster.speed * delta;
+            const candidateX = monster.mesh.position.x + direction.x * step;
+            const candidateZ = monster.mesh.position.z + direction.z * step;
+
+            if (!isWallAtWorld(candidateX, monster.mesh.position.z, monster.radius)) {
+              monster.mesh.position.x = candidateX;
+            }
+            if (!isWallAtWorld(monster.mesh.position.x, candidateZ, monster.radius)) {
+              monster.mesh.position.z = candidateZ;
+            }
+          }
+
+          monster.mesh.rotation.y = Math.atan2(
+            player.x - monster.mesh.position.x,
+            player.z - monster.mesh.position.z
+          );
+        }
+
+        const distanceToPlayer = Math.hypot(player.x - monster.mesh.position.x, player.z - monster.mesh.position.z);
+
+        if (distanceToPlayer < 1.25) {
+          gameRunning = false;
+          gameEnded = true;
+          monster.active = false;
+          beginJumpscare();
+        }
+      }
+
+      function updateCollectibles() {
+        const playerCell = worldToCell(player.x, player.z);
+
+        for (const keyMesh of keyMeshes) {
+          if (!keyMesh.userData.active) continue;
+
+          const keyCell = keyMesh.userData.cell;
+          const keyWorld = cellToWorld(keyCell.x, keyCell.y);
+          const dist = Math.hypot(player.x - keyWorld.x, player.z - keyWorld.z);
+
+          if (dist < 1.2) {
+            keyMesh.visible = false;
+            keyMesh.userData.active = false;
+            keysCollected += 1;
+            updateHUD();
+          } else {
+            keyMesh.rotation.y += 0.05;
+            keyMesh.position.y = 1.1 + Math.sin(Date.now() * 0.003 + keyCell.x * 2.2 + keyCell.y) * 0.18;
+          }
+        }
+
+        if (keysCollected >= totalKeys) {
+          const exitPos = cellToWorld(exitCell.x, exitCell.y);
+          const distToExit = Math.hypot(player.x - exitPos.x, player.z - exitPos.z);
+          if (distToExit < 1.2) {
+            gameRunning = false;
+            gameEnded = true;
+            showOverlay('Escaped', 'You found all of the keys and made it out. The maze is behind you now.', 'Play Again');
+          }
+        }
+      }
+
+      function animateMonsterModel() {
+        if (!monster.mesh) return;
+        const baseY = 0;
+        monster.mesh.position.y = baseY;
+      }
+
+      function loadMonster() {
+        const loader = new GLTFLoader();
+        loader.load('Models/scp-096.glb', (gltf) => {
+          const root = gltf.scene;
+          root.scale.setScalar(1.15);
+          root.traverse((obj) => {
+            if (obj.isMesh) {
+              obj.castShadow = true;
+              obj.receiveShadow = true;
+            }
+          });
+
+          monster.mesh = root;
+          scene.add(monster.mesh);
+          monster.mixer = new THREE.AnimationMixer(root);
+
+          const idleClip = gltf.animations.find((clip) => /idle|stand|rest|breath/i.test(clip.name));
+          const runClip = gltf.animations.find((clip) => /run|walk|move|crawl|chase/i.test(clip.name));
+          const chargeClip = gltf.animations.find((clip) => /chrge|charge/i.test(clip.name));
+
+          monster.clips = { idleClip, runClip, chargeClip };
+
+          playMonsterAnimation(chargeClip || runClip || idleClip || gltf.animations[0]);
+          setupJumpscare(gltf);
+
+          resetMonster();
+        }, undefined, (error) => {
+          console.error('Failed to load monster model:', error);
+        });
+      }
+
+      function playMonsterAnimation(clip) {
+        if (!monster.mixer || !clip || monster.currentAction?.getClip() === clip) return;
+
+        const nextAction = monster.mixer.clipAction(clip);
+        nextAction.reset();
+        nextAction.setLoop(THREE.LoopRepeat, Infinity);
+        nextAction.clampWhenFinished = false;
+        nextAction.fadeIn(0.12);
+        nextAction.play();
+        monster.currentAction?.fadeOut(0.12);
+        monster.currentAction = nextAction;
+      }
+
+      function startAmbience() {
+        ambienceAudio?.pause();
+        const track = ambienceSounds[Math.floor(Math.random() * ambienceSounds.length)];
+        ambienceAudio = new Audio(track);
+        ambienceAudio.preload = 'auto';
+        ambienceAudio.loop = true;
+        ambienceAudio.volume = 0.24;
+        ambienceAudio.play().catch((error) => {
+          console.warn('Could not play maze ambience:', error);
+        });
+      }
+
+      function playFootstep(isRunning) {
+        const footstep = new Audio(footstepSound);
+        footstep.preservesPitch = false;
+        footstep.playbackRate = isRunning
+          ? 1.3 + Math.random() * 0.35
+          : 0.88 + Math.random() * 0.22;
+        footstep.volume = isRunning ? 0.48 : 0.36;
+        footstep.play().catch((error) => {
+          console.warn('Could not play footstep audio:', error);
+        });
+      }
+
+      function playScream() {
+        jumpscareAudio.currentTime = 0;
+        jumpscareAudio.play().catch((error) => {
+          console.warn('Could not play the jumpscare scream:', error);
+        });
+      }
+
+      function setupJumpscare(gltf) {
+        jumpscareScene = new THREE.Scene();
+        jumpscareScene.background = new THREE.Color(0x000000);
+        jumpscareCamera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 100);
+        jumpscareCamera.position.set(0, 1.45, 4.2);
+        jumpscareCamera.lookAt(0, 1.45, 0);
+
+        jumpscareRenderer = new THREE.WebGLRenderer({
+          canvas: jumpscareCanvas,
+          antialias: true,
+          alpha: false
+        });
+        jumpscareRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        jumpscareRenderer.setSize(window.innerWidth, window.innerHeight);
+        jumpscareRenderer.outputColorSpace = THREE.SRGBColorSpace;
+
+        jumpscareScene.add(new THREE.HemisphereLight(0x8f99b5, 0x120308, 1.7));
+        const frontLight = new THREE.PointLight(0xffdada, 85, 20);
+        frontLight.position.set(0, 2.6, 2.6);
+        jumpscareScene.add(frontLight);
+        const rimLight = new THREE.PointLight(0xff173d, 110, 18);
+        rimLight.position.set(-2.5, 3.2, -1.5);
+        jumpscareScene.add(rimLight);
+
+        jumpscareMonster = cloneSkeleton(gltf.scene);
+        jumpscareMonster.scale.setScalar(1.7);
+        jumpscareMonster.position.set(0, -1.15, -1.4);
+        jumpscareMonster.rotation.y = 0;
+        jumpscareScene.add(jumpscareMonster);
+        jumpscareMixer = new THREE.AnimationMixer(jumpscareMonster);
+
+        const scareClip = gltf.animations.find((clip) => /grpl|gate|swp/i.test(clip.name)) ||
+          monster.clips.chargeClip ||
+          monster.clips.idleClip;
+        if (scareClip) {
+          const action = jumpscareMixer.clipAction(scareClip);
+          action.setLoop(THREE.LoopRepeat, Infinity);
+          action.play();
+        }
+      }
+
+      function beginJumpscare() {
+        if (!jumpscareRenderer || !jumpscareMonster) {
+          showOverlay('Caught', 'The creature reached you before you escaped. Press R or use the button to try again.', 'Retry');
+          return;
+        }
+
+        document.exitPointerLock?.();
+        jumpscareStartedAt = performance.now();
+        jumpscareActive = true;
+        jumpscareMonster.position.set(0, -1.15, -1.4);
+        jumpscareElement.dataset.active = 'true';
+        jumpscareElement.setAttribute('aria-hidden', 'false');
+        jumpscareElement.classList.remove('hidden');
+        jumpscareMessage.style.opacity = '0';
+        playScream();
+        window.clearTimeout(jumpscareCloseTimer);
+        jumpscareCloseTimer = window.setTimeout(closeAfterJumpscare, 2000);
+      }
+
+      function closeAfterJumpscare() {
+        jumpscareActive = false;
+        jumpscareElement.classList.add('hidden');
+        jumpscareElement.dataset.active = 'false';
+        jumpscareElement.setAttribute('aria-hidden', 'true');
+        window.close();
+        if (!window.closed) {
+          showOverlay('Caught', 'Your browser blocked automatic tab closing. Close this tab, or press R to try again.', 'Retry');
+        }
+      }
+
+      function updateJumpscare(delta, now) {
+        if (!jumpscareRenderer || !jumpscareActive) return;
+
+        const elapsed = now - jumpscareStartedAt;
+        const progress = Math.min(elapsed / 2200, 1);
+        const easedProgress = progress * progress * (3 - 2 * progress);
+        jumpscareMonster.position.z = -1.4 + easedProgress * 2.2;
+        jumpscareMonster.position.y = -1.15 + Math.sin(elapsed * 0.035) * 0.035;
+        jumpscareMonster.rotation.z = Math.sin(elapsed * 0.047) * 0.025;
+        jumpscareCamera.position.x = Math.sin(elapsed * 0.055) * 0.045;
+        jumpscareCamera.lookAt(0, 1.45, 0);
+        jumpscareMixer?.update(delta);
+        jumpscareRenderer.render(jumpscareScene, jumpscareCamera);
+
+        if (elapsed > 700) {
+          jumpscareMessage.style.opacity = '1';
+        }
+
+      }
+
+      function animate() {
+        const delta = Math.min(0.033, clock.getDelta());
+        const now = performance.now();
+
+        if (gameRunning) {
+          updatePlayer(delta);
+          updateCameraShake(delta);
+          updateMonster(delta);
+          if (gameRunning) {
+            updateCollectibles();
+          }
+        } else if (jumpscareActive) {
+          updateJumpscare(delta, now);
+        }
+
+        animateMonsterModel();
+        if (monster.mixer) {
+          monster.mixer.update(delta);
+        }
+
+        updateFlashlightDirection();
+        updateMonsterReadout(now);
+        updateHorrorLights(delta);
+        updateFearEffects(delta);
+        renderer.render(scene, camera);
+      }
+
+      const clock = new THREE.Clock();
+
+      createFloor();
+      buildLevel();
+      startButton.textContent = 'Start';
+      showOverlay('Monster Maze', 'Use WASD to move, Shift to sprint, and your mouse to look around. Hold Space to look behind without changing movement direction. Press F to toggle your flashlight. Collect all three keys and reach the glowing exit before the creature finds you.', 'Start');
+      loadMonster();
+      renderer.setAnimationLoop(animate);
+
+      function buildLevel() {
+        const { grid, spawn, exit, selectedKeys } = generateMaze();
+        maze = grid;
+        spawnCell = spawn;
+        exitCell = exit;
+
+        for (const wall of wallMeshes) {
+          scene.remove(wall);
+        }
+        wallMeshes.length = 0;
+
+        for (const keyMesh of keyMeshes) {
+          scene.remove(keyMesh);
+        }
+        keyMeshes.length = 0;
+
+        for (let row = 0; row < maze.length; row++) {
+          for (let col = 0; col < maze[row].length; col++) {
+            if (maze[row][col] !== '#') continue;
+            const world = cellToWorld(col, row);
+            const wall = new THREE.Mesh(new THREE.BoxGeometry(cellSize * 0.9, 2.8, cellSize * 0.9), wallMat);
+            wall.position.set(world.x, 1.4, world.z);
+            wall.castShadow = true;
+            wall.receiveShadow = true;
+            wallMeshes.push(wall);
+            scene.add(wall);
+          }
+        }
+
+        const exitPos = cellToWorld(exitCell.x, exitCell.y);
+        const exitMesh = new THREE.Mesh(new THREE.BoxGeometry(0.9, 2.2, 0.9), exitMat);
+        exitMesh.position.set(exitPos.x, 1.1, exitPos.z);
+        scene.add(exitMesh);
+        wallMeshes.push(exitMesh);
+
+        selectedKeys.forEach((cell, index) => {
+          const pos = cellToWorld(cell.x, cell.y);
+          const keyMesh = new THREE.Mesh(new THREE.TorusKnotGeometry(0.32, 0.1, 36, 10), keyMat);
+          keyMesh.position.set(pos.x, 1.2 + Math.sin(index * 1.7) * 0.15, pos.z);
+          keyMesh.rotation.x = Math.PI / 2;
+          keyMesh.userData = { cell, active: true };
+          keyMeshes.push(keyMesh);
+          scene.add(keyMesh);
+        });
+
+        totalKeys = selectedKeys.length;
+        keysCollected = 0;
+        createHorrorDetails(selectedKeys);
+        updateHUD();
+        resetPlayer();
+      }
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        if (jumpscareCamera && jumpscareRenderer) {
+          jumpscareCamera.aspect = window.innerWidth / window.innerHeight;
+          jumpscareCamera.updateProjectionMatrix();
+          jumpscareRenderer.setSize(window.innerWidth, window.innerHeight);
+        }
+      });
+
+      document.addEventListener('click', () => {
+        if (!gameRunning && !gameEnded) {
+          setPointerLock();
+        }
+      });
+
+      window.addEventListener('beforeunload', () => {
+        renderer.dispose();
+      });
+
+      window.__game = {
+        scene,
+        camera,
+        get maze() { return maze; },
+        player,
+        monster,
+        wallMeshes,
+        keyMeshes,
+        startLevel,
+        updatePlayer,
+        updateCameraShake,
+        updateMonster,
+        beginJumpscare,
+        updateMonsterReadout,
+        updateHUD,
+        getMoveVector
+      };
+
+      updateHUD();
+    </script>
+  </body>
+</html>

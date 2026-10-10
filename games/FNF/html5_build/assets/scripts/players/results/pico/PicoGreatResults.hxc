@@ -1,0 +1,23 @@
+import funkin.graphics.FunkinSprite;
+import flixel.math.FlxPoint;
+import funkin.util.HapticUtil;
+
+class PicoGreatResults extends FunkinSprite
+{
+  function new(x:Float, y:Float)
+  {
+    super(x, y);
+
+    loadTextureAtlas("resultScreen/results-pico/resultsGREAT", "shared");
+
+    anim.onFrameChange.add((animation:String, frame:Int) -> {
+      if (!HapticUtil.hapticsAvailable) return;
+
+      // Pico shoots.
+      if (frame == 45) HapticUtil.vibrate(0, 0.01, 0.8);
+
+      // The targets explode.
+      if (frame == 50) HapticUtil.vibrate(0.1, 0.1, 1);
+    });
+  }
+}

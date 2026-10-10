@@ -1,0 +1,247 @@
+{
+  "version": "1.0.0",
+  "name": "Boyfriend",
+  "ownedChars": [
+    "bf",
+    "bf-car",
+    "bf-pixel",
+    "bf-christmas",
+    "bf-holding-gf",
+    "bf-dark"
+  ],
+  "showUnownedChars": true,
+  "unlocked": true,
+  "freeplayStyle": "bf",
+  "stickerPack": "standard-bf",
+  "freeplayDJ": {
+    "assetPath": "freeplay/freeplay-boyfriend",
+    "scriptClass": "BoyfriendFreeplayDJ",
+    "cartoon": {
+      "soundClickFrame": 80,
+      "soundCartoonFrame": 85,
+      "loopBlinkFrame": 112,
+      "loopFrame": 166,
+      "channelChangeFrame": 60
+    },
+    "fistPump": {
+      "introStartFrame": 0,
+      "introEndFrame": 4,
+
+      "loopStartFrame": 4,
+      "loopEndFrame": -1,
+
+      "introBadStartFrame": 0,
+      "introBadEndFrame": 4,
+
+      "loopBadStartFrame": 4,
+      "loopBadEndFrame": -1
+    },
+    "charSelect": {
+      "transitionDelay": 0.45
+    },
+    "text1": "BOYFRIEND",
+    "text2": "HOT BLOODED IN MORE WAYS THAN ONE",
+    "text3": "PROTECT YO NUTS",
+    "animations": [
+      {
+        "name": "intro",
+        "prefix": "boyfriend dj intro",
+        "offsets": [3.4, -135.5]
+      },
+      {
+        "name": "idle",
+        "prefix": "Boyfriend DJ",
+        "offsets": [10, 290]
+      },
+      {
+        "name": "idleEasterEgg",
+        "prefix": "bf dj afk",
+        "offsets": [10, 127.2]
+      },
+      {
+        "name": "confirm",
+        "prefix": "Boyfriend DJ confirm",
+        "offsets": [-40, 289.5]
+      },
+      {
+        "name": "fistPump",
+        "prefix": "Boyfriend DJ fist pump",
+        "offsets": [10, 278.3]
+      },
+      {
+        "name": "cartoon",
+        "prefix": "Boyfriend DJ watchin tv OG",
+        "offsets": [-10, -167.5]
+      },
+      {
+        "name": "loss",
+        "prefix": "Boyfriend DJ loss reaction 1",
+        "offsets": [10, 277.3]
+      },
+      {
+        "name": "charSelect",
+        "prefix": "Boyfriend DJ to CS",
+        "offsets": [-51.5, 210.4]
+      },
+      {
+        "name": "newUnlock",
+        "prefix": "Boyfriend DJ new character ",
+        "offsets": [-144.5, 69.2]
+      }
+    ]
+  },
+  "charSelect": {
+    "position": 4,
+    "gf": {
+      "assetPath": "charSelect/gfChill",
+      "animInfoPath": "charSelect/gfAnimInfo",
+      "visualizer": false
+    }
+  },
+  "results": {
+    "music": {
+      "PERFECT_GOLD": "resultsPERFECT",
+      "PERFECT": "resultsPERFECT",
+      "EXCELLENT": "resultsEXCELLENT",
+      "GREAT": "resultsNORMAL",
+      "GOOD": "resultsNORMAL",
+      "SHIT": "resultsSHIT"
+    },
+    "perfectGold": [
+      {
+        "renderType": "animateatlas",
+        "scriptClass": "BFBedPerfectResults",
+        "startFrameLabel": "INTRO",
+        "filter": "naughty",
+        "zIndex": 500,
+        "offsets": [403, -305],
+        "loopFrameLabel": "LOOP START"
+      },
+      {
+        "renderType": "animateatlas",
+        "assetPath": "shared:resultScreen/results-bf/resultsPERFECT/hearts",
+        "filter": "naughty",
+        "zIndex": 501,
+        "delay": 4.41,
+        "offsets": [630, 300],
+        "loopFrame": 43
+      },
+      {
+        "renderType": "animateatlas",
+        "scriptClass": "BFBedPerfectResults",
+        "startFrameLabel": "INTRO 2",
+        "filter": "safe",
+        "zIndex": 500,
+        "offsets": [403, -305],
+        "loopFrameLabel": "LOOP 2"
+      },
+      {
+        "renderType": "animateatlas",
+        "assetPath": "shared:resultScreen/results-bf/resultsPERFECT/tickleFight",
+        "filter": "safe",
+        "zIndex": 501,
+        "delay": 4.41,
+        "offsets": [413, 314],
+        "scale": 0.6,
+        "sound": "shared:tickleFight",
+        "loopFrameLabel": "LOOP"
+      }
+    ],
+    "perfect": [
+      {
+        "renderType": "animateatlas",
+        "scriptClass": "BFBedPerfectResults",
+        "startFrameLabel": "INTRO",
+        "filter": "naughty",
+        "zIndex": 500,
+        "offsets": [403, -305],
+        "loopFrameLabel": "LOOP START"
+      },
+      {
+        "renderType": "animateatlas",
+        "assetPath": "shared:resultScreen/results-bf/resultsPERFECT/hearts",
+        "filter": "naughty",
+        "zIndex": 501,
+        "delay": 4.41,
+        "offsets": [630, 300],
+        "loopFrame": 43
+      },
+      {
+        "renderType": "animateatlas",
+        "scriptClass": "BFBedPerfectResults",
+        "startFrameLabel": "INTRO 2",
+        "filter": "safe",
+        "zIndex": 500,
+        "offsets": [403, -305],
+        "loopFrameLabel": "LOOP 2"
+      },
+      {
+        "renderType": "animateatlas",
+        "assetPath": "shared:resultScreen/results-bf/resultsPERFECT/tickleFight",
+        "filter": "safe",
+        "zIndex": 501,
+        "delay": 4.41,
+        "offsets": [413, 314],
+        "scale": 0.6,
+        "sound": "shared:tickleFight",
+        "loopFrameLabel": "LOOP"
+      }
+    ],
+    "excellent": [
+      {
+        "renderType": "animateatlas",
+        "assetPath": "shared:resultScreen/results-bf/resultsEXCELLENT",
+        "zIndex": 500,
+        "offsets": [560.85, -410.35],
+        "loopFrame": 29
+      }
+    ],
+    "great": [
+      {
+        "renderType": "animateatlas",
+        "assetPath": "shared:resultScreen/results-bf/resultsGREAT/gf",
+        "scale": 0.93,
+        "delay": 0.25,
+        "offsets": [563.364, -123.186],
+        "zIndex": 499,
+
+        "loopFrame": 9
+      },
+      {
+        "renderType": "animateatlas",
+        "assetPath": "shared:resultScreen/results-bf/resultsGREAT/bf",
+        "scale": 0.93,
+        "zIndex": 500,
+        "offsets": [655.3, -247.95],
+
+        "loopFrame": 15
+      }
+    ],
+    "good": [
+      {
+        "renderType": "animateatlas",
+        "assetPath": "shared:resultScreen/results-bf/resultsGOOD/bf",
+        "zIndex": 501,
+        "offsets": [645.4, -214.8],
+        "loopFrame": 14
+      },
+      {
+        "renderType": "sparrow",
+        "assetPath": "shared:resultScreen/results-bf/resultsGOOD/resultGirlfriendGOOD",
+        "zIndex": 500,
+        "delay": 0.91,
+        "offsets": [629, 323],
+        "loopFrame": 9
+      }
+    ],
+    "loss": [
+      {
+        "renderType": "animateatlas",
+        "scriptClass": "BFShitResults",
+        "zIndex": 500,
+        "offsets": [570.5, -390.5],
+        "loopFrameLabel": "Loop Start"
+      }
+    ]
+  }
+}
