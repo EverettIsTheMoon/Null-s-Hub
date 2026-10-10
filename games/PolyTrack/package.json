@@ -1,0 +1,9 @@
+{
+  "name": "polytrack",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node scripts/run-tests.js",
+    "update-fallbacks": "node scripts/update-track-fallbacks.js"
+  }
+}

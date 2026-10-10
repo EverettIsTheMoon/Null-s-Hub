@@ -156,6 +156,7 @@
     .card-thumb .game-logo { display:block; width:100%; height:100%; object-fit:cover; }
     .card-thumb .game-logo[hidden] { display:none; }
     .sandbox-thumb .catalog-logo { display:none; }
+    .geometry-dash-card .card-thumb .catalog-logo { display:none; }
     .card-body {
         position:absolute; inset:0; z-index:3; display:flex; align-items:center; justify-content:center;
         padding:10px; background:rgba(8,9,14,.76); text-align:center;
@@ -319,7 +320,10 @@
                     <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="survival" onclick="setCategory('survival',this)">Survival</button>
                     <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="sandbox" onclick="setCategory('sandbox',this)">Sandbox</button>
                     <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="horror" onclick="setCategory('horror',this)">Horror</button>
-                    <span class="ml-auto text-[10px] font-bold uppercase tracking-widest text-slate-500"><span id="gameCount">4 games</span></span>
+                    <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="rhythm" onclick="setCategory('rhythm',this)">Rhythm</button>
+                    <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="racing" onclick="setCategory('racing',this)">Racing</button>
+                    <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="shooter" onclick="setCategory('shooter',this)">Shooter</button>
+                    <span class="ml-auto text-[10px] font-bold uppercase tracking-widest text-slate-500"><span id="gameCount">8 games</span></span>
                 </div>
 
                 <div id="hero" class="catalog-hero">
@@ -343,7 +347,7 @@
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-2.5" id="gameGrid">
                     
                     <!-- Geometry Dash Card -->
-                    <div class="game-card catalog-card" data-name="Geometry Dash" data-category="platformer">
+                    <div class="game-card catalog-card geometry-dash-card" data-name="Geometry Dash" data-category="platformer">
                         <div class="card-thumb">
                             <svg class="catalog-logo" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Neon geometric cube logo for Geometry Dash">
                                 <defs>
@@ -377,6 +381,7 @@
                                 <path d="m94 56 6-3 6 3" stroke="#fff" stroke-opacity=".7" stroke-width="2" stroke-linecap="round"/>
                                 <path d="m30 58 4 9 9 4-9 4-4 9-4-9-9-4 9-4 4-9Zm137 73 3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z" fill="#ffe9ad"/>
                             </svg>
+                            <img class="game-logo" src="games/Geometry%20Dash/geometry-dash-logo.png" alt="Geometry Dash logo with the orange cube">
                         </div>
                         <div class="card-body">
                             <h3 class="card-title">Geometry Dash</h3>
@@ -559,6 +564,74 @@
                             <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Find the keys. Don't let it catch you.</p>
                         </div>
                         <a href="games/SCP-096/monster-maze.html" aria-label="Play SCP-096: Monster Maze" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Friday Night Funkin' Card -->
+                    <div class="game-card catalog-card" data-name="Friday Night Funkin FNF Rhythm" data-category="rhythm">
+                        <div class="card-thumb">
+                            <svg class="catalog-logo" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Colorful music notes and equalizer bars">
+                                <defs>
+                                    <linearGradient id="fnf-bg" x1="16" y1="12" x2="180" y2="190" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#302850"/>
+                                        <stop offset="1" stop-color="#10141c"/>
+                                    </linearGradient>
+                                    <linearGradient id="fnf-note" x1="62" y1="38" x2="145" y2="158" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#8ef4df"/>
+                                        <stop offset="1" stop-color="#6f8cff"/>
+                                    </linearGradient>
+                                </defs>
+                                <rect width="200" height="200" rx="18" fill="url(#fnf-bg)"/>
+                                <path d="M22 160h156M22 139h156M22 118h156" stroke="#c1c9ff" stroke-opacity=".12"/>
+                                <path d="M42 160v-25h15v25m14 0V99h15v61m14 0v-43h15v43m14 0V72h15v88m14 0v-34h15v34" fill="#b78aff" fill-opacity=".36"/>
+                                <path d="M99 42v72.5a17.5 17.5 0 1 1-9-15.31V56l55-12v57.5a17.5 17.5 0 1 1-9-15.31V33L99 42Z" fill="url(#fnf-note)" stroke="#e4fff8" stroke-width="3" stroke-linejoin="round"/>
+                                <path d="m39 41 4 9 9 4-9 4-4 9-4-9-9-4 9-4 4-9Zm122 81 3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z" fill="#ffe08c"/>
+                            </svg>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Friday Night Funkin'</h3>
+                            <span class="card-cat">Rhythm</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Hit the arrows and keep the beat.</p>
+                        </div>
+                        <a href="games/FNF/html5_build/index.html" aria-label="Play Friday Night Funkin'" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Five Nights at Freddy's Card -->
+                    <div class="game-card catalog-card" data-name="Five Nights at Freddy's FNAF Horror" data-category="horror">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="games/FNAF/FNaF1.webp" alt="Freddy Fazbear, the bear animatronic from Five Nights at Freddy's">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Five Nights at Freddy's</h3>
+                            <span class="card-cat">Horror</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Keep watch through the night.</p>
+                        </div>
+                        <a href="games/FNAF/index.html" aria-label="Play Five Nights at Freddy's" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- PolyTrack Card -->
+                    <div class="game-card catalog-card" data-name="PolyTrack Racing Driving" data-category="racing">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="games/PolyTrack/images/polytrack-logo.webp" alt="PolyTrack logo">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">PolyTrack</h3>
+                            <span class="card-cat">Racing</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Race, build tracks, and chase the best time.</p>
+                        </div>
+                        <a href="games/PolyTrack/index.html" aria-label="Play PolyTrack" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Time Shooter 3 SWAT Card -->
+                    <div class="game-card catalog-card" data-name="Time Shooter 3 SWAT Shooter Action" data-category="shooter">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="games/Time%20Shooter%203/TimeSHooter3.png" alt="Colorful low-poly artwork for Time Shooter 3 SWAT">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Time Shooter 3 SWAT</h3>
+                            <span class="card-cat">Shooter</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Move carefully: time advances when you do.</p>
+                        </div>
+                        <a href="games/Time%20Shooter%203/Time%20SHooter%203.html" aria-label="Play Time Shooter 3 SWAT" class="card-play">▶ Play</a>
                     </div>
 
                 </div>
