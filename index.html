@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Null's Hub</title>
+    <link rel="icon" type="image/png" href="assets/nulls-hub-logo-tab.png">
+    <link rel="shortcut icon" type="image/png" href="assets/nulls-hub-logo-tab.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -79,10 +81,14 @@
         border-bottom:2px solid var(--amber);
     }
     .brand { display:flex; align-items:center; gap:11px; }
-    .logo-mark {
-        width:30px; height:30px; border-radius:3px; color:#f3ede1;
-        background:#a74430; box-shadow:none;
-        display:grid; place-items:center; font:700 17px/1 Georgia, serif;
+    .brand-logo-wrap {
+        width:42px; height:42px; border-radius:8px; background:#f8f7f5;
+        box-shadow:0 0 0 1px rgba(255,255,255,0.1), 0 4px 10px rgba(0,0,0,0.25);
+        display:grid; place-items:center; overflow:hidden; flex-shrink:0;
+    }
+    .brand-logo {
+        width:100%; height:100%; object-fit:cover; display:block;
+        background:#f8f7f5;
     }
     .brand-name { font:700 18px/1 Georgia, "Times New Roman", serif; letter-spacing:-.02em; }
     .brand-tag {
@@ -295,7 +301,9 @@
     <header class="marquee sticky top-0 z-50 border-b border-white/10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 h-[62px] flex items-center justify-between gap-4">
             <a href="inddex.html" class="flex items-center gap-2.5 shrink-0 group">
-                <span class="logo-mark" aria-hidden="true">N</span>
+                <span class="brand-logo-wrap" aria-label="Null's Hub logo">
+                    <img class="brand-logo" src="assets/nulls-hub-logo.png" alt="Null's Hub logo">
+                </span>
                 <span class="brand-name">Null's Arcade</span>
                 <span class="tagline">A few things I made.</span>
             </a>
