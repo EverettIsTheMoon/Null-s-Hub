@@ -2,16 +2,51 @@
 <html lang="en" class="dark">
 <head>
 <script>
-    // Redirect to about:blank immediately to hide this page from the browsing
-    // history and from any screen recordings/videos. Replaces the current
-    // history entry instead of adding a new one, so the site URL never stays
-    // in the history and the tab shows about:blank instead of "Null's Hub".
-    try {
-        location.replace("about:blank");
-    } catch (e) {
-        // Fallback if location.replace is somehow blocked
-        window.location.href = "about:blank";
-    }
+    // Privacy "cloak": open this hub inside an about:blank tab so the real URL
+    // never shows in the address bar / history / screen recordings, while the
+    // hub itself stays fully usable inside that tab.
+    //
+    // Loop protection: only cloak when this is the TOP-LEVEL page (not already
+    // running inside our own cloak iframe) and we haven't cloaked this session.
+    // Inside the iframe, window.self !== window.top is true, so the hub just
+    // renders normally. If the popup is blocked we fall through and render the
+    // hub normally too, so the page is never a dead blank screen.
+    (function () {
+        var inFrame = false;
+        try { inFrame = (window.self !== window.top); } catch (e) { inFrame = true; }
+
+        var cloaked = false;
+        try { cloaked = sessionStorage.getItem('__nullsub_cloak') === '1'; } catch (e) {}
+
+        if (inFrame || cloaked) return; // already cloaked / embedded -> render hub
+
+        var w = null;
+        try { w = window.open('about:blank', '_blank'); } catch (e) {}
+
+        if (!w) return; // popup blocked -> render the hub normally in this tab
+
+        try { sessionStorage.setItem('__nullsub_cloak', '1'); } catch (e) {}
+
+        try {
+            w.document.open();
+            w.document.write(
+                '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+                '<title>New Tab</title>' +
+                '<style>html,body{margin:0;padding:0;height:100%;background:#07090e;overflow:hidden}' +
+                'iframe{position:fixed;inset:0;width:100vw;height:100vh;border:0;display:block}</style>' +
+                '</head><body>' +
+                '<iframe src="' + window.location.href + '" ' +
+                'allow="autoplay; fullscreen; gamepad; pointer-lock" ' +
+                'referrerpolicy="no-referrer"></iframe>' +
+                '</body></html>'
+            );
+            w.document.close();
+        } catch (e) {}
+
+        // Swap THIS tab to about:blank so the real URL leaves the address bar
+        // and this history entry becomes about:blank instead of the site URL.
+        try { window.location.replace('about:blank'); } catch (e) {}
+    })();
 </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -359,8 +394,8 @@
                         <div class="hero-art">
                             <span class="shelf-note-count">NO. 04</span>
                             <p class="shelf-note-kicker">Currently on the shelf</p>
-                            <h2 class="shelf-note-title">idk what to say<br> </h2>
-                            <p class="shelf-note-copy">sup G</p>
+                            <h2 class="shelf-note-title">TRY BLOCKING THIS<br> </h2>
+                            <p class="shelf-note-copy">I made it UNBLOCKABLE</p>
                         </div>
                 </div>
 
