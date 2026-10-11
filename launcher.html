@@ -29,8 +29,8 @@
 <body>
   <div class="card">
     <h1>Your classwork</h1>
-    <p>Loading your assignments&hellip;</p>
-    <button id="go" hidden>Open</button>
+    <p>Click below to open your assignments.</p>
+    <button id="go">Open classwork</button>
   </div>
 
 <script>
@@ -62,12 +62,9 @@
     return true;
   }
 
-  // Try once automatically (some browsers allow it right after a click-through).
-  if (openHub()) return;
-
-  // Otherwise show a button — a real click, so it's never popup-blocked.
+  // Open only when the button is clicked — a real user gesture, so the
+  // about:blank popup is never blocked and nothing fires on page load.
   var btn = document.getElementById('go');
-  btn.hidden = false;
   btn.addEventListener('click', openHub);
 })();
 </script>
