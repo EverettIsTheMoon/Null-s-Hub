@@ -446,6 +446,7 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                 <a href="#categories">Browse by type</a>
                 <a href="https://forms.gle/heNFYBkbisCNd5zh7" target="_blank" rel="noopener noreferrer">Request a game</a>
                 <a href="https://github.com/EverettIsTheMoon/Null-s-Hub#readme" target="_blank" rel="noopener noreferrer">README</a>
+                <button onclick="cloakSelf()">Cloak</button>
                 <button onclick="openSettings()">Settings</button>
             </nav>
             <label class="relative w-full max-w-[280px]">
@@ -1120,6 +1121,33 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                 } catch (e) { /* cross-origin or blocked — panic key just won't apply here */ }
             };
             frame.addEventListener('load', injectPanic);
+        }
+
+        // Wrap the hub itself in an about:blank tab, exactly like the games do.
+        // The hub loads inside an iframe whose top-level document is about:blank,
+        // so the real hub URL never becomes a top-level history entry. Then we
+        // close this (directly-visited) tab so only the cloaked tab is left.
+        function cloakSelf() {
+            const blankTab = window.open('about:blank', '_blank');
+            if (!blankTab) {
+                alert('Your browser blocked the new tab. Allow pop-ups for this page and try again.');
+                return;
+            }
+
+            blankTab.document.title = document.title;
+            blankTab.document.documentElement.style.cssText = 'height:100%;margin:0;background:#080909';
+            blankTab.document.body.style.cssText = 'height:100%;margin:0;overflow:hidden';
+
+            const frame = blankTab.document.createElement('iframe');
+            frame.title = document.title;
+            frame.allow = 'autoplay; fullscreen; gamepad; pointer-lock';
+            frame.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;border:0;display:block;background:#080909';
+            frame.src = window.location.href;
+            blankTab.document.body.append(frame);
+            blankTab.opener = null;
+
+            // Close this directly-visited tab so only the about:blank tab remains.
+            try { window.open('', '_self').close(); } catch (e) { /* ignore */ }
         }
 
         document.getElementById('gameGrid').addEventListener('click', event => {
