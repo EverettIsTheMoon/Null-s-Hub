@@ -6,21 +6,40 @@ Most of it was made with AI, but the layout, the ideas, and a lot of the code ar
 
 ## What's here
 
-16 games you can play right in your browser. No installs, no sign-ups.
+35 games you can play right in your browser. No installs, no sign-ups.
 
+- 2048
+- Bad Time Simulator
+- Baldi's Basics
+- Basketball Stars
+- Bank Robbery 2
+- BitLife
 - Cluster Rush
 - Doge Miner
+- Drift Boss
 - Flappy Bird
 - FNAF
+- FNaF 2
+- FNaF 3
+- FNaF 4
 - FNF
+- Funny Shooter 2
 - Geometry Dash
+- Johnny Trigger
+- Level Devil
 - PolyTrack
 - Ragdoll Archers
+- Ragdoll Hit
+- Retro Bowl
+- Rocket Soccer Derby
+- Sandbox City
 - Sandbox Galore
 - SCP-096
+- Slope
 - Space Invaders
 - Stack
-- Super Mario Bros.
+- Stickman Hook
+- Superhot
 - Tetris
 - Time Shooter 3
 - Zombie Survival

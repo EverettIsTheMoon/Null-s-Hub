@@ -470,7 +470,10 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                     <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="clicker" onclick="setCategory('clicker',this)">Clicker</button>
                     <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="racing" onclick="setCategory('racing',this)">Racing</button>
                     <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="shooter" onclick="setCategory('shooter',this)">Shooter</button>
-                    <span class="ml-auto text-[10px] font-bold uppercase tracking-widest text-slate-500"><span id="gameCount">15 games</span></span>
+                    <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="sports" onclick="setCategory('sports',this)">Sports</button>
+                    <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="arcade" onclick="setCategory('arcade',this)">Arcade</button>
+                    <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="simulation" onclick="setCategory('simulation',this)">Simulation</button>
+                    <span class="ml-auto text-[10px] font-bold uppercase tracking-widest text-slate-500"><span id="gameCount">35 games</span></span>
                 </div>
 
                 <div id="hero" class="catalog-hero">
@@ -528,7 +531,7 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                                 <path d="m94 56 6-3 6 3" stroke="#fff" stroke-opacity=".7" stroke-width="2" stroke-linecap="round"/>
                                 <path d="m30 58 4 9 9 4-9 4-4 9-4-9-9-4 9-4 4-9Zm137 73 3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z" fill="#ffe9ad"/>
                             </svg>
-                            <img class="game-logo" src="games/Geometry%20Dash/geometry-dash-logo.png" alt="Geometry Dash logo with the orange cube">
+                            <img class="game-logo" src="assets/Game%20Logos/GeometryDash.png" alt="Geometry Dash logo with the orange cube">
                         </div>
                         <div class="card-body">
                             <h3 class="card-title">Geometry Dash</h3>
@@ -652,7 +655,7 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                                     <path d="M18 26h25m-25 0v20m164-20h-25m25 0v20M18 174v-20m0 20h25m139 0h-25m25 0v-20" stroke="#efc18b" stroke-opacity=".48" stroke-width="1.5"/>
                                 </g>
                             </svg>
-                            <img class="game-logo" src="games/Sandbox%20Galore/sandbox-galore-cover.png" alt="Sandbox Galore logo with a game controller and red splatter">
+                            <img class="game-logo" src="assets/Game%20Logos/SandboxGalore.png" alt="Sandbox Galore logo with a game controller and red splatter">
                         </div>
                         <div class="card-body">
                             <h3 class="card-title">Sandbox Galore</h3>
@@ -716,23 +719,7 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                     <!-- Friday Night Funkin' Card -->
                     <div class="game-card catalog-card" data-name="Friday Night Funkin FNF Rhythm" data-category="rhythm">
                         <div class="card-thumb">
-                            <svg class="catalog-logo" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Colorful music notes and equalizer bars">
-                                <defs>
-                                    <linearGradient id="fnf-bg" x1="16" y1="12" x2="180" y2="190" gradientUnits="userSpaceOnUse">
-                                        <stop stop-color="#302850"/>
-                                        <stop offset="1" stop-color="#10141c"/>
-                                    </linearGradient>
-                                    <linearGradient id="fnf-note" x1="62" y1="38" x2="145" y2="158" gradientUnits="userSpaceOnUse">
-                                        <stop stop-color="#8ef4df"/>
-                                        <stop offset="1" stop-color="#6f8cff"/>
-                                    </linearGradient>
-                                </defs>
-                                <rect width="200" height="200" rx="18" fill="url(#fnf-bg)"/>
-                                <path d="M22 160h156M22 139h156M22 118h156" stroke="#c1c9ff" stroke-opacity=".12"/>
-                                <path d="M42 160v-25h15v25m14 0V99h15v61m14 0v-43h15v43m14 0V72h15v88m14 0v-34h15v34" fill="#b78aff" fill-opacity=".36"/>
-                                <path d="M99 42v72.5a17.5 17.5 0 1 1-9-15.31V56l55-12v57.5a17.5 17.5 0 1 1-9-15.31V33L99 42Z" fill="url(#fnf-note)" stroke="#e4fff8" stroke-width="3" stroke-linejoin="round"/>
-                                <path d="m39 41 4 9 9 4-9 4-4 9-4-9-9-4 9-4 4-9Zm122 81 3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z" fill="#ffe08c"/>
-                            </svg>
+                            <img class="game-logo" src="assets/Game%20Logos/FridayNightFunkin.webp" alt="Friday Night Funkin' logo with the two characters on stage">
                         </div>
                         <div class="card-body">
                             <h3 class="card-title">Friday Night Funkin'</h3>
@@ -745,7 +732,7 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                     <!-- Five Nights at Freddy's Card -->
                     <div class="game-card catalog-card" data-name="Five Nights at Freddy's FNAF Horror" data-category="horror">
                         <div class="card-thumb">
-                            <img class="game-logo" src="games/FNAF/FNaF1.webp" alt="Freddy Fazbear, the bear animatronic from Five Nights at Freddy's">
+                            <img class="game-logo" src="assets/Game%20Logos/FNaF1.webp" alt="Freddy Fazbear, the bear animatronic from Five Nights at Freddy's">
                         </div>
                         <div class="card-body">
                             <h3 class="card-title">Five Nights at Freddy's</h3>
@@ -758,7 +745,7 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                     <!-- PolyTrack Card -->
                     <div class="game-card catalog-card" data-name="PolyTrack Racing Driving" data-category="racing">
                         <div class="card-thumb">
-                            <img class="game-logo" src="games/PolyTrack/images/polytrack-logo.webp" alt="PolyTrack logo">
+                            <img class="game-logo" src="assets/Game%20Logos/PolyTrack.webp" alt="PolyTrack logo">
                         </div>
                         <div class="card-body">
                             <h3 class="card-title">PolyTrack</h3>
@@ -855,7 +842,7 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                     <!-- Doge Miner Card -->
                     <div class="game-card catalog-card" data-name="Doge Miner Dogecoin Idle Clicker" data-category="clicker">
                         <div class="card-thumb">
-                            <img class="game-logo" src="games/Doge%20Miner/DogeMiner.webp" alt="Golden Dogecoin with the Doge meme">
+                            <img class="game-logo" src="assets/Game%20Logos/DogeMiner.webp" alt="Golden Dogecoin with the Doge meme">
                         </div>
                         <div class="card-body">
                             <h3 class="card-title">Doge Miner</h3>
@@ -868,7 +855,7 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                     <!-- Cluster Rush Card -->
                     <div class="game-card catalog-card" data-name="Cluster Rush Truck Jumping Racing Platformer" data-category="platformer">
                         <div class="card-thumb">
-                            <img class="game-logo" src="games/Cluster%20Rush/cluster.avif" alt="Cluster Rush game artwork">
+                            <img class="game-logo" src="assets/Game%20Logos/ClusterRush.avif" alt="Cluster Rush game artwork">
                         </div>
                         <div class="card-body">
                             <h3 class="card-title">Cluster Rush</h3>
@@ -881,7 +868,7 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                     <!-- Ragdoll Archers Card -->
                     <div class="game-card catalog-card" data-name="Ragdoll Archers Bow Arrow Multiplayer Shooter" data-category="shooter">
                         <div class="card-thumb">
-                            <img class="game-logo" src="games/Ragdoll%20Archers/RagdollArchers.png" alt="Ragdoll archer firing a bow at opponents">
+                            <img class="game-logo" src="assets/Game%20Logos/RagdollArchers.png" alt="Ragdoll archer firing a bow at opponents">
                         </div>
                         <div class="card-body">
                             <h3 class="card-title">Ragdoll Archers</h3>
@@ -891,10 +878,153 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                         <a href="games/Ragdoll%20Archers/index.html" aria-label="Play Ragdoll Archers" class="card-play">▶ Play</a>
                     </div>
 
+                    <!-- Basketball Stars Card -->
+                    <div class="game-card catalog-card" data-name="Basketball Stars Basketball Hoops Dunk Two Player Sports" data-category="sports">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/BasketballStars.png" alt="Two cartoon basketball players on the court for Basketball Stars">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Basketball Stars</h3>
+                            <span class="card-cat">Sports</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Sink baskets and pull off slick moves against your rival.</p>
+                        </div>
+                        <a href="games/Basketball%20Stars/index.html" aria-label="Play Basketball Stars" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- 2048 Card -->
+                    <div class="game-card catalog-card" data-name="2048 Number Puzzle Merge Tiles" data-category="puzzle">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/2048.png" alt="Numbered 2048 tiles on a beige board">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">2048</h3>
+                            <span class="card-cat">Puzzle</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Slide and merge the numbered tiles to reach 2048.</p>
+                        </div>
+                        <a href="games/2048/2048.html" aria-label="Play 2048" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Baldi's Basics Card -->
+                    <div class="game-card catalog-card" data-name="Baldi's Basics Education Horror Math" data-category="horror">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/BaldisBasics.png" alt="Baldi smiling in front of a chalkboard for Baldi's Basics">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Baldi's Basics</h3>
+                            <span class="card-cat">Horror</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Solve the math, grab the notebooks, and don't get caught.</p>
+                        </div>
+                        <a href="games/BaldisBasics/BaldisBasics.html" aria-label="Play Baldi's Basics" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Bank Robbery 2 Card -->
+                    <div class="game-card catalog-card" data-name="Bank Robbery 2 Heist Money Action" data-category="arcade">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/BankRobbers2.png" alt="A money bag with a dollar sign for Bank Robbery 2">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Bank Robbery 2</h3>
+                            <span class="card-cat">Arcade</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Pull off the heist and grab the cash before time runs out.</p>
+                        </div>
+                        <a href="games/BankRobbery2/BankRobbery.html" aria-label="Play Bank Robbery 2" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- BitLife Card -->
+                    <div class="game-card catalog-card" data-name="BitLife Life Simulator Text Choices" data-category="simulation">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/BitLife.png" alt="A character with a heart for BitLife life simulator">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">BitLife</h3>
+                            <span class="card-cat">Simulation</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Live a whole second life one choice at a time.</p>
+                        </div>
+                        <a href="games/Bitlife/bitlife.html" aria-label="Play BitLife" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Johnny Trigger Card -->
+                    <div class="game-card catalog-card" data-name="Johnny Trigger Sniper Shooter Action" data-category="shooter">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/JohnnyTrigger.png" alt="A yellow stickman aiming a pistol for Johnny Trigger">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Johnny Trigger</h3>
+                            <span class="card-cat">Shooter</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Line up the perfect shot and take down every bad guy.</p>
+                        </div>
+                        <a href="games/Johnny%20Trigger/johnny-trigger.html" aria-label="Play Johnny Trigger" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Superhot Card -->
+                    <div class="game-card catalog-card" data-name="Superhot Time Bullet Shooter FPS" data-category="shooter">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/Superhot.avif" alt="Bold red SUPER HOT title with shards">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Superhot</h3>
+                            <span class="card-cat">Shooter</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Time moves only when you do. Dodge bullets and strike back.</p>
+                        </div>
+                        <a href="games/Superhot/superhot.html" aria-label="Play Superhot" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Level Devil Card -->
+                    <div class="game-card catalog-card" data-name="Level Devil Platformer Troll Trap" data-category="platformer">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/LevelDevil.webp" alt="A grinning devil above platforms for Level Devil">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Level Devil</h3>
+                            <span class="card-cat">Platformer</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">A devious platformer where the level itself is out to get you.</p>
+                        </div>
+                        <a href="games/Level%20Devil/level-devil.html" aria-label="Play Level Devil" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Retro Bowl Card -->
+                    <div class="game-card catalog-card" data-name="Retro Bowl Football Sports Arcade" data-category="sports">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/RetroBowl.avif" alt="A retro football on a green field for Retro Bowl">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Retro Bowl</h3>
+                            <span class="card-cat">Sports</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Manage your team and lead them to the championship.</p>
+                        </div>
+                        <a href="games/Retro%20Bowl/retro-bowl.html" aria-label="Play Retro Bowl" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Stickman Hook Card -->
+                    <div class="game-card catalog-card" data-name="Stickman Hook Swing Arcade Physics" data-category="arcade">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/StickmanHook.jpg" alt="A stickman swinging on a grapple for Stickman Hook">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Stickman Hook</h3>
+                            <span class="card-cat">Arcade</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Swing through the course and stick every landing.</p>
+                        </div>
+                        <a href="games/Stickman%20Hook/stickman-hook.html" aria-label="Play Stickman Hook" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- FNaF 2 Card -->
+                    <div class="game-card catalog-card" data-name="FNAF Five Nights at Freddy's 2 Horror Survival" data-category="horror">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/FNaF2.jpeg" alt="Freddy Fazbear's face for Five Nights at Freddy's 2">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">FNaF 2</h3>
+                            <span class="card-cat">Horror</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Survive the night against the animatronics in the mask.</p>
+                        </div>
+                        <a href="games/FNaF2/fnaf-2.html" aria-label="Play FNaF 2" class="card-play">▶ Play</a>
+                    </div>
+
                     <!-- Time Shooter 3 SWAT Card -->
                     <div class="game-card catalog-card" data-name="Time Shooter 3 SWAT Shooter Action" data-category="shooter">
                         <div class="card-thumb">
-                            <img class="game-logo" src="games/Time%20Shooter%203/TimeSHooter3.png" alt="Colorful low-poly artwork for Time Shooter 3 SWAT">
+                            <img class="game-logo" src="assets/Game%20Logos/TimeShooter3.png" alt="Colorful low-poly artwork for Time Shooter 3 SWAT">
                         </div>
                         <div class="card-body">
                             <h3 class="card-title">Time Shooter 3 SWAT</h3>
@@ -953,6 +1083,125 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                         </div>
                         <a href="games/Space%20Invaders/index.html" aria-label="Play Rainbow Invaders, a Space Invaders game" class="card-play">▶ Play</a>
                     </div>
+                    <!-- FNaF 4 Card -->
+                    <div class="game-card catalog-card" data-name="FNAF Five Nights at Freddy's 4 Horror Survival" data-category="horror">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/FNaF4.webp" alt="Freddy Fazbear's face for Five Nights at Freddy's 4">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">FNaF 4</h3>
+                            <span class="card-cat">Horror</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">The nightmare. Survive against the twisted animatronics.</p>
+                        </div>
+                        <a href="games/FNaF4/fnaf-4.html" aria-label="Play FNaF 4" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- FNaF 3 Card -->
+                    <div class="game-card catalog-card" data-name="FNAF Five Nights at Freddy's 3 Horror Survival" data-category="horror">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/FNaF3.webp" alt="Springtrap animatronic for Five Nights at Freddy's 3">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">FNaF 3</h3>
+                            <span class="card-cat">Horror</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Face Springtrap in the haunted Fazbear's Fright.</p>
+                        </div>
+                        <a href="games/FNaF3/fnaf-3.html" aria-label="Play FNaF 3" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Funny Shooter 2 Card -->
+                    <div class="game-card catalog-card" data-name="Funny Shooter 2 Shooter Action FPS" data-category="shooter">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/FunnyShooter3.png" alt="Funny Shooter 2 character with a weapon">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Funny Shooter 2</h3>
+                            <span class="card-cat">Shooter</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Wacky weapons and chaotic ragdoll enemies.</p>
+                        </div>
+                        <a href="games/Funny%20Shooter%202/funny-shooter-2.html" aria-label="Play Funny Shooter 2" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Drift Boss Card -->
+                    <div class="game-card catalog-card" data-name="Drift Boss Racing Driving Drift" data-category="racing">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/driftboss.png" alt="A drifting car leaving tire marks for Drift Boss">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Drift Boss</h3>
+                            <span class="card-cat">Racing</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Tap to drift through twisting tracks without crashing.</p>
+                        </div>
+                        <a href="games/Drift%20Boss/drift-boss.htm" aria-label="Play Drift Boss" class="card-play">▶ Play</a>
+                    </div>
+                    <!-- Ragdoll Hit Card -->
+                    <div class="game-card catalog-card" data-name="Ragdoll Hit Physics Arcade Punch" data-category="arcade">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/ragdoll-hit-logo.png" alt="Ragdoll Hit game logo">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Ragdoll Hit</h3>
+                            <span class="card-cat">Arcade</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Launch ragdolls with wild physics and crushing hits.</p>
+                        </div>
+                        <a href="games/Ragdoll%20Hit/ragdoll-hit.html" aria-label="Play Ragdoll Hit" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Rocket Soccer Derby Card -->
+                    <div class="game-card catalog-card" data-name="Rocket Soccer Derby Sports Cars Soccer" data-category="sports">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/rocket-soccer-derby.jpeg" alt="Rocket Soccer Derby game logo">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Rocket Soccer Derby</h3>
+                            <span class="card-cat">Sports</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Rocket cars play soccer. Score explosive goals.</p>
+                        </div>
+                        <a href="games/Rocket%20Soccer%20Derby/rocket-soccer-derby.html" aria-label="Play Rocket Soccer Derby" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Sandbox City Card -->
+                    <div class="game-card catalog-card" data-name="Sandbox City 3D Town Sandbox Action" data-category="sandbox">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/sandboxcity.png" alt="Sandbox City 3D town scene">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Sandbox City</h3>
+                            <span class="card-cat">Sandbox</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Roam a 3D city and cause as much chaos as you want.</p>
+                        </div>
+                        <a href="games/Sandbox%20City/sandbox-city.html" aria-label="Play Sandbox City" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Bad Time Simulator Card -->
+                    <div class="game-card catalog-card" data-name="Bad Time Simulator Sans Arcade Battle" data-category="arcade">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/BadtimeSimulator.jpg" alt="Sans character for Bad Time Simulator">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Bad Time Simulator</h3>
+                            <span class="card-cat">Arcade</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Dodge bones in a relentless bullet-hell battle.</p>
+                        </div>
+                        <a href="games/Bad%20Time%20Simulator/bad-time-simulator.html" aria-label="Play Bad Time Simulator" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Slope Card -->
+                    <div class="game-card catalog-card" data-name="Slope Ball Rolling Racing Endless" data-category="racing">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="assets/Game%20Logos/slope.jpg" alt="A ball rolling down a neon slope for Slope">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Slope</h3>
+                            <span class="card-cat">Racing</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Roll down an endless slope and don't fall off.</p>
+                        </div>
+                        <a href="games/Slope/slope.html" aria-label="Play Slope" class="card-play">▶ Play</a>
+                    </div>
+
+
+
+
 
                 </div>
 
@@ -1064,7 +1313,7 @@ nav[class*="text-slate"] { color: var(--nav-color); }
 
     <script>
         // Edit this sentence to change the message shown after scrolling down.
-        const scrollMessageText = "AI plus Me = Goated Unblocked Games.";
+        const scrollMessageText = "Adding More Games Every Day!.";
 
         function adjustTextSizes() {
             document.querySelectorAll('body *').forEach(element => {
