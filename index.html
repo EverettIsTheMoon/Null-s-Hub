@@ -342,6 +342,17 @@ nav[class*="text-slate"] { color: var(--nav-color); }
     }
     .settings-close:hover { color:var(--amber); }
     .settings-body { padding:18px 20px 22px; }
+    .settings-tabs {
+        display:flex; gap:4px; padding:10px 20px 0; border-bottom:1px solid var(--line);
+    }
+    .settings-tab {
+        padding:9px 10px; border:0; border-bottom:2px solid transparent;
+        background:transparent; color:var(--muted); cursor:pointer;
+        font:inherit; font-size:12px; font-weight:600; line-height:1.2;
+    }
+    .settings-tab:hover, .settings-tab[aria-selected="true"] { color:var(--amber); }
+    .settings-tab[aria-selected="true"] { border-bottom-color:var(--amber); }
+    .settings-tab:focus-visible { outline:2px solid var(--amber-focus); outline-offset:2px; }
     .settings-section { margin-bottom:22px; }
     .settings-section:last-child { margin-bottom:0; }
     .settings-label {
@@ -389,6 +400,26 @@ nav[class*="text-slate"] { color: var(--nav-color); }
     .panic-key-btn kbd {
         font:inherit; background:var(--input-border); color:var(--text-strong);
         padding:2px 8px; border-radius:4px; border:1px solid var(--line-strong);
+    }
+    .disguise-icon-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+    .disguise-option {
+        position:relative; display:flex; flex-direction:column; align-items:center; gap:7px;
+        padding:9px 6px; border:1px solid var(--btn-border); border-radius:5px;
+        color:var(--btn-text); font-size:11px; cursor:pointer; text-align:center;
+    }
+    .disguise-option:hover, .disguise-option:focus-within { border-color:var(--amber); }
+    .disguise-option:has(input:checked) { border-color:var(--amber); background:var(--btn-hover-bg); color:var(--btn-hover-text); }
+    .disguise-option input { position:absolute; opacity:0; pointer-events:none; }
+    .disguise-option img { width:48px; height:48px; object-fit:contain; }
+    .disguise-name-input {
+        width:100%; margin-top:4px; padding:9px 10px; border:1px solid var(--input-border);
+        border-radius:4px; background:var(--bg); color:var(--text); font:inherit; font-size:13px;
+    }
+    .disguise-name-input:focus { outline:2px solid var(--amber-focus); outline-offset:1px; }
+    @media (max-width:380px) {
+        .settings-tabs { padding-inline:12px; }
+        .settings-tab { padding-inline:7px; font-size:11px; }
+        .settings-body { padding-inline:14px; }
     }
     </style>
 
@@ -948,38 +979,82 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                 <h2 id="settingsTitle">Settings</h2>
                 <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">&times;</button>
             </div>
+            <div class="settings-tabs" id="settingsTabs" role="tablist" aria-label="Settings sections">
+                <button type="button" class="settings-tab" id="settingsTabAppearance" role="tab" aria-controls="settingsPanelAppearance" aria-selected="true" tabindex="0" onclick="selectSettingsTab('appearance')">Appearance</button>
+                <button type="button" class="settings-tab" id="settingsTabPanic" role="tab" aria-controls="settingsPanelPanic" aria-selected="false" tabindex="-1" onclick="selectSettingsTab('panic')">Panic key</button>
+                <button type="button" class="settings-tab" id="settingsTabDisguise" role="tab" aria-controls="settingsPanelDisguise" aria-selected="false" tabindex="-1" onclick="selectSettingsTab('disguise')">Disguise</button>
+            </div>
             <div class="settings-body">
-                <div class="settings-section">
-                    <span class="settings-label">Appearance</span>
-                    <p class="settings-hint">Pick a look for the hub.</p>
-                    <div class="theme-row">
-                        <button type="button" class="theme-btn" data-theme-choice="dark" onclick="setTheme('dark')">
-                            <span class="theme-swatch sw-dark"></span>Dark
-                        </button>
-                        <button type="button" class="theme-btn" data-theme-choice="light" onclick="setTheme('light')">
-                            <span class="theme-swatch sw-light"></span>Light
-                        </button>
-                        <button type="button" class="theme-btn" data-theme-choice="blue" onclick="setTheme('blue')">
-                            <span class="theme-swatch sw-blue"></span>Blue
-                        </button>
+                <div class="settings-tab-panel" id="settingsPanelAppearance" role="tabpanel" aria-labelledby="settingsTabAppearance">
+                    <div class="settings-section">
+                        <span class="settings-label">Appearance</span>
+                        <p class="settings-hint">Pick a look for the hub.</p>
+                        <div class="theme-row">
+                            <button type="button" class="theme-btn" data-theme-choice="dark" onclick="setTheme('dark')">
+                                <span class="theme-swatch sw-dark"></span>Dark
+                            </button>
+                            <button type="button" class="theme-btn" data-theme-choice="light" onclick="setTheme('light')">
+                                <span class="theme-swatch sw-light"></span>Light
+                            </button>
+                            <button type="button" class="theme-btn" data-theme-choice="blue" onclick="setTheme('blue')">
+                                <span class="theme-swatch sw-blue"></span>Blue
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="settings-section">
-                    <span class="settings-label">Panic key</span>
-                    <p class="settings-hint">Press this key any time — even inside a game — to jump straight to Google.com.</p>
-                    <div class="panic-toggle-row">
-                        <span style="font-size:13px; color:var(--text);">Enable panic key</span>
-                        <label class="switch">
-                            <input type="checkbox" id="panicEnabled" onchange="togglePanic(this.checked)">
-                            <span class="slider"></span>
-                        </label>
+                <div class="settings-tab-panel" id="settingsPanelPanic" role="tabpanel" aria-labelledby="settingsTabPanic" hidden>
+                    <div class="settings-section">
+                        <span class="settings-label">Panic key</span>
+                        <p class="settings-hint">Press this key any time — even inside a game — to jump straight to Google.com.</p>
+                        <div class="panic-toggle-row">
+                            <span style="font-size:13px; color:var(--text);">Enable panic key</span>
+                            <label class="switch">
+                                <input type="checkbox" id="panicEnabled" onchange="togglePanic(this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="panic-key-row">
+                            <button type="button" class="panic-key-btn" id="panicKeyBtn" onclick="listenForPanicKey()">
+                                <span id="panicKeyLabel"><kbd>Click to set a key</kbd></span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="panic-key-row">
-                        <button type="button" class="panic-key-btn" id="panicKeyBtn" onclick="listenForPanicKey()">
-                            <span id="panicKeyLabel"><kbd>Click to set a key</kbd></span>
-                        </button>
+                </div>
+
+                <div class="settings-tab-panel" id="settingsPanelDisguise" role="tabpanel" aria-labelledby="settingsTabDisguise" hidden>
+                    <div class="settings-section">
+                        <span class="settings-label">Tab icon</span>
+                        <p class="settings-hint">Choose an icon and name for this game hub tab only. Game tabs are not changed.</p>
+                        <div class="disguise-icon-grid" role="radiogroup" aria-label="Hub tab icon">
+                            <label class="disguise-option">
+                                <input type="radio" name="disguiseIcon" value="default" onchange="setDisguiseIcon(this.value)">
+                                <img src="assets/nulls-hub-logo-tab.png" alt="">
+                                <span>Hub</span>
+                            </label>
+                            <label class="disguise-option">
+                                <input type="radio" name="disguiseIcon" value="clever" onchange="setDisguiseIcon(this.value)">
+                                <img src="assets/disguise/clever.png" alt="">
+                                <span>Clever</span>
+                            </label>
+                            <label class="disguise-option">
+                                <input type="radio" name="disguiseIcon" value="classroom" onchange="setDisguiseIcon(this.value)">
+                                <img src="assets/disguise/classroom.png" alt="">
+                                <span>Classroom</span>
+                            </label>
+                            <label class="disguise-option">
+                                <input type="radio" name="disguiseIcon" value="schoology" onchange="setDisguiseIcon(this.value)">
+                                <img src="assets/disguise/schoology.png" alt="">
+                                <span>Schoology</span>
+                            </label>
+                        </div>
                     </div>
+                    <div class="settings-section">
+                        <label class="settings-label" for="disguiseName">Tab name</label>
+                        <p class="settings-hint">Customize the title shown on this hub tab.</p>
+                        <input class="disguise-name-input" type="text" id="disguiseName" maxlength="60" value="Null's Hub" oninput="setDisguiseName(this.value)" autocomplete="off">
+                    </div>
+                    <button type="button" class="btn" onclick="resetDisguise()">Reset disguise</button>
                 </div>
             </div>
         </div>
@@ -987,7 +1062,7 @@ nav[class*="text-slate"] { color: var(--nav-color); }
 
     <script>
         // Edit this sentence to change the message shown after scrolling down.
-        const scrollMessageText = "made by taking a web proxy, making it randomize the ip, then making it show up.";
+        const scrollMessageText = "AI plus Me = Goated Unblocked Games.";
 
         function adjustTextSizes() {
             document.querySelectorAll('body *').forEach(element => {
@@ -1129,6 +1204,102 @@ nav[class*="text-slate"] { color: var(--nav-color); }
             try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
         }
 
+        /* ===================== Settings: disguise ===================== */
+        const DISGUISE_ICON_KEY = 'nullhub_disguise_icon';
+        const DISGUISE_NAME_KEY = 'nullhub_disguise_name';
+        const DEFAULT_HUB_TITLE = "Null's Hub";
+        const DISGUISE_ICONS = {
+            default: 'assets/nulls-hub-logo-tab.png',
+            clever: 'assets/disguise/clever.png',
+            classroom: 'assets/disguise/classroom.png',
+            schoology: 'assets/disguise/schoology.png'
+        };
+
+        function selectSettingsTab(tabName) {
+            const tabs = {
+                appearance: ['settingsTabAppearance', 'settingsPanelAppearance'],
+                panic: ['settingsTabPanic', 'settingsPanelPanic'],
+                disguise: ['settingsTabDisguise', 'settingsPanelDisguise']
+            };
+            if (!Object.prototype.hasOwnProperty.call(tabs, tabName)) return;
+
+            Object.entries(tabs).forEach(([name, [tabId, panelId]]) => {
+                const tab = document.getElementById(tabId);
+                tab.setAttribute('aria-selected', String(name === tabName));
+                tab.tabIndex = name === tabName ? 0 : -1;
+                document.getElementById(panelId).hidden = name !== tabName;
+            });
+        }
+
+        document.getElementById('settingsTabs').addEventListener('keydown', event => {
+            const tabNames = ['appearance', 'panic', 'disguise'];
+            const currentIndex = tabNames.findIndex(name =>
+                document.getElementById(`settingsTab${name[0].toUpperCase()}${name.slice(1)}`) === event.target
+            );
+            if (currentIndex < 0) return;
+
+            let nextIndex;
+            if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % tabNames.length;
+            else if (event.key === 'ArrowLeft') nextIndex = (currentIndex + tabNames.length - 1) % tabNames.length;
+            else if (event.key === 'Home') nextIndex = 0;
+            else if (event.key === 'End') nextIndex = tabNames.length - 1;
+            else return;
+
+            event.preventDefault();
+            const nextTab = document.getElementById(`settingsTab${tabNames[nextIndex][0].toUpperCase()}${tabNames[nextIndex].slice(1)}`);
+            nextTab.focus();
+            selectSettingsTab(tabNames[nextIndex]);
+        });
+
+        function getDisguiseIcon() {
+            try {
+                const icon = localStorage.getItem(DISGUISE_ICON_KEY);
+                return Object.prototype.hasOwnProperty.call(DISGUISE_ICONS, icon) ? icon : 'default';
+            } catch (e) {
+                return 'default';
+            }
+        }
+
+        function getDisguiseName() {
+            try { return localStorage.getItem(DISGUISE_NAME_KEY) || DEFAULT_HUB_TITLE; } catch (e) { return DEFAULT_HUB_TITLE; }
+        }
+
+        function applyDisguise() {
+            document.title = getDisguiseName().trim() || DEFAULT_HUB_TITLE;
+            const iconPath = DISGUISE_ICONS[getDisguiseIcon()];
+            const iconLinks = document.querySelectorAll('link[rel~="icon"]');
+            iconLinks.forEach(link => link.setAttribute('href', iconPath));
+        }
+
+        function setDisguiseIcon(icon) {
+            if (!Object.prototype.hasOwnProperty.call(DISGUISE_ICONS, icon)) return;
+            try { localStorage.setItem(DISGUISE_ICON_KEY, icon); } catch (e) {}
+            applyDisguise();
+        }
+
+        function setDisguiseName(name) {
+            const safeName = String(name).slice(0, 60);
+            try { localStorage.setItem(DISGUISE_NAME_KEY, safeName); } catch (e) {}
+            applyDisguise();
+        }
+
+        function refreshDisguiseUI() {
+            const icon = getDisguiseIcon();
+            document.querySelectorAll('input[name="disguiseIcon"]').forEach(input => {
+                input.checked = input.value === icon;
+            });
+            document.getElementById('disguiseName').value = getDisguiseName();
+            applyDisguise();
+        }
+
+        function resetDisguise() {
+            try {
+                localStorage.removeItem(DISGUISE_ICON_KEY);
+                localStorage.removeItem(DISGUISE_NAME_KEY);
+            } catch (e) {}
+            refreshDisguiseUI();
+        }
+
         /* ===================== Settings: modal ===================== */
         function openSettings() {
             document.getElementById('settingsOverlay').classList.add('is-open');
@@ -1164,6 +1335,7 @@ nav[class*="text-slate"] { color: var(--nav-color); }
             const toggle = document.getElementById('panicEnabled');
             if (toggle) toggle.checked = getPanicEnabled();
             renderPanicKeyLabel();
+            refreshDisguiseUI();
         }
 
         function renderPanicKeyLabel() {
