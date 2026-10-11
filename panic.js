@@ -56,8 +56,8 @@
 /*
  * ---------------------------------------------------------------------------
  * Floating "Null's Hub" bubble — injected into every game alongside the panic
- * key. It is a rounded, translucent bubble with a slowly rotating rainbow
- * outline at 50% opacity. It carries a "Back" button that returns to the hub.
+ * key. It is a rounded bubble with a solid center and a slowly rotating
+ * rainbow outline. It carries a "Back" button that returns to the hub.
  *
  * Works whether panic.js runs inside a game iframe (window.self !== window.top)
  * or directly on the hub. All styles are scoped with an "nhb-" prefix and
@@ -112,8 +112,8 @@
         '}',
         '@keyframes nhb-spin{to{--nhb-angle:360deg;}}',
         '.nhb-core{',
-        'position:absolute;inset:4px;border-radius:999px;opacity:.5;',
-        'background:rgba(10,12,20,.75);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);',
+        'position:absolute;inset:4px;border-radius:999px;',
+        'background:rgb(10,12,20);',
         'display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:10px;',
         'color:#fff;padding:0 16px;box-sizing:border-box;',
         '}',
@@ -167,4 +167,3 @@
         mount();
     }
 })();
-
