@@ -50,17 +50,47 @@
         font-weight:400 !important;
         letter-spacing:.06em !important;
     }
-:root {
-        --bg: #171815;
-        --panel: #20211e;
-        --line: #3c3b35;
-        --amber: #ca7253;
-        --teal: #78968d;
-        --muted: #aaa394;
-    }
+:root, [data-theme="dark"] {
+    --bg:#171815; --panel:#20211e; --line:#3c3b35; --amber:#ca7253; --teal:#78968d; --muted:#aaa394;
+    --text:#e9e2d5; --text-strong:#eee7da; --text-soft:#bcb4a5;
+    --amber-strong:#a74430; --amber-strong-hover:#883a2c; --amber-border:#a85e46; --amber-light:#d28a70; --amber-focus:#f0b092;
+    --hero-bg:#252620; --note-bg:#11120f; --note-text:#b8b09f; --footer-bg:#1d1e1b; --thumb-bg:#282923;
+    --btn-hover-bg:#282822; --input-border:#47443c; --line-strong:#6b6254; --btn-border:#575248;
+    --nav-idle:#514b41; --pill-hover-border:#5c574e; --shelf-count:#a69b86; --nav-color:#c7c0b3; --nav-hover:#f0e7d8;
+    --logo-bg:#f8f7f5; --btn-amber-text:#fff1e6; --btn-text:#e1d9ca; --btn-hover-text:#f2e9db; --pill-hover-text:#eee6d9;
+}
+[data-theme="light"] {
+    --bg:#f4f1ea; --panel:#ffffff; --line:#d9d3c6; --amber:#b8552f; --teal:#4f7d72; --muted:#6b6558;
+    --text:#2a2721; --text-strong:#1c1a15; --text-soft:#57524a;
+    --amber-strong:#a7442c; --amber-strong-hover:#8a3521; --amber-border:#c26a4e; --amber-light:#c9724f; --amber-focus:#a8442c;
+    --hero-bg:#ece7dc; --note-bg:#e7e2d6; --note-text:#6b6558; --footer-bg:#ece7dc; --thumb-bg:#e2ddd0;
+    --btn-hover-bg:#e7e2d6; --input-border:#c2bbab; --line-strong:#b9b2a1; --btn-border:#b9b2a1;
+    --nav-idle:#6b6558; --pill-hover-border:#b9b2a1; --shelf-count:#8a8375; --nav-color:#3a362e; --nav-hover:#1c1a15;
+    --logo-bg:#ffffff; --btn-amber-text:#fff3ec; --btn-text:#3a362e; --btn-hover-text:#1c1a15; --pill-hover-text:#1c1a15;
+}
+[data-theme="blue"] {
+    --bg:#0b1220; --panel:#111a2e; --line:#23324d; --amber:#4f8ef7; --teal:#38bdf8; --muted:#8aa0c4;
+    --text:#dbe6f7; --text-strong:#eaf2ff; --text-soft:#a9bcd9;
+    --amber-strong:#2563eb; --amber-strong-hover:#1d4ed8; --amber-border:#3b82f6; --amber-light:#60a5fa; --amber-focus:#93c5fd;
+    --hero-bg:#0f1830; --note-bg:#0a1120; --note-text:#8aa0c4; --footer-bg:#0e1626; --thumb-bg:#152037;
+    --btn-hover-bg:#152037; --input-border:#2c3d5c; --line-strong:#33456a; --btn-border:#33456a;
+    --nav-idle:#8aa0c4; --pill-hover-border:#33456a; --shelf-count:#7f93b5; --nav-color:#c3d3ee; --nav-hover:#eaf2ff;
+    --logo-bg:#0f1830; --btn-amber-text:#eaf2ff; --btn-text:#c3d3ee; --btn-hover-text:#eaf2ff; --pill-hover-text:#eaf2ff;
+}
+/* theme-aware fixes for Tailwind utility colors used in the markup */
+#searchBar { color: var(--text) !important; }
+#searchBar::placeholder { color: var(--muted) !important; }
+header label > span[class*="text-slate"] { color: var(--muted); }
+#noResults [class*="bg-slate"] { background: var(--btn-hover-bg); }
+#noResults [class*="border-slate"] { border-color: var(--line); }
+#noResults .text-slate-300 { color: var(--text-strong); }
+#noResults .text-slate-500 { color: var(--text-soft); }
+footer { color: var(--muted) !important; background: var(--footer-bg) !important; border-color: var(--line) !important; }
+header.marquee { border-bottom-color: var(--line) !important; }
+nav[class*="text-slate"] { color: var(--nav-color); }
     body {
         background: var(--bg);
-        color: #e9e2d5;
+        color: var(--text);
         font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         overflow-x: hidden;
     }
@@ -72,23 +102,23 @@
     body::before, .ambient-glow, .grain { display:none; }
     .site-note {
         position:relative; z-index:11; margin:0; padding:7px max(16px, calc((100vw - 1200px) / 2));
-        background:#11120f; color:#b8b09f; font:600 11px/1.3 ui-monospace, "SFMono-Regular", Consolas, monospace;
+        background:var(--note-bg); color:var(--note-text); font:600 11px/1.3 ui-monospace, "SFMono-Regular", Consolas, monospace;
         letter-spacing:.04em;
     }
     .marquee {
         position: relative; z-index: 10;
-        background:#20211e;
+        background:var(--panel);
         border-bottom:2px solid var(--amber);
     }
     .brand { display:flex; align-items:center; gap:11px; }
     .brand-logo-wrap {
-        width:42px; height:42px; border-radius:8px; background:#f8f7f5;
+        width:42px; height:42px; border-radius:8px; background:var(--logo-bg);
         box-shadow:0 0 0 1px rgba(255,255,255,0.1), 0 4px 10px rgba(0,0,0,0.25);
         display:grid; place-items:center; overflow:hidden; flex-shrink:0;
     }
     .brand-logo {
         width:100%; height:100%; object-fit:cover; display:block;
-        background:#f8f7f5;
+        background:var(--logo-bg);
     }
     .brand-name { font:700 18px/1 Georgia, "Times New Roman", serif; letter-spacing:-.02em; }
     .brand-tag {
@@ -101,15 +131,15 @@
     .nav { display:flex; align-items:center; gap:14px; }
     .nav a, .nav button {
         font-size:12px; font-weight:600; letter-spacing:0; text-transform:none;
-        color:#514b41; background:none; border:0; cursor:pointer; padding:6px 2px;
+        color:var(--nav-idle); background:none; border:0; cursor:pointer; padding:6px 2px;
         border-bottom:1px solid transparent; transition: color .15s, border-color .15s;
     }
     .nav a:hover, .nav button:hover { color:var(--amber); border-bottom-color:var(--amber); }
     header nav a, header nav button {
-        color:#c7c0b3 !important; text-transform:none !important; letter-spacing:0 !important;
+        color:var(--nav-color) !important; text-transform:none !important; letter-spacing:0 !important;
         font-size:12px !important; font-weight:600 !important;
     }
-    header nav a:hover, header nav button:hover { color:#f0e7d8 !important; }
+    header nav a:hover, header nav button:hover { color:var(--nav-hover) !important; }
     .pill {
         display:inline-block; padding:3px 9px; border-radius:999px;
         background: rgba(245,179,66,.14); color: var(--amber);
@@ -121,7 +151,7 @@
         color:var(--muted) !important; background:transparent !important;
         border:0 !important; border-bottom:2px solid transparent !important; transition:color .15s, border-color .15s !important;
     }
-    .category-pill:hover { color:#eee6d9 !important; border-color:#5c574e !important; }
+    .category-pill:hover { color:var(--pill-hover-text) !important; border-color:var(--pill-hover-border) !important; }
     .category-pill.active {
         color:var(--amber) !important; border-color:var(--amber) !important;
         background:transparent !important;
@@ -129,8 +159,8 @@
     .search-wrap { position:relative; width:100%; max-width:280px; margin-left:auto; }
     .search-wrap svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); width:15px; height:15px; color: var(--muted); pointer-events:none; }
     .search-input {
-        width:100%; padding:8px 13px 8px 36px; background:#171815;
-        border:1px solid #47443c; border-radius:3px; color:#e9e2d5; font-size:13px;
+        width:100%; padding:8px 13px 8px 36px; background:var(--bg);
+        border:1px solid var(--input-border); border-radius:3px; color:var(--text); font-size:13px;
         outline:none; transition: border-color .15s;
     }
     .search-input:focus { border-color:var(--amber); }
@@ -138,20 +168,20 @@
     .content { position: relative; z-index: 1; }
     .catalog-card {
         position: relative; overflow: hidden; display: flex; flex-direction: column;
-        background:var(--panel); border:1px solid #3c3b35;
-        border-top:2px solid #6b6254; border-radius:4px;
+        background:var(--panel); border:1px solid var(--line);
+        border-top:2px solid var(--line-strong); border-radius:4px;
         aspect-ratio:1;
         box-shadow:0 2px 8px rgba(0,0,0,.14);
         transition:transform .18s ease, border-color .18s, box-shadow .18s;
     }
     .catalog-card:hover {
         transform:translateY(-2px);
-        border-color:#a85e46;
+        border-color:var(--amber-border);
         box-shadow:0 5px 14px rgba(0,0,0,.24);
     }
     .card-thumb {
         position:absolute; inset:0; width:100%; height:100%; display:block; border-radius:0; overflow:hidden;
-        background:#282923;
+        background:var(--thumb-bg);
     }
     .card-thumb::after {
         content:""; position:absolute; inset:0; pointer-events:none;
@@ -171,7 +201,7 @@
     }
     .catalog-card:hover .card-body, .catalog-card:focus-within .card-body { opacity:1; visibility:visible; }
     .card-title {
-        margin:0; color:#eee7da; font:700 14px/1.25 Georgia, "Times New Roman", serif;
+        margin:0; color:var(--text-strong); font:700 14px/1.25 Georgia, "Times New Roman", serif;
         letter-spacing:-.02em; overflow-wrap:anywhere;
     }
     .card-title.scp-title {
@@ -185,7 +215,7 @@
     }
     .card-cat {
         display:inline-block; font-size:10px; font-weight:700; letter-spacing:.06em;
-        text-transform:uppercase; color:#aaa394; background:transparent;
+        text-transform:uppercase; color:var(--muted); background:transparent;
         border:0; border-radius:0; padding:0; margin-top:7px;
     }
     .card-body .card-cat, .card-body .card-tag { display:none; }
@@ -197,7 +227,7 @@
         box-shadow:none; transition:background .15s, color .15s;
     }
     .card-play:hover { transform:none; background:transparent; color:transparent !important; box-shadow:none; }
-    .card-play:focus-visible { outline:3px solid #f0b092; outline-offset:-4px; }
+    .card-play:focus-visible { outline:3px solid var(--amber-focus); outline-offset:-4px; }
     .card-foot {
         display:flex; justify-content:space-between; align-items:center;
         margin-top:10px; padding-top:10px; border-top:1px solid var(--line);
@@ -209,7 +239,7 @@
     .hl { color: var(--amber); }
     .catalog-hero {
         display:grid; grid-template-columns: 1.15fr .85fr; gap: 28px; align-items:center;
-        padding:30px 0 32px; margin:0 0 25px; border-bottom:1px solid #3b3a34;
+        padding:30px 0 32px; margin:0 0 25px; border-bottom:1px solid var(--line);
     }
     .eyebrow {
         margin:0 0 11px; font:700 11px/1.4 ui-monospace, "SFMono-Regular", Consolas, monospace;
@@ -217,43 +247,43 @@
     }
     .hero-title {
         margin:0 0 12px; font:700 clamp(34px, 4.4vw, 54px)/.99 Georgia, "Times New Roman", serif;
-        letter-spacing:-.045em; color:#eee7da; max-width:640px;
+        letter-spacing:-.045em; color:var(--text-strong); max-width:640px;
     }
     .hero-copy-text {
-        margin:0 0 20px; max-width:440px; color:#bcb4a5; line-height:1.65; font-size:15px;
+        margin:0 0 20px; max-width:440px; color:var(--text-soft); line-height:1.65; font-size:15px;
     }
     .hero-actions { display:flex; gap:10px; flex-wrap:wrap; }
     .btn {
         padding:10px 14px; border-radius:3px; font:inherit; font-size:13px; font-weight:600; line-height:1.2;
         letter-spacing:0; text-transform:none; cursor:pointer;
-        border:1px solid #575248; background:transparent; color:#e1d9ca;
+        border:1px solid var(--btn-border); background:transparent; color:var(--btn-text);
         transition:background .15s, border-color .15s, color .15s;
     }
-    .btn:hover { border-color:#ca7253; background:#282822; color:#f2e9db; }
-    .btn-amber { background:#a74430; color:#fff1e6; border-color:#a74430; }
-    .btn-amber:hover { background:#883a2c; color:#fff1e6; border-color:#883a2c; }
+    .btn:hover { border-color:var(--amber); background:var(--btn-hover-bg); color:var(--btn-hover-text); }
+    .btn-amber { background:var(--amber-strong); color:var(--btn-amber-text); border-color:var(--amber-strong); }
+    .btn-amber:hover { background:var(--amber-strong-hover); color:var(--btn-amber-text); border-color:var(--amber-strong-hover); }
     .hero-art {
         position:relative; min-height:190px; padding:22px 24px;
-        background:#252620; border-left:3px solid #a74430; color:#eee7da;
+        background:var(--hero-bg); border-left:3px solid var(--amber-strong); color:var(--text-strong);
         display:flex; flex-direction:column; justify-content:center;
     }
-    .shelf-note-kicker { margin:0 0 9px; font:700 10px/1.4 ui-monospace, "SFMono-Regular", Consolas, monospace; letter-spacing:.1em; color:#d28a70; text-transform:uppercase; }
+    .shelf-note-kicker { margin:0 0 9px; font:700 10px/1.4 ui-monospace, "SFMono-Regular", Consolas, monospace; letter-spacing:.1em; color:var(--amber-light); text-transform:uppercase; }
     .shelf-note-title { margin:0 0 7px; font:700 25px/1.1 Georgia, "Times New Roman", serif; letter-spacing:-.025em; }
-    .shelf-note-copy { max-width:280px; margin:0; color:#bcb4a5; font-size:13px; line-height:1.5; }
-    .shelf-note-count { position:absolute; right:18px; top:17px; color:#a69b86; font:700 11px/1 ui-monospace, "SFMono-Regular", Consolas, monospace; }
+    .shelf-note-copy { max-width:280px; margin:0; color:var(--text-soft); font-size:13px; line-height:1.5; }
+    .shelf-note-count { position:absolute; right:18px; top:17px; color:var(--shelf-count); font:700 11px/1 ui-monospace, "SFMono-Regular", Consolas, monospace; }
     #gameGrid {
         width:100%; max-width:1050px; margin-inline:auto;
         grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px;
     }
-    #categories { margin-bottom:17px; padding-bottom:8px; border-bottom:1px solid #3b3a34; }
-    #gameCount { color:#aaa394; font:600 12px/1 ui-monospace, "SFMono-Regular", Consolas, monospace; letter-spacing:0; text-transform:none; }
-    #noResults { color:#bcb4a5; }
-    footer { color:#aaa394 !important; background:#1d1e1b !important; border-color:#3b3a34 !important; }
+    #categories { margin-bottom:17px; padding-bottom:8px; border-bottom:1px solid var(--line); }
+    #gameCount { color:var(--muted); font:600 12px/1 ui-monospace, "SFMono-Regular", Consolas, monospace; letter-spacing:0; text-transform:none; }
+    #noResults { color:var(--text-soft); }
+    footer { color:var(--muted) !important; background:var(--footer-bg) !important; border-color:var(--line) !important; }
     #scrollMessage {
         position:fixed; left:50%; bottom:24px; z-index:60;
         width:max-content; max-width:min(560px, calc(100vw - 32px));
-        padding:12px 18px; color:#eee7da; background:#20211e;
-        border:1px solid #6b6254; border-left:3px solid var(--amber);
+        padding:12px 18px; color:var(--text-strong); background:var(--panel);
+        border:1px solid var(--line-strong); border-left:3px solid var(--amber);
         box-shadow:0 8px 28px rgba(0,0,0,.38);
         opacity:0; visibility:hidden; transform:translate(-50%, 12px);
         transition:opacity .2s ease, transform .2s ease, visibility .2s;
@@ -287,6 +317,79 @@
     @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after { scroll-behavior:auto !important; transition-duration:.01ms !important; animation-duration:.01ms !important; }
     }
+
+    /* ===== Settings modal ===== */
+    .settings-overlay {
+        position:fixed; inset:0; z-index:200; display:none;
+        align-items:center; justify-content:center; padding:20px;
+        background:rgba(0,0,0,.6); backdrop-filter:blur(3px);
+    }
+    .settings-overlay.is-open { display:flex; }
+    .settings-panel {
+        width:100%; max-width:440px; max-height:90vh; overflow-y:auto;
+        background:var(--panel); color:var(--text);
+        border:1px solid var(--line-strong); border-top:3px solid var(--amber);
+        border-radius:6px; box-shadow:0 24px 60px rgba(0,0,0,.5);
+    }
+    .settings-head {
+        display:flex; align-items:center; justify-content:space-between;
+        padding:16px 20px; border-bottom:1px solid var(--line);
+    }
+    .settings-head h2 { margin:0; font:700 18px/1.2 Georgia, "Times New Roman", serif; letter-spacing:-.02em; color:var(--text-strong); }
+    .settings-close {
+        background:none; border:0; cursor:pointer; font-size:22px; line-height:1;
+        color:var(--muted); padding:2px 6px; border-radius:4px;
+    }
+    .settings-close:hover { color:var(--amber); }
+    .settings-body { padding:18px 20px 22px; }
+    .settings-section { margin-bottom:22px; }
+    .settings-section:last-child { margin-bottom:0; }
+    .settings-label {
+        display:block; margin:0 0 4px; font:700 11px/1.4 ui-monospace, "SFMono-Regular", Consolas, monospace;
+        letter-spacing:.08em; text-transform:uppercase; color:var(--amber);
+    }
+    .settings-hint { margin:0 0 12px; font-size:12px; line-height:1.5; color:var(--text-soft); }
+    .theme-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+    .theme-btn {
+        display:flex; flex-direction:column; align-items:center; gap:8px;
+        padding:12px 8px; cursor:pointer; border-radius:5px;
+        background:transparent; border:1px solid var(--btn-border); color:var(--btn-text);
+        font:inherit; font-size:12px; font-weight:600; transition:border-color .15s, background .15s, color .15s;
+    }
+    .theme-btn:hover { border-color:var(--amber); background:var(--btn-hover-bg); color:var(--btn-hover-text); }
+    .theme-btn.active { border-color:var(--amber); background:var(--btn-hover-bg); color:var(--btn-hover-text); }
+    .theme-swatch {
+        width:100%; height:34px; border-radius:4px; border:1px solid var(--line);
+        display:flex; overflow:hidden;
+    }
+    .theme-swatch span { flex:1; }
+    .sw-dark  { background:linear-gradient(135deg,#171815 0 50%,#ca7253 50% 100%); }
+    .sw-light { background:linear-gradient(135deg,#f4f1ea 0 50%,#b8552f 50% 100%); }
+    .sw-blue  { background:linear-gradient(135deg,#0b1220 0 50%,#4f8ef7 50% 100%); }
+    .panic-toggle-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .switch { position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0; }
+    .switch input { opacity:0; width:0; height:0; }
+    .switch .slider {
+        position:absolute; cursor:pointer; inset:0; border-radius:999px;
+        background:var(--input-border); transition:background .18s;
+    }
+    .switch .slider::before {
+        content:""; position:absolute; height:20px; width:20px; left:3px; top:3px;
+        border-radius:50%; background:#fff; transition:transform .18s;
+    }
+    .switch input:checked + .slider { background:var(--amber-strong); }
+    .switch input:checked + .slider::before { transform:translateX(20px); }
+    .panic-key-row { display:flex; align-items:center; gap:10px; margin-top:14px; }
+    .panic-key-btn {
+        flex:1; padding:10px 12px; cursor:pointer; border-radius:4px; text-align:center;
+        background:var(--btn-hover-bg); border:1px dashed var(--amber-border); color:var(--text-strong);
+        font:700 14px/1 ui-monospace, "SFMono-Regular", Consolas, monospace; letter-spacing:.06em;
+    }
+    .panic-key-btn.listening { border-style:solid; border-color:var(--amber); color:var(--amber); }
+    .panic-key-btn kbd {
+        font:inherit; background:var(--input-border); color:var(--text-strong);
+        padding:2px 8px; border-radius:4px; border:1px solid var(--line-strong);
+    }
     </style>
 
 
@@ -311,6 +414,7 @@
                 <a href="#games-section">The games</a>
                 <a href="#categories">Browse by type</a>
                 <button onclick="pickRandomGame()">Surprise me</button>
+                <button onclick="openSettings()">Settings</button>
             </nav>
             <label class="relative w-full max-w-[280px]">
                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">⌕</span>
@@ -712,6 +816,50 @@
 
     <div id="scrollMessage" role="status" aria-live="polite"></div>
 
+    <!-- ===== Settings modal ===== -->
+    <div class="settings-overlay" id="settingsOverlay" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div class="settings-panel">
+            <div class="settings-head">
+                <h2 id="settingsTitle">Settings</h2>
+                <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Close settings">&times;</button>
+            </div>
+            <div class="settings-body">
+                <div class="settings-section">
+                    <span class="settings-label">Appearance</span>
+                    <p class="settings-hint">Pick a look for the hub.</p>
+                    <div class="theme-row">
+                        <button type="button" class="theme-btn" data-theme-choice="dark" onclick="setTheme('dark')">
+                            <span class="theme-swatch sw-dark"></span>Dark
+                        </button>
+                        <button type="button" class="theme-btn" data-theme-choice="light" onclick="setTheme('light')">
+                            <span class="theme-swatch sw-light"></span>Light
+                        </button>
+                        <button type="button" class="theme-btn" data-theme-choice="blue" onclick="setTheme('blue')">
+                            <span class="theme-swatch sw-blue"></span>Blue
+                        </button>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <span class="settings-label">Panic key</span>
+                    <p class="settings-hint">Press this key any time — even inside a game — to jump straight to Google.com.</p>
+                    <div class="panic-toggle-row">
+                        <span style="font-size:13px; color:var(--text);">Enable panic key</span>
+                        <label class="switch">
+                            <input type="checkbox" id="panicEnabled" onchange="togglePanic(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="panic-key-row">
+                        <button type="button" class="panic-key-btn" id="panicKeyBtn" onclick="listenForPanicKey()">
+                            <span id="panicKeyLabel"><kbd>Click to set a key</kbd></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Edit this sentence to change the message shown after scrolling down.
         const scrollMessageText = "made by taking a web proxy, making it randomize the ip, then making it show up.";
@@ -755,6 +903,22 @@
             frame.src = gameUrl.href;
             blankTab.document.body.append(frame);
             blankTab.opener = null;
+
+            // Inject the shared panic-key handler into the game so the panic
+            // key keeps working while you play. Same-origin iframe, so we can
+            // reach into its document once it has loaded.
+            const panicUrl = new URL('panic.js', window.location.href).href;
+            const injectPanic = function () {
+                frame.removeEventListener('load', injectPanic);
+                try {
+                    const gameDoc = frame.contentDocument;
+                    if (!gameDoc) return;
+                    const script = gameDoc.createElement('script');
+                    script.src = panicUrl;
+                    (gameDoc.head || gameDoc.documentElement).appendChild(script);
+                } catch (e) { /* cross-origin or blocked — panic key just won't apply here */ }
+            };
+            frame.addEventListener('load', injectPanic);
         }
 
         document.getElementById('gameGrid').addEventListener('click', event => {
@@ -822,6 +986,133 @@
             const link = visibleCards[Math.floor(Math.random() * visibleCards.length)].querySelector('a');
             launchGameInBlankTab(link.href);
         }
+
+        /* ===================== Settings: theme ===================== */
+        const THEME_KEY = 'nullhub_theme';
+        const VALID_THEMES = ['dark', 'light', 'blue'];
+
+        function applyTheme(theme) {
+            if (!VALID_THEMES.includes(theme)) theme = 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-theme-choice') === theme);
+            });
+        }
+
+        function setTheme(theme) {
+            applyTheme(theme);
+            try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+        }
+
+        /* ===================== Settings: modal ===================== */
+        function openSettings() {
+            document.getElementById('settingsOverlay').classList.add('is-open');
+            refreshSettingsUI();
+        }
+        function closeSettings() {
+            document.getElementById('settingsOverlay').classList.remove('is-open');
+            cancelListenForPanicKey();
+        }
+        // Close when clicking the dimmed backdrop (but not the panel itself)
+        document.getElementById('settingsOverlay').addEventListener('click', event => {
+            if (event.target.id === 'settingsOverlay') closeSettings();
+        });
+        // Close on Escape
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') closeSettings();
+        });
+
+        /* ===================== Settings: panic key ===================== */
+        const PANIC_ENABLED_KEY = 'nullhub_panic_enabled';
+        const PANIC_KEY_KEY = 'nullhub_panic_key';
+        const PANIC_URL = 'https://www.google.com';
+        let listeningForKey = false;
+
+        function getPanicEnabled() {
+            try { return localStorage.getItem(PANIC_ENABLED_KEY) === '1'; } catch (e) { return false; }
+        }
+        function getPanicKey() {
+            try { return localStorage.getItem(PANIC_KEY_KEY) || ''; } catch (e) { return ''; }
+        }
+
+        function refreshSettingsUI() {
+            const toggle = document.getElementById('panicEnabled');
+            if (toggle) toggle.checked = getPanicEnabled();
+            renderPanicKeyLabel();
+        }
+
+        function renderPanicKeyLabel() {
+            const label = document.getElementById('panicKeyLabel');
+            if (!label) return;
+            const key = getPanicKey();
+            label.innerHTML = key
+                ? 'Panic key: <kbd>' + escapeHtml(key.length === 1 ? key.toUpperCase() : key) + '</kbd>'
+                : '<kbd>Click to set a key</kbd>';
+        }
+
+        function togglePanic(enabled) {
+            try { localStorage.setItem(PANIC_ENABLED_KEY, enabled ? '1' : '0'); } catch (e) {}
+        }
+
+        function cancelListenForPanicKey() {
+            listeningForKey = false;
+            const btn = document.getElementById('panicKeyBtn');
+            if (btn) btn.classList.remove('listening');
+        }
+
+        function listenForPanicKey() {
+            const btn = document.getElementById('panicKeyBtn');
+            const label = document.getElementById('panicKeyLabel');
+            if (!btn) return;
+            listeningForKey = true;
+            btn.classList.add('listening');
+            label.innerHTML = '<kbd>Press any key…</kbd>';
+        }
+
+        // Capture the next keypress as the panic key while listening
+        document.addEventListener('keydown', event => {
+            if (!listeningForKey) return;
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            listeningForKey = false;
+            const btn = document.getElementById('panicKeyBtn');
+            if (btn) btn.classList.remove('listening');
+            // Ignore bare modifier keys
+            if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Tab'].includes(event.key)) {
+                renderPanicKeyLabel();
+                return;
+            }
+            try { localStorage.setItem(PANIC_KEY_KEY, event.key); } catch (e) {}
+            renderPanicKeyLabel();
+        }, true);
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
+        // Apply saved theme on load
+        (function initSettings() {
+            let saved = 'dark';
+            try { saved = localStorage.getItem(THEME_KEY) || 'dark'; } catch (e) {}
+            applyTheme(saved);
+            refreshSettingsUI();
+        })();
+
+        // Shared panic-key handler: used on the hub and injected into games
+        function handlePanicKey(event) {
+            if (!getPanicEnabled()) return;
+            const key = getPanicKey();
+            if (!key) return;
+            if (event.key === key) {
+                event.preventDefault();
+                event.stopPropagation();
+                window.location.replace(PANIC_URL);
+            }
+        }
+        document.addEventListener('keydown', handlePanicKey);
     </script>
 </body>
 </html>
