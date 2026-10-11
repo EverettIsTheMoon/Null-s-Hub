@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
+<script>
+    // Redirect to about:blank immediately to hide this page from the browsing
+    // history and from any screen recordings/videos. Replaces the current
+    // history entry instead of adding a new one, so the site URL never stays
+    // in the history and the tab shows about:blank instead of "Null's Hub".
+    try {
+        location.replace("about:blank");
+    } catch (e) {
+        // Fallback if location.replace is somehow blocked
+        window.location.href = "about:blank";
+    }
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Null's Hub</title>
@@ -331,7 +343,7 @@
                     <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="rhythm" onclick="setCategory('rhythm',this)">Rhythm</button>
                     <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="racing" onclick="setCategory('racing',this)">Racing</button>
                     <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="shooter" onclick="setCategory('shooter',this)">Shooter</button>
-                    <span class="ml-auto text-[10px] font-bold uppercase tracking-widest text-slate-500"><span id="gameCount">8 games</span></span>
+                    <span class="ml-auto text-[10px] font-bold uppercase tracking-widest text-slate-500"><span id="gameCount">10 games</span></span>
                 </div>
 
                 <div id="hero" class="catalog-hero">
@@ -640,6 +652,56 @@
                             <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Move carefully: time advances when you do.</p>
                         </div>
                         <a href="games/Time%20Shooter%203/Time%20SHooter%203.html" aria-label="Play Time Shooter 3 SWAT" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Sky Hopper Card -->
+                    <div class="game-card catalog-card" data-name="Flappy Bird Sky Hopper Arcade" data-category="platformer">
+                        <div class="card-thumb">
+                            <svg class="catalog-logo" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Yellow bird flying between green pipes in a blue sky">
+                                <defs><linearGradient id="flappy-sky" x1="100" y1="0" x2="100" y2="200" gradientUnits="userSpaceOnUse"><stop stop-color="#48bce7"/><stop offset="1" stop-color="#d7f3dd"/></linearGradient><linearGradient id="flappy-pipe" x1="140" y1="48" x2="174" y2="160" gradientUnits="userSpaceOnUse"><stop stop-color="#70ed76"/><stop offset="1" stop-color="#219d4d"/></linearGradient></defs>
+                                <rect width="200" height="200" rx="18" fill="url(#flappy-sky)"/>
+                                <circle cx="42" cy="42" r="19" fill="#fff8c6" fill-opacity=".7"/>
+                                <path d="M0 147c38-25 64-18 91 0s67 18 109-4v57H0v-53Z" fill="#9ad88d"/>
+                                <path d="M147 0h31v66h-37V24a24 24 0 0 1 6-24ZM141 129h37v71h-31a24 24 0 0 1-24-24v-23h18v-24Z" fill="url(#flappy-pipe)" stroke="#e2ffe5" stroke-width="3"/>
+                                <path d="M58 97c0-15 14-25 30-21 7 2 11 7 13 14l18 7-18 8c-2 10-10 17-22 17-12 0-21-10-21-25Z" fill="#ffd532" stroke="#fff5b1" stroke-width="3"/>
+                                <path d="M69 104c8-6 16-5 23 1-8 7-15 8-23 4" fill="#e9a82a"/>
+                                <circle cx="91" cy="91" r="6" fill="white"/><circle cx="93" cy="91" r="2.5" fill="#263448"/>
+                                <path d="m25 82 4 9 9 4-9 4-4 9-4-9-9-4 9-4 4-9Zm80-48 3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z" fill="white"/>
+                            </svg>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Sky Hopper</h3>
+                            <span class="card-cat">Platformer</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Flap through the pipes and chase your best score.</p>
+                        </div>
+                        <a href="games/Flappy%20Bird/index.html" aria-label="Play Sky Hopper, a Flappy Bird game" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Rainbow Invaders Card -->
+                    <div class="game-card catalog-card" data-name="Space Invaders Rainbow Invaders Arcade Shooter" data-category="shooter">
+                        <div class="card-thumb">
+                            <svg class="catalog-logo" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rainbow rows of pixel aliens approaching a space ship">
+                                <defs><linearGradient id="invader-bg" x1="100" y1="0" x2="100" y2="200" gradientUnits="userSpaceOnUse"><stop stop-color="#202352"/><stop offset="1" stop-color="#090c20"/></linearGradient><linearGradient id="invader-rainbow" x1="39" y1="65" x2="160" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#ff648b"/><stop offset=".24" stop-color="#ffbd55"/><stop offset=".48" stop-color="#fff06a"/><stop offset=".69" stop-color="#5df0a2"/><stop offset=".84" stop-color="#64cfff"/><stop offset="1" stop-color="#c275ff"/></linearGradient></defs>
+                                <rect width="200" height="200" rx="18" fill="url(#invader-bg)"/>
+                                <path d="M24 39h4m38 12h3m68-22h4m26 55h3m-120 51h4m103 26h3" stroke="#fff" stroke-opacity=".8" stroke-width="3" stroke-linecap="round"/>
+                                <g fill="url(#invader-rainbow)" stroke="#fff" stroke-opacity=".75" stroke-width="1.5">
+                                    <path d="M51 56h14v8h8v8h-8v8h-5v-5h-4v5h-5v-5h-4v5h-5v-8h-8v-8h8v-8h14v-5h4v5Z"/>
+                                    <path d="M100 56h14v8h8v8h-8v8h-5v-5h-4v5h-5v-5h-4v5h-5v-8h-8v-8h8v-8h14v-5h4v5Z"/>
+                                    <path d="M149 56h14v8h8v8h-8v8h-5v-5h-4v5h-5v-5h-4v5h-5v-8h-8v-8h8v-8h14v-5h4v5Z"/>
+                                    <path d="M76 101h14v8h8v8h-8v8h-5v-5h-4v5h-5v-5h-4v5h-5v-8h-8v-8h8v-8h14v-5h4v5Z"/>
+                                    <path d="M125 101h14v8h8v8h-8v8h-5v-5h-4v5h-5v-5h-4v5h-5v-8h-8v-8h8v-8h14v-5h4v5Z"/>
+                                </g>
+                                <path d="M100 145 119 174h-12l-7-8-7 8H81l19-29Z" fill="#68eaff" stroke="#dcfbff" stroke-width="2"/>
+                                <path d="M100 151v16" stroke="#fff" stroke-width="3"/>
+                                <path d="M19 188h162" stroke="#73eaff" stroke-opacity=".45"/>
+                            </svg>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Rainbow Invaders</h3>
+                            <span class="card-cat">Shooter</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Blast the colorful alien waves before they land.</p>
+                        </div>
+                        <a href="games/Space%20Invaders/index.html" aria-label="Play Rainbow Invaders, a Space Invaders game" class="card-play">▶ Play</a>
                     </div>
 
                 </div>
