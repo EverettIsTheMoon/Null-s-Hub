@@ -1,6 +1,6 @@
 # Null's Hub
 
-A little collection of browser games I put together in one place. Play it at **csproject.org**.
+A little collection of browser games I put together in one place. Play it at **https://nullshub.chto-on-delaet.ru/**.
 
 Most of it was made with AI, but the layout, the ideas, and a lot of the code are mine.
 
