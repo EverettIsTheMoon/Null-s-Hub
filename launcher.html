@@ -36,22 +36,28 @@
 <script>
 (function () {
   'use strict';
+
+  // The hub to open. Matches how index.html opens games in about:blank tabs.
   var HUB = 'https://nullshub.chto-on-delaet.ru/';
 
   function openHub() {
-    var w = window.open('about:blank', '_blank');
-    if (!w) return false;
-    w.document.open();
-    w.document.write(
-      '<!DOCTYPE html><html><head><meta charset="utf-8">' +
-      '<meta name="viewport" content="width=device-width, initial-scale=1">' +
-      '<title>Classes</title>' +
-      '<style>html,body{margin:0;height:100%;overflow:hidden;background:#000}' +
-      'iframe{border:0;width:100vw;height:100vh;display:block}</style></head>' +
-      '<body><iframe src="' + HUB + '"></iframe></body></html>'
-    );
-    w.document.close();
-    // Try to close this launcher tab so only the about:blank tab is left.
+    // Same approach as launchGameInBlankTab() in index.html.
+    const blankTab = window.open('about:blank', '_blank');
+    if (!blankTab) return false;
+
+    blankTab.document.title = 'Classes';
+    blankTab.document.documentElement.style.cssText = 'height:100%;margin:0;background:#080909';
+    blankTab.document.body.style.cssText = 'height:100%;margin:0;overflow:hidden';
+
+    const frame = blankTab.document.createElement('iframe');
+    frame.title = 'Classwork';
+    frame.allow = 'autoplay; fullscreen; gamepad; pointer-lock';
+    frame.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;border:0;display:block;background:#080909';
+    frame.src = HUB;
+    blankTab.document.body.append(frame);
+    blankTab.opener = null;
+
+    // Close this launcher tab so only the about:blank tab is left.
     try { window.open('', '_self').close(); } catch (e) {}
     return true;
   }
