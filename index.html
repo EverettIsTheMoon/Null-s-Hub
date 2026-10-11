@@ -1,23 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<script>
-    // Redirect to about:blank the instant this page loads, and REPLACE the
-    // current history entry so your real URL never sticks in the address bar,
-    // browser history, or screen recordings.
-    //
-    // location.replace() (not location.href = ...) swaps the CURRENT history
-    // entry instead of adding a new one -- that's what keeps the site out of
-    // history. No window.open/popups, so a popup blocker can't interfere.
-    try {
-        window.location.replace('about:blank');
-    } catch (e) {
-        window.location.href = 'about:blank';
-    }
-</script>
-<noscript>
-    <meta http-equiv="refresh" content="0;url=about:blank">
-</noscript>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Null's Hub</title>
