@@ -433,9 +433,11 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                     <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="sandbox" onclick="setCategory('sandbox',this)">Sandbox</button>
                     <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="horror" onclick="setCategory('horror',this)">Horror</button>
                     <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="rhythm" onclick="setCategory('rhythm',this)">Rhythm</button>
+                    <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="puzzle" onclick="setCategory('puzzle',this)">Puzzle</button>
+                    <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="clicker" onclick="setCategory('clicker',this)">Clicker</button>
                     <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="racing" onclick="setCategory('racing',this)">Racing</button>
                     <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="shooter" onclick="setCategory('shooter',this)">Shooter</button>
-                    <span class="ml-auto text-[10px] font-bold uppercase tracking-widest text-slate-500"><span id="gameCount">10 games</span></span>
+                    <span class="ml-auto text-[10px] font-bold uppercase tracking-widest text-slate-500"><span id="gameCount">15 games</span></span>
                 </div>
 
                 <div id="hero" class="catalog-hero">
@@ -731,6 +733,129 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                             <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Race, build tracks, and chase the best time.</p>
                         </div>
                         <a href="games/PolyTrack/index.html" aria-label="Play PolyTrack" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Tetris Card -->
+                    <div class="game-card catalog-card" data-name="Tetris Modern Mono Blocks Puzzle" data-category="puzzle">
+                        <div class="card-thumb">
+                            <svg class="catalog-logo" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Colorful falling Tetris blocks">
+                                <defs>
+                                    <linearGradient id="tetris-bg" x1="100" y1="0" x2="100" y2="200" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#283153"/><stop offset="1" stop-color="#111522"/>
+                                    </linearGradient>
+                                    <linearGradient id="tetris-cyan" x1="37" y1="36" x2="67" y2="66" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#9af6ff"/><stop offset="1" stop-color="#20a9d0"/>
+                                    </linearGradient>
+                                    <linearGradient id="tetris-violet" x1="111" y1="53" x2="143" y2="85" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#e5a0ff"/><stop offset="1" stop-color="#9747d0"/>
+                                    </linearGradient>
+                                    <linearGradient id="tetris-gold" x1="77" y1="120" x2="108" y2="151" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#fff18e"/><stop offset="1" stop-color="#f0a529"/>
+                                    </linearGradient>
+                                    <filter id="tetris-glow" x="22" y="18" width="156" height="166" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+                                        <feGaussianBlur stdDeviation="7"/>
+                                    </filter>
+                                </defs>
+                                <rect width="200" height="200" rx="18" fill="url(#tetris-bg)"/>
+                                <path d="M26 20v160m30-160v160m30-160v160m30-160v160m30-160v160M22 28h156M22 58h156M22 88h156M22 118h156M22 148h156M22 178h156" stroke="#aebce8" stroke-opacity=".09"/>
+                                <path d="M50 35h30v30H50zm30 0h30v30H80z" fill="#42dafa" opacity=".55" filter="url(#tetris-glow)"/>
+                                <g stroke="#fff" stroke-opacity=".65" stroke-width="1.5">
+                                    <path d="M33 29h30v30H33z" fill="url(#tetris-cyan)"/><path d="M63 29h30v30H63z" fill="url(#tetris-cyan)"/>
+                                    <path d="M107 45h30v30h-30z" fill="url(#tetris-violet)"/><path d="M137 45h30v30h-30z" fill="url(#tetris-violet)"/>
+                                    <path d="M107 75h30v30h-30z" fill="url(#tetris-violet)"/>
+                                    <path d="M62 106h30v30H62z" fill="url(#tetris-gold)"/><path d="M92 106h30v30H92z" fill="url(#tetris-gold)"/>
+                                    <path d="M62 136h30v30H62z" fill="url(#tetris-gold)"/>
+                                    <path d="M122 136h30v30h-30z" fill="#f06d83"/><path d="M152 136h30v30h-30z" fill="#f06d83"/>
+                                    <path d="M122 166h30v14h-30z" fill="#f06d83"/><path d="M152 166h30v14h-30z" fill="#f06d83"/>
+                                </g>
+                                <path d="M22 182h156" stroke="#b9d5ff" stroke-opacity=".6" stroke-width="2"/>
+                                <path d="m100 29 4-9 4 9 9 4-9 4-4 9-4-9-9-4 9-4Zm65 58 3-7 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z" fill="#fff3b0"/>
+                            </svg>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Tetris</h3>
+                            <span class="card-cat">Puzzle</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Stack the blocks, clear the lines, chase a high score.</p>
+                        </div>
+                        <a href="games/Tetris/Tetris.html" aria-label="Play Tetris" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Stack Card -->
+                    <div class="game-card catalog-card" data-name="Stack Tower Blocks Arcade Puzzle" data-category="puzzle">
+                        <div class="card-thumb">
+                            <svg class="catalog-logo" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Colorful blocks stacked into a tower">
+                                <defs>
+                                    <linearGradient id="stack-bg" x1="100" y1="0" x2="100" y2="200" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#f8fdff"/><stop offset="1" stop-color="#a9ddff"/>
+                                    </linearGradient>
+                                    <linearGradient id="stack-top" x1="62" y1="49" x2="138" y2="70" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#b8f7a5"/><stop offset="1" stop-color="#58c96b"/>
+                                    </linearGradient>
+                                    <linearGradient id="stack-mid" x1="48" y1="91" x2="153" y2="113" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#a9ed75"/><stop offset="1" stop-color="#55b84a"/>
+                                    </linearGradient>
+                                    <linearGradient id="stack-base" x1="37" y1="135" x2="165" y2="158" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#d4f77a"/><stop offset="1" stop-color="#8bbf39"/>
+                                    </linearGradient>
+                                </defs>
+                                <rect width="200" height="200" rx="18" fill="url(#stack-bg)"/>
+                                <text x="100" y="30" fill="#285a36" font-family="sans-serif" font-size="17" font-weight="700" letter-spacing="2" text-anchor="middle">STACK</text>
+                                <path d="M30 38h140M30 78h140M30 118h140M30 158h140" stroke="#aebce8" stroke-opacity=".1"/>
+                                <path d="m53 143 20-13h95l-20 13H53Z" fill="#d4f77a"/>
+                                <path d="M53 143h95v18H53v-18Z" fill="url(#stack-base)"/>
+                                <path d="m73 99 19-13h76l-20 13H73Z" fill="#a9ed75"/>
+                                <path d="M73 99h75v18H73V99Z" fill="url(#stack-mid)"/>
+                                <path d="m89 57 18-13h57l-19 13H89Z" fill="#b8f7a5"/>
+                                <path d="M89 57h56v18H89V57Z" fill="url(#stack-top)"/>
+                                <path d="M42 164h116" stroke="#b9d5ff" stroke-opacity=".55" stroke-width="2"/>
+                                <path d="m164 35 3-7 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z" fill="#fff3b0"/>
+                            </svg>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Stack</h3>
+                            <span class="card-cat">Puzzle</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Stack the blocks and build the tallest tower you can.</p>
+                        </div>
+                        <a href="games/Stack/index.html" aria-label="Play Stack" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Doge Miner Card -->
+                    <div class="game-card catalog-card" data-name="Doge Miner Dogecoin Idle Clicker" data-category="clicker">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="games/Doge%20Miner/DogeMiner.webp" alt="Golden Dogecoin with the Doge meme">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Doge Miner</h3>
+                            <span class="card-cat">Clicker</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Mine Dogecoin, hire miners, and grow your fortune.</p>
+                        </div>
+                        <a href="games/Doge%20Miner/index.html" aria-label="Play Doge Miner" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Cluster Rush Card -->
+                    <div class="game-card catalog-card" data-name="Cluster Rush Truck Jumping Racing Platformer" data-category="platformer">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="games/Cluster%20Rush/cluster.avif" alt="Cluster Rush game artwork">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Cluster Rush</h3>
+                            <span class="card-cat">Platformer</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Jump across speeding trucks and stay on the move.</p>
+                        </div>
+                        <a href="games/Cluster%20Rush/index.html" aria-label="Play Cluster Rush" class="card-play">▶ Play</a>
+                    </div>
+
+                    <!-- Ragdoll Archers Card -->
+                    <div class="game-card catalog-card" data-name="Ragdoll Archers Bow Arrow Multiplayer Shooter" data-category="shooter">
+                        <div class="card-thumb">
+                            <img class="game-logo" src="games/Ragdoll%20Archers/RagdollArchers.png" alt="Ragdoll archer firing a bow at opponents">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Ragdoll Archers</h3>
+                            <span class="card-cat">Shooter</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Aim carefully and take down your opponents with arrows.</p>
+                        </div>
+                        <a href="games/Ragdoll%20Archers/index.html" aria-label="Play Ragdoll Archers" class="card-play">▶ Play</a>
                     </div>
 
                     <!-- Time Shooter 3 SWAT Card -->

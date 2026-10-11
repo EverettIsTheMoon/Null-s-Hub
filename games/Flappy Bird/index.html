@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#63c8ed">
+<title>Sky Hopper · Null's Arcade</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden}
+body{display:grid;place-items:center;background:#173a57;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+canvas{display:block;max-width:100vw;max-height:100vh;touch-action:none;outline:none}
+</style>
+</head>
+<body>
+<canvas id="game" tabindex="0" aria-label="Sky Hopper. Press space or tap to flap through the green pipes."></canvas>
+<script>
+(() => {
+  const canvas = document.querySelector("#game");
+  const ctx = canvas.getContext("2d");
+  const W = 480, H = 720;
+  const bird = { x: 125, y: 330, vy: 0, r: 17, angle: 0 };
+  let pipes = [], clouds = [], state = "ready", score = 0, best = 0;
+  let lastTime = 0, pipeTimer = 0, groundOffset = 0;
+  try { best = Number(localStorage.getItem("skyHopperBest")) || 0; } catch {}
+
+  function resize() {
+    const scale = Math.min(innerWidth / W, innerHeight / H);
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    canvas.style.width = `${W * scale}px`;
+    canvas.style.height = `${H * scale}px`;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  addEventListener("resize", resize);
+  resize();
+  for (let i = 0; i < 7; i++) clouds.push({ x: i * 94 + Math.random() * 30, y: 76 + Math.random() * 260, s: .65 + Math.random() * .55 });
+
+  function reset() {
+    bird.y = 330; bird.vy = 0; bird.angle = 0;
+    pipes = []; pipeTimer = .55; score = 0; state = "playing";
+    flap();
+  }
+  function flap() {
+    if (state === "ready" || state === "over") { reset(); return; }
+    if (state === "playing") bird.vy = -440;
+  }
+  canvas.addEventListener("pointerdown", event => { event.preventDefault(); canvas.focus(); flap(); });
+  addEventListener("keydown", event => {
+    if (["Space", "ArrowUp", "KeyW"].includes(event.code)) { event.preventDefault(); if (!event.repeat) flap(); }
+    if (event.code === "Enter" && state !== "playing") { event.preventDefault(); reset(); }
+  });
+
+  function pipePair(x) {
+    const gap = Math.max(148, 174 - Math.floor(score / 8) * 3);
+    const gapY = 165 + Math.random() * 300;
+    return { x, w: 76, gapY, gap, scored: false };
+  }
+  function hitPipe(p) {
+    if (bird.x + bird.r < p.x || bird.x - bird.r > p.x + p.w) return false;
+    return bird.y - bird.r < p.gapY - p.gap / 2 || bird.y + bird.r > p.gapY + p.gap / 2;
+  }
+  function endGame() {
+    if (state !== "playing") return;
+    state = "over";
+    best = Math.max(best, score);
+    try { localStorage.setItem("skyHopperBest", String(best)); } catch {}
+  }
+  function roundedRect(x,y,w,h,r,color) {
+    ctx.fillStyle = color; ctx.beginPath(); ctx.roundRect(x,y,w,h,r); ctx.fill();
+  }
+  function drawPipe(x,y,w,h,top) {
+    if (h <= 0) return;
+    const body = ctx.createLinearGradient(x,y,x+w,y);
+    body.addColorStop(0,"#25994c"); body.addColorStop(.18,"#55d66d"); body.addColorStop(.74,"#36bd59"); body.addColorStop(1,"#188346");
+    roundedRect(x,y,w,h,5,body);
+    ctx.fillStyle="#ffffff35"; ctx.fillRect(x+12,y+5,8,Math.max(0,h-10));
+    const capH=24, capY=top?y+h-capH:y;
+    roundedRect(x-7,capY,w+14,capH,5,"#2aa34d");
+    ctx.fillStyle="#8aefa0"; ctx.fillRect(x-3,capY+4,8,4);
+  }
+  function drawBird() {
+    ctx.save(); ctx.translate(bird.x,bird.y); ctx.rotate(bird.angle);
+    ctx.shadowColor="#14334a55"; ctx.shadowBlur=8; ctx.shadowOffsetY=4;
+    ctx.fillStyle="#ffd534"; ctx.beginPath(); ctx.ellipse(0,0,20,15,0,0,Math.PI*2); ctx.fill();
+    ctx.shadowColor="transparent"; ctx.shadowOffsetY=0;
+    ctx.fillStyle="#eaaa22"; ctx.beginPath(); ctx.ellipse(-5,5,10,6,-.35,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(9,-6,6,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="#1d2934"; ctx.beginPath(); ctx.arc(11,-6,2.4,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="#ff8c27"; ctx.beginPath(); ctx.moveTo(16,0); ctx.lineTo(29,4); ctx.lineTo(16,8); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+  function draw() {
+    const sky=ctx.createLinearGradient(0,0,0,H); sky.addColorStop(0,"#55c4ec"); sky.addColorStop(.72,"#b0ecf4"); sky.addColorStop(1,"#e1f8d0");
+    ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle="#fff9"; ctx.beginPath(); ctx.arc(390,104,39,0,Math.PI*2); ctx.fill();
+    clouds.forEach(c => {
+      ctx.save(); ctx.translate(c.x,c.y); ctx.scale(c.s,c.s); ctx.fillStyle="#ffffffb5";
+      ctx.beginPath(); ctx.arc(0,10,22,0,Math.PI*2); ctx.arc(23,0,29,0,Math.PI*2); ctx.arc(51,12,20,0,Math.PI*2); ctx.rect(-1,10,53,20); ctx.fill(); ctx.restore();
+    });
+    ctx.fillStyle="#8ed8a0"; ctx.beginPath(); ctx.moveTo(0,575); ctx.quadraticCurveTo(100,505,212,574); ctx.quadraticCurveTo(344,488,480,560); ctx.lineTo(480,690); ctx.lineTo(0,690); ctx.fill();
+    pipes.forEach(p => {
+      drawPipe(p.x,0,p.w,p.gapY-p.gap/2,true);
+      drawPipe(p.x,p.gapY+p.gap/2,p.w,H-(p.gapY+p.gap/2)-48,false);
+    });
+    ctx.fillStyle="#8fe05d"; ctx.fillRect(0,665,W,11);
+    ctx.fillStyle="#d9b567"; ctx.fillRect(0,676,W,44);
+    ctx.fillStyle="#bc914e";
+    for(let x=-(groundOffset%44);x<W;x+=44) { ctx.fillRect(x,680,23,5); ctx.fillRect(x+22,699,21,5); }
+    drawBird();
+    if(state==="playing" || state==="ready") {
+      ctx.textAlign="center"; ctx.font="900 55px system-ui"; ctx.lineWidth=6; ctx.strokeStyle="#23546b88"; ctx.strokeText(score,W/2,91); ctx.fillStyle="#fff"; ctx.fillText(score,W/2,91);
+      if(state==="ready") {
+        roundedRect(46,207,388,196,22,"#14354dcc");
+        ctx.fillStyle="#fff"; ctx.font="900 34px system-ui"; ctx.fillText("SKY HOPPER",W/2,260);
+        ctx.font="700 17px system-ui"; ctx.fillText("Tap, click, or press SPACE to flap",W/2,305);
+        ctx.font="600 14px system-ui"; ctx.fillStyle="#d1f3fc"; ctx.fillText("Dodge the pipes and fly as far as you can",W/2,337);
+      }
+    } else {
+      roundedRect(52,213,376,227,22,"#16364ee8");
+      ctx.textAlign="center"; ctx.fillStyle="#fff"; ctx.font="900 36px system-ui"; ctx.fillText("NICE FLIGHT!",W/2,270);
+      ctx.font="800 23px system-ui"; ctx.fillStyle="#ffe16b"; ctx.fillText(`SCORE  ${score}`,W/2,317);
+      ctx.font="700 17px system-ui"; ctx.fillStyle="#e2f5fc"; ctx.fillText(`BEST  ${best}`,W/2,350);
+      roundedRect(126,374,228,47,24,"#ffd534");
+      ctx.fillStyle="#254458"; ctx.font="900 16px system-ui"; ctx.fillText("TAP TO FLY AGAIN",W/2,404);
+    }
+  }
+  function tick(time) {
+    const dt = Math.min((time-lastTime)/1000 || 0, .035); lastTime=time;
+    if(state==="playing") {
+      bird.vy += 1350*dt; bird.y += bird.vy*dt; bird.angle=Math.min(.95,Math.max(-.48,bird.vy/620));
+      pipeTimer-=dt;
+      if(pipeTimer<=0) { pipes.push(pipePair(W+15)); pipeTimer=1.5; }
+      pipes.forEach(p => {
+        p.x-=190*dt;
+        if(!p.scored && p.x+p.w<bird.x) { p.scored=true; score++; }
+        if(hitPipe(p)) endGame();
+      });
+      pipes=pipes.filter(p=>p.x+p.w>-10);
+      if(bird.y+bird.r>665 || bird.y-bird.r<0) endGame();
+      groundOffset+=190*dt;
+      clouds.forEach(c=>{c.x-=15*c.s*dt;if(c.x<-90)c.x=W+30;});
+    } else if(state==="ready") {
+      bird.y=465+Math.sin(time/260)*9;
+      clouds.forEach(c=>{c.x-=8*c.s*dt;if(c.x<-90)c.x=W+30;});
+    }
+    draw(); requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

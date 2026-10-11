@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#090b21">
+<title>Rainbow Invaders · Null's Arcade</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden}
+body{display:grid;place-items:center;background:#080a1c;color:#f7f4ff;font:600 15px system-ui,-apple-system,Segoe UI,sans-serif}
+canvas{display:block;max-width:100vw;max-height:100vh;touch-action:none;outline:none}
+</style>
+</head>
+<body>
+<canvas id="game" tabindex="0" aria-label="Rainbow Invaders. Move with arrow keys or A and D. Press space or click to shoot. Drag on touch screens to move."></canvas>
+<script>
+(() => {
+  const canvas=document.querySelector("#game"),ctx=canvas.getContext("2d");
+  const W=800,H=600;
+  let state="ready",score=0,best=0,lives=3,wave=1,last=0,shotWait=0,enemyShotWait=1.1;
+  let player={x:W/2,y:535,w:38,h:28,speed:350},aliens=[],shots=[],enemyShots=[],stars=[];
+  const keys=new Set();
+  try{best=Number(localStorage.getItem("rainbowInvadersBest"))||0}catch{}
+  function resize(){const s=Math.min(innerWidth/W,innerHeight/H),d=Math.min(devicePixelRatio||1,2);canvas.style.width=`${W*s}px`;canvas.style.height=`${H*s}px`;canvas.width=W*d;canvas.height=H*d;ctx.setTransform(d,0,0,d,0,0)}
+  addEventListener("resize",resize);resize();
+  for(let i=0;i<95;i++)stars.push({x:Math.random()*W,y:Math.random()*H,a:.25+Math.random()*.7,r:.5+Math.random()*1.4});
+  function formation(){aliens=[];for(let row=0;row<4;row++)for(let col=0;col<9;col++)aliens.push({x:116+col*68,y:112+row*54,row,col,w:38,h:27,alive:true});}
+  function start(){state="playing";score=0;lives=3;wave=1;player.x=W/2;shots=[];enemyShots=[];formation();shotWait=0;enemyShotWait=1;}
+  function moveToPointer(e){const rect=canvas.getBoundingClientRect();player.x=Math.max(32,Math.min(W-32,(e.clientX-rect.left)/rect.width*W));}
+  canvas.addEventListener("pointerdown",e=>{e.preventDefault();canvas.focus();if(state!=="playing")start();else fire();if(e.pointerType==="touch")canvas.setPointerCapture(e.pointerId);});
+  canvas.addEventListener("pointermove",e=>{if(e.pointerType==="touch"&&e.buttons&&state==="playing")moveToPointer(e)});
+  addEventListener("keydown",e=>{if(["ArrowLeft","ArrowRight","Space","KeyA","KeyD","Enter"].includes(e.code))e.preventDefault();keys.add(e.code);if(e.code==="Enter"&&state!=="playing")start();if(e.code==="Space"&&!e.repeat){if(state!=="playing")start();fire();}});
+  addEventListener("keyup",e=>keys.delete(e.code));
+  function fire(){if(state!=="playing"||shotWait>0)return;shots.push({x:player.x,y:player.y-20,vy:-500});shotWait=.24}
+  function loseLife(){lives--;if(lives<=0){state="over";best=Math.max(best,score);try{localStorage.setItem("rainbowInvadersBest",String(best))}catch{}}}
+  function rounded(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
+  function drawAlien(a,t){
+    const hue=(a.row*68+a.col*4+t*.012)%360,color=`hsl(${hue} 96% 64%)`,glow=`hsl(${hue} 100% 65% / .28)`;
+    ctx.save();ctx.translate(a.x,a.y);ctx.shadowColor=glow;ctx.shadowBlur=17;
+    ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(-17,-11,34,19,7);ctx.fill();
+    ctx.fillRect(-21,-5,5,10);ctx.fillRect(16,-5,5,10);
+    ctx.fillRect(-13,7,5,7);ctx.fillRect(-3,7,5,7);ctx.fillRect(9,7,5,7);
+    ctx.shadowBlur=0;ctx.fillStyle="#11142e";ctx.fillRect(-9,-4,5,6);ctx.fillRect(5,-4,5,6);
+    ctx.fillStyle="#fff";ctx.fillRect(-8,-3,2,2);ctx.fillRect(6,-3,2,2);ctx.restore();
+  }
+  function drawShip(){
+    ctx.save();ctx.translate(player.x,player.y);ctx.shadowColor="#48efff";ctx.shadowBlur=18;
+    ctx.fillStyle="#68f2ff";ctx.beginPath();ctx.moveTo(0,-23);ctx.lineTo(20,8);ctx.lineTo(12,8);ctx.lineTo(8,14);ctx.lineTo(-8,14);ctx.lineTo(-12,8);ctx.lineTo(-20,8);ctx.closePath();ctx.fill();
+    ctx.shadowBlur=0;ctx.fillStyle="#f7ffff";ctx.fillRect(-3,-8,6,12);ctx.fillStyle="#b785ff";ctx.fillRect(-5,11,4,7);ctx.fillRect(2,11,4,7);ctx.restore();
+  }
+  function draw(t){
+    const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,"#101438");bg.addColorStop(1,"#090b1e");ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+    stars.forEach(s=>{ctx.globalAlpha=s.a*(.75+.25*Math.sin(t/500+s.x));ctx.fillStyle="#d9e6ff";ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill()});ctx.globalAlpha=1;
+    const band=ctx.createLinearGradient(0,0,W,0);["#ff5378","#ffa946","#ffe95e","#4ef0a0","#43dbff","#8782ff","#f470ff"].forEach((c,i)=>band.addColorStop(i/6,c));ctx.fillStyle=band;ctx.fillRect(0,44,W,3);
+    ctx.textBaseline="middle";ctx.font="800 18px system-ui";ctx.fillStyle="#eef0ff";ctx.textAlign="left";ctx.fillText(`SCORE  ${score}`,28,27);ctx.textAlign="center";ctx.fillText(`WAVE  ${wave}`,W/2,27);ctx.textAlign="right";ctx.fillStyle="#ff8aa7";ctx.fillText(`LIVES  ${"♥ ".repeat(lives).trim()}`,W-28,27);
+    aliens.filter(a=>a.alive).forEach(a=>drawAlien(a,t));
+    drawShip();
+    shots.forEach(b=>{ctx.shadowColor="#52eeff";ctx.shadowBlur=14;rounded(b.x-2,b.y-10,4,18,2,"#d9ffff");ctx.shadowBlur=0});
+    enemyShots.forEach(b=>{ctx.shadowColor="#ff68c5";ctx.shadowBlur=12;rounded(b.x-3,b.y-7,6,14,3,b.color);ctx.shadowBlur=0});
+    ctx.textAlign="center";ctx.textBaseline="middle";
+    if(state!=="playing"){
+      rounded(180,173,440,230,20,"#11152beF");
+      ctx.strokeStyle="#ffffff24";ctx.lineWidth=1;ctx.strokeRect(180,173,440,230);
+      if(state==="ready"){
+        ctx.font="1000 40px system-ui";ctx.fillStyle="#fff";ctx.fillText("RAINBOW",W/2,222);
+        ctx.font="1000 42px system-ui";ctx.fillStyle="#77e9ff";ctx.fillText("INVADERS",W/2,267);
+        ctx.font="600 15px system-ui";ctx.fillStyle="#c8cce6";ctx.fillText("The galaxy's brightest invasion starts now.",W/2,310);
+        ctx.font="700 14px system-ui";ctx.fillStyle="#98a4d3";ctx.fillText("MOVE  A / D or ← →     SHOOT  SPACE / CLICK",W/2,341);
+        rounded(294,359,212,32,16,"#6043b2");ctx.font="800 13px system-ui";ctx.fillStyle="#fff";ctx.fillText("PRESS SPACE TO PLAY",W/2,375);
+      }else{
+        ctx.font="1000 38px system-ui";ctx.fillStyle="#ff729c";ctx.fillText("SHIP DOWN",W/2,227);
+        ctx.font="800 22px system-ui";ctx.fillStyle="#fff";ctx.fillText(`FINAL SCORE  ${score}`,W/2,272);
+        ctx.font="600 15px system-ui";ctx.fillStyle="#bdc6e5";ctx.fillText(`PERSONAL BEST  ${best}`,W/2,307);
+        rounded(303,340,194,37,18,"#6043b2");ctx.font="800 14px system-ui";ctx.fillStyle="#fff";ctx.fillText("TAP OR PRESS ENTER",W/2,359);
+      }
+    }
+  }
+  function tick(time){
+    const dt=Math.min((time-last)/1000||0,.035);last=time;
+    if(state==="playing"){
+      if(keys.has("ArrowLeft")||keys.has("KeyA"))player.x-=player.speed*dt;
+      if(keys.has("ArrowRight")||keys.has("KeyD"))player.x+=player.speed*dt;
+      player.x=Math.max(24,Math.min(W-24,player.x));
+      shotWait=Math.max(0,shotWait-dt);if(keys.has("Space"))fire();
+      const live=aliens.filter(a=>a.alive),left=Math.min(...live.map(a=>a.x-a.w/2)),right=Math.max(...live.map(a=>a.x+a.w/2));
+      const speed=46+wave*8+(36-live.length)*2.8;let dx=speed*dt*(formation.dir||1);
+      if((right+dx>W-25)||(left+dx<25)){formation.dir=-(formation.dir||1);aliens.forEach(a=>a.y+=16);dx=speed*dt*formation.dir;}
+      const breached=aliens.some(a=>a.alive&&a.y+a.h/2>player.y-10);
+      if(breached){loseLife();formation();shots=[];enemyShots=[];}
+      else aliens.forEach(a=>{if(a.alive)a.x+=dx});
+      shots.forEach(b=>b.y+=b.vy*dt);
+      shots=shots.filter(b=>b.y>-15);
+      shots.forEach(b=>{const a=aliens.find(q=>q.alive&&Math.abs(b.x-q.x)<q.w/2+4&&Math.abs(b.y-q.y)<q.h/2+7);if(a){a.alive=false;b.y=-40;score+=10+(3-a.row)*5;}});
+      enemyShotWait-=dt;
+      if(enemyShotWait<=0&&live.length){const shooter=live[Math.floor(Math.random()*live.length)];const hue=(shooter.row*68+shooter.col*4+time*.012)%360;enemyShots.push({x:shooter.x,y:shooter.y+18,vy:225+wave*15,color:`hsl(${hue} 100% 70%)`});enemyShotWait=Math.max(.34,1.15-wave*.06+Math.random()*.45);}
+      enemyShots.forEach(b=>b.y+=b.vy*dt);enemyShots=enemyShots.filter(b=>b.y<H+20);
+      enemyShots.forEach(b=>{if(Math.abs(b.x-player.x)<player.w/2&&Math.abs(b.y-player.y)<player.h/2+8){b.y=H+30;loseLife();}});
+      if(!aliens.some(a=>a.alive)){wave++;formation();enemyShots=[];shots=[];}
+    }
+    draw(time);requestAnimationFrame(tick);
+  }
+  formation();requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
