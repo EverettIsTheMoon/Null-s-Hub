@@ -1,5 +1,0 @@
-{
-"scripts": {
-"build": "node inject-panic.js"
-}
-}
