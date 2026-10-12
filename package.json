@@ -1,5 +1,5 @@
 {
 "scripts": {
-"build": "node scripts/inject-panic.js"
+"build": "node inject-panic.js"
 }
 }
