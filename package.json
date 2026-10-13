@@ -1,0 +1,9 @@
+
+{
+  "name": "nulls-hub",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node inject-panic.js"
+  }
+}
