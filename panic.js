@@ -1,4 +1,3 @@
-
 /*
  * panic.js — Null's Hub
  * Floating hub, panic handler, fullscreen, configurable mobile controls.
@@ -13,11 +12,9 @@
   function read(key) {
     try { return localStorage.getItem(key); } catch (e) { return null; }
   }
-
   function write(key, value) {
     try { localStorage.setItem(key, value); } catch (e) {}
   }
-
   function isEnabled() { return read(ENABLED_KEY) === '1'; }
   function getKey() { return read(KEY_KEY) || ''; }
   function setEnabled(value) { write(ENABLED_KEY, value ? '1' : '0'); }
@@ -30,7 +27,6 @@
         return;
       }
     } catch (e) {}
-
     try { window.location.replace(PANIC_URL); }
     catch (e) { window.location.href = PANIC_URL; }
   }
@@ -38,7 +34,8 @@
   document.addEventListener('keydown', function (event) {
     if (!isEnabled()) return;
     var key = getKey();
-    if (key && event.key === key) {
+    if (!key) return;
+    if (event.key === key) {
       event.preventDefault();
       event.stopPropagation();
       goToGoogle();
@@ -62,7 +59,6 @@
 
   var SETTINGS_KEY = 'nullhub_mobile_settings_v2';
   var hubUrl = '/';
-
   try {
     var src = document.currentScript && document.currentScript.src;
     hubUrl = new URL('./', src || window.location.href).href;
@@ -82,24 +78,18 @@
         return;
       }
     } catch (e) {}
-
     try {
       if (window.top && window.top !== window) {
         window.top.location.replace(hubUrl);
         return;
       }
     } catch (e) {}
-
     window.location.href = hubUrl;
   }
 
-  var coarsePointer = window.matchMedia &&
-    window.matchMedia('(pointer: coarse)');
-
-  var isMobile =
-    ('ontouchstart' in window) ||
-    navigator.maxTouchPoints > 0 ||
-    !!(coarsePointer && coarsePointer.matches);
+  var coarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)');
+  var isMobile = ('ontouchstart' in window) ||
+    (navigator.maxTouchPoints > 0) || !!(coarsePointer && coarsePointer.matches);
 
   var defaults = {
     controlsEnabled: true,
@@ -110,47 +100,28 @@
     invertX: false,
     invertY: false,
     deadzone: 16,
-    directions: {
-      up: 'KeyW',
-      down: 'KeyS',
-      left: 'KeyA',
-      right: 'KeyD'
-    }
+    directions: { up: 'KeyW', down: 'KeyS', left: 'KeyA', right: 'KeyD' }
   };
-
-  function readStorage(key) {
-    try { return localStorage.getItem(key); }
-    catch (e) { return null; }
-  }
 
   function loadSettings() {
     var result = {};
-
-    try {
-      result = JSON.parse(readStorage(SETTINGS_KEY) || '{}') || {};
-    } catch (e) {}
-
+    try { result = JSON.parse(readStorage(SETTINGS_KEY) || '{}') || {}; } catch (e) {}
     var s = {};
-    Object.keys(defaults).forEach(function (key) {
-      s[key] = defaults[key];
-    });
-
+    Object.keys(defaults).forEach(function (key) { s[key] = defaults[key]; });
     Object.keys(result).forEach(function (key) {
       if (key !== 'directions') s[key] = result[key];
     });
-
     s.directions = {};
-
     Object.keys(defaults.directions).forEach(function (key) {
-      s.directions[key] =
-        (result.directions && result.directions[key]) ||
+      s.directions[key] = result.directions && result.directions[key] ||
         defaults.directions[key];
     });
-
     return s;
   }
 
-  var settings = loadSettings();
+  function readStorage(key) {
+    try { return localStorage.getItem(key); } catch (e) { return null; }
+  }
 
   function saveSettings() {
     try {
@@ -158,10 +129,11 @@
     } catch (e) {}
   }
 
-  var style = document.createElement('style');
+  var settings = loadSettings();
 
+  var style = document.createElement('style');
   style.textContent = [
-    '#nhb-bubble{position:fixed;left:16px;top:16px;z-index:2147483647;font-family:system-ui,sans-serif;user-select:none;-webkit-user-select:none;display:flex;align-items:center;gap:8px;color:#fff;}',
+    '#nhb-bubble{position:fixed;left:16px;top:16px;z-index:2147483647;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;user-select:none;-webkit-user-select:none;display:flex;align-items:center;gap:8px;color:#fff;}',
     '@property --nhb-angle{syntax:"<angle>";inherits:false;initial-value:0deg;}',
     '.nhb-ring{position:absolute;inset:0;border-radius:999px;background:conic-gradient(from var(--nhb-angle),#ff2d55,#ff9500,#ffcc00,#34c759,#00c7be,#0a84ff,#5e5ce6,#bf5af2,#ff2d55);animation:nhb-spin 7s linear infinite;z-index:-1;}',
     '@keyframes nhb-spin{to{--nhb-angle:360deg;}}',
@@ -169,7 +141,7 @@
     '.nhb-title{font-size:13px;font-weight:800;white-space:nowrap;letter-spacing:.02em;}',
     '.nhb-btn{border:1px solid rgba(255,255,255,.12);cursor:pointer;background:rgba(255,255,255,.12);color:#fff;font:600 11px/1 system-ui,sans-serif;padding:8px 10px;border-radius:999px;white-space:nowrap;}',
     '.nhb-btn:hover,.nhb-btn:focus{background:rgba(10,132,255,.45);outline:none;}',
-    '#nhb-bubble.nhb-minimized .nhb-ring,#nhb-bubble.nhb-minimized .nhb-title,#nhb-bubble.nhb-minimized #nhb-back,#nhb-bubble.nhb-minimized #nhb-fullscreen,#nhb-bubble.nhb-minimized #nhb-settings-button,#nhb-bubble.nhb-minimized #nhb-mobile-toggle{display:none;}',
+    '#nhb-bubble.nhb-minimized .nhb-ring,#nhb-bubble.nhb-minimized .nhb-title,#nhb-bubble.nhb-minimized #nhb-back,#nhb-bubble.nhb-minimized #nhb-fullscreen{display:none;}',
     '#nhb-bubble.nhb-minimized .nhb-core{padding:5px;border-radius:50%;min-height:0;}',
     '#nhb-bubble.nhb-minimized #nhb-expand{width:42px;height:42px;padding:0;font-size:18px;}',
     '#nhb-mobile-toggle{display:none;}',
@@ -187,10 +159,10 @@
     '#nhb-settings select,#nhb-settings input[type=number]{max-width:140px;background:#171e2d;color:#fff;border:1px solid #45536a;border-radius:7px;padding:6px;}',
     '.nhb-settings-note{opacity:.75;font-size:11px;margin:8px 0;}',
     '.nhb-settings-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px;}',
-    '@media (pointer:coarse),(max-width:700px){#nhb-mobile-toggle{display:inline-flex;}#nhb-bubble{left:10px;top:10px}.nhb-title{font-size:11px}.nhb-btn{padding:7px 8px;font-size:10px}}',
+    '.nhb-drag-hint{font-size:11px;opacity:.75;}',
+    '@media (pointer:coarse),(max-width:700px){#nhb-mobile-toggle{display:inline-flex;}#nhb-bubble{left:10px;top:10px;} .nhb-title{font-size:11px;} .nhb-btn{padding:7px 8px;font-size:10px;} }',
     '@media (max-width:380px){.nhb-core{gap:4px;padding:5px}.nhb-title{display:none!important}.nhb-btn{padding:7px;font-size:10px}}'
   ].join('');
-
   (document.head || document.documentElement).appendChild(style);
 
   var bubble = document.createElement('div');
@@ -212,17 +184,13 @@
     b.id = id;
     b.className = 'nhb-btn';
     b.textContent = label;
-
     b.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
       handler();
     });
-
     return b;
   }
-
-  var settingsPanel;
 
   var back = makeButton('nhb-back', '← Back', goHomeAboutBlank);
 
@@ -248,6 +216,7 @@
         '☷ Controls: ' + (settings.controlsEnabled ? 'On' : 'Off');
     }
   );
+  mobileToggle.title = 'Show or hide mobile movement controls';
 
   var settingsBtn = makeButton('nhb-settings-button', '⚙ Settings', function () {
     settingsPanel.classList.toggle('nhb-open');
@@ -262,39 +231,30 @@
   core.appendChild(title);
   core.appendChild(back);
   core.appendChild(fsBtn);
-  core.appendChild(mobileToggle);
+  if (isMobile) core.appendChild(mobileToggle);
   core.appendChild(settingsBtn);
   core.appendChild(expandBtn);
-
   bubble.appendChild(ring);
   bubble.appendChild(core);
 
-  settingsPanel = document.createElement('div');
+  var settingsPanel = document.createElement('div');
   settingsPanel.id = 'nhb-settings';
-
-  var keyOptions =
-    '<option value="none">Disabled</option>' +
-    '<option value="KeyW">W</option><option value="KeyA">A</option>' +
-    '<option value="KeyS">S</option><option value="KeyD">D</option>' +
-    '<option value="ArrowUp">Arrow Up</option><option value="ArrowDown">Arrow Down</option>' +
-    '<option value="ArrowLeft">Arrow Left</option><option value="ArrowRight">Arrow Right</option>' +
-    '<option value="Space">Space</option><option value="KeyZ">Z</option>' +
-    '<option value="KeyX">X</option><option value="KeyE">E</option>' +
-    '<option value="KeyQ">Q</option>';
-
   settingsPanel.innerHTML =
-    '<div class="nhb-settings-head"><span>Mobile Controls</span>' +
-    '<button type="button" class="nhb-btn" id="nhb-settings-close">✕</button></div>' +
-    '<div class="nhb-setting-row"><label for="nhb-up">Joystick up / forward</label><select id="nhb-up">' + keyOptions + '</select></div>' +
-    '<div class="nhb-setting-row"><label for="nhb-down">Joystick down / backward</label><select id="nhb-down">' + keyOptions + '</select></div>' +
-    '<div class="nhb-setting-row"><label for="nhb-left">Joystick left</label><select id="nhb-left">' + keyOptions + '</select></div>' +
-    '<div class="nhb-setting-row"><label for="nhb-right">Joystick right</label><select id="nhb-right">' + keyOptions + '</select></div>' +
-    '<div class="nhb-setting-row"><label for="nhb-invert-x">Invert joystick X axis</label><input id="nhb-invert-x" type="checkbox"></div>' +
-    '<div class="nhb-setting-row"><label for="nhb-invert-y">Invert joystick Y axis</label><input id="nhb-invert-y" type="checkbox"></div>' +
+    '<div class="nhb-settings-head"><span>Mobile Controls</span><button type="button" class="nhb-btn" id="nhb-settings-close">✕</button></div>' +
+    '<div class="nhb-settings-note">Movement defaults: up=W, down=S, left=A, right=D. Drag the joystick or action group to reposition it.</div>' +
+    '<div class="nhb-setting-row"><label for="nhb-up">Joystick up</label><select id="nhb-up"><option value="KeyW">W — Forward</option><option value="ArrowUp">Arrow Up</option><option value="KeyS">S</option><option value="none">None</option></select></div>' +
+    '<div class="nhb-setting-row"><label for="nhb-down">Joystick down</label><select id="nhb-down"><option value="KeyS">S — Backward</option><option value="ArrowDown">Arrow Down</option><option value="KeyW">W</option><option value="none">None</option></select></div>' +
+    '<div class="nhb-setting-row"><label for="nhb-left">Joystick left</label><select id="nhb-left"><option value="KeyA">A — Left</option><option value="ArrowLeft">Arrow Left</option><option value="KeyD">D</option><option value="none">None</option></select></div>' +
+    '<div class="nhb-setting-row"><label for="nhb-right">Joystick right</label><select id="nhb-right"><option value="KeyD">D — Right</option><option value="ArrowRight">Arrow Right</option><option value="KeyA">A</option><option value="none">None</option></select></div>' +
+    '<div class="nhb-setting-row"><label for="nhb-invert-x">Invert horizontal (X)</label><input id="nhb-invert-x" type="checkbox"></div>' +
+    '<div class="nhb-setting-row"><label for="nhb-invert-y">Invert vertical (Y)</label><input id="nhb-invert-y" type="checkbox"></div>' +
     '<div class="nhb-setting-row"><label for="nhb-deadzone">Joystick dead zone (px)</label><input id="nhb-deadzone" type="number" min="4" max="40" value="16"></div>' +
     '<div class="nhb-settings-actions"><button type="button" class="nhb-btn" id="nhb-reset">Reset layout/settings</button><button type="button" class="nhb-btn" id="nhb-drag">Move controls</button></div>' +
-    '<div class="nhb-settings-note">Default: up=W, down=S, left=A, right=D. Settings save automatically.</div>' +
-    '<div class="nhb-settings-note">When Move controls is active, drag the joystick or action buttons to reposition them.</div>';
+    '<div class="nhb-settings-note nhb-drag-hint">When Move controls is active, drag the joystick or action buttons to place them. Tap Move controls again to finish.</div>';
+
+  document.body
+    ? document.body.appendChild(settingsPanel)
+    : document.documentElement.appendChild(settingsPanel);
 
   var controls = document.createElement('div');
   controls.id = 'nhb-mobile-controls';
@@ -312,10 +272,11 @@
 
   function emitKey(code, down) {
     if (!code || code === 'none') return;
-
     var key = code.indexOf('Key') === 0
       ? code.slice(3).toLowerCase()
-      : (code === 'Space' ? ' ' : code);
+      : (code.indexOf('Arrow') === 0
+        ? code
+        : (code === 'Space' ? ' ' : code));
 
     window.dispatchEvent(new KeyboardEvent(down ? 'keydown' : 'keyup', {
       key: key,
@@ -335,7 +296,10 @@
     var pointers = {};
 
     function down(e) {
-      if (movingControls) return;
+      if (movingControls) {
+        e.preventDefault();
+        return;
+      }
       e.preventDefault();
       if (pointers[e.pointerId]) return;
       pointers[e.pointerId] = true;
@@ -354,26 +318,26 @@
     button.addEventListener('pointerup', up);
     button.addEventListener('pointercancel', up);
     button.addEventListener('lostpointercapture', up);
-
     return button;
   }
 
   actionGroup.appendChild(createActionButton('Z', 'KeyZ'));
   actionGroup.appendChild(createActionButton('X', 'KeyX'));
   actionGroup.appendChild(createActionButton('JUMP', 'Space'));
-
   controls.appendChild(joystickBase);
   controls.appendChild(actionGroup);
 
   function updateControlsVisibility() {
-    controls.classList.toggle('nhb-visible', isMobile && settings.controlsEnabled);
+    controls.classList.toggle(
+      'nhb-visible',
+      isMobile && settings.controlsEnabled
+    );
   }
 
   function updateLayout() {
     joystickBase.style.left = settings.joystickX + 'px';
     joystickBase.style.bottom = settings.joystickY + 'px';
     joystickBase.style.right = 'auto';
-
     actionGroup.style.right = settings.buttonsX + 'px';
     actionGroup.style.bottom = settings.buttonsY + 'px';
     actionGroup.style.left = 'auto';
@@ -384,7 +348,6 @@
       var select = document.getElementById('nhb-' + dir);
       if (select) select.value = settings.directions[dir];
     });
-
     document.getElementById('nhb-invert-x').checked = !!settings.invertX;
     document.getElementById('nhb-invert-y').checked = !!settings.invertY;
     document.getElementById('nhb-deadzone').value = settings.deadzone;
@@ -395,39 +358,53 @@
       settings.directions[dir] =
         document.getElementById('nhb-' + dir).value;
     });
-
     settings.invertX = document.getElementById('nhb-invert-x').checked;
     settings.invertY = document.getElementById('nhb-invert-y').checked;
-
     settings.deadzone = Math.max(
       4,
-      Math.min(40, Number(document.getElementById('nhb-deadzone').value) || 16)
+      Math.min(
+        40,
+        Number(document.getElementById('nhb-deadzone').value) || 16
+      )
     );
-
     saveSettings();
   }
 
+  // Use settingsPanel.querySelector because these controls belong to this panel.
   ['up', 'down', 'left', 'right'].forEach(function (dir) {
-    document.getElementById('nhb-' + dir).addEventListener('change', readSettingsUI);
+    settingsPanel.querySelector('#nhb-' + dir)
+      .addEventListener('change', readSettingsUI);
   });
 
-  document.getElementById('nhb-invert-x').addEventListener('change', readSettingsUI);
-  document.getElementById('nhb-invert-y').addEventListener('change', readSettingsUI);
-  document.getElementById('nhb-deadzone').addEventListener('change', readSettingsUI);
+  settingsPanel.querySelector('#nhb-invert-x')
+    .addEventListener('change', readSettingsUI);
+  settingsPanel.querySelector('#nhb-invert-y')
+    .addEventListener('change', readSettingsUI);
+  settingsPanel.querySelector('#nhb-deadzone')
+    .addEventListener('change', readSettingsUI);
 
-  document.getElementById('nhb-settings-close').addEventListener('click', function () {
-    settingsPanel.classList.remove('nhb-open');
-  });
+  settingsPanel.querySelector('#nhb-settings-close')
+    .addEventListener('click', function () {
+      settingsPanel.classList.remove('nhb-open');
+    });
 
-  document.getElementById('nhb-reset').addEventListener('click', function () {
-    settings = JSON.parse(JSON.stringify(defaults));
-    saveSettings();
-    syncSettingsUI();
-    updateLayout();
-    updateControlsVisibility();
-    mobileToggle.textContent =
-      '☷ Controls: ' + (settings.controlsEnabled ? 'On' : 'Off');
-  });
+  settingsPanel.querySelector('#nhb-reset')
+    .addEventListener('click', function () {
+      settings = {};
+      Object.keys(defaults).forEach(function (key) {
+        settings[key] = defaults[key];
+      });
+      settings.directions = {};
+      Object.keys(defaults.directions).forEach(function (key) {
+        settings.directions[key] = defaults.directions[key];
+      });
+      saveSettings();
+      syncSettingsUI();
+      updateLayout();
+      updateControlsVisibility();
+      mobileToggle.textContent =
+        '☷ Controls: ' + (settings.controlsEnabled ? 'On' : 'Off');
+    });
 
   var activeCodes = {};
 
@@ -452,18 +429,15 @@
   }
 
   var touchId = null;
-  var movingControls = false;
 
   function updateJoystick(clientX, clientY) {
     var rect = joystickBase.getBoundingClientRect();
     var dx = clientX - (rect.left + rect.width / 2);
     var dy = clientY - (rect.top + rect.height / 2);
-
     var maxDist = Math.max(
       1,
       (rect.width - joystickStick.offsetWidth) / 2
     );
-
     var distance = Math.sqrt(dx * dx + dy * dy);
 
     if (distance > maxDist) {
@@ -476,22 +450,19 @@
 
     var mappedX = settings.invertX ? -dx : dx;
     var mappedY = settings.invertY ? -dy : dy;
-    var deadzone = Number(settings.deadzone) || 16;
+    var dz = Number(settings.deadzone) || 16;
 
-    setDirection('up', mappedY < -deadzone);
-    setDirection('down', mappedY > deadzone);
-    setDirection('left', mappedX < -deadzone);
-    setDirection('right', mappedX > deadzone);
+    setDirection('up', mappedY < -dz);
+    setDirection('down', mappedY > dz);
+    setDirection('left', mappedX < -dz);
+    setDirection('right', mappedX > dz);
   }
 
   joystickBase.addEventListener('pointerdown', function (event) {
     if (movingControls || !settings.controlsEnabled || touchId !== null) return;
-
     event.preventDefault();
     touchId = event.pointerId;
-
     try { joystickBase.setPointerCapture(touchId); } catch (e) {}
-
     updateJoystick(event.clientX, event.clientY);
   });
 
@@ -502,12 +473,9 @@
   });
 
   function releaseJoystick(event) {
-    if (touchId === null) return;
-
     if (
-      event &&
-      event.pointerId !== undefined &&
-      touchId !== event.pointerId
+      touchId === null ||
+      (event && event.pointerId !== undefined && touchId !== event.pointerId)
     ) return;
 
     touchId = null;
@@ -519,28 +487,25 @@
   joystickBase.addEventListener('pointercancel', releaseJoystick);
   joystickBase.addEventListener('lostpointercapture', releaseJoystick);
 
-  document.getElementById('nhb-drag').addEventListener('click', function () {
-    movingControls = !movingControls;
-    this.textContent = movingControls ? 'Finish moving' : 'Move controls';
+  var movingControls = false;
 
-    joystickBase.style.borderStyle = movingControls ? 'dashed' : 'solid';
-
-    actionGroup.style.outline = movingControls
-      ? '2px dashed rgba(100,190,255,.9)'
-      : '';
-  });
+  settingsPanel.querySelector('#nhb-drag')
+    .addEventListener('click', function () {
+      movingControls = !movingControls;
+      this.textContent = movingControls ? 'Finish moving' : 'Move controls';
+      joystickBase.style.borderStyle = movingControls ? 'dashed' : 'solid';
+      actionGroup.style.outline = movingControls
+        ? '2px dashed rgba(100,190,255,.9)'
+        : '';
+    });
 
   function makeDraggable(element, which) {
     var drag = null;
 
     element.addEventListener('pointerdown', function (event) {
       if (!movingControls) return;
-
       event.preventDefault();
-      event.stopPropagation();
-
       drag = { x: event.clientX, y: event.clientY };
-
       try { element.setPointerCapture(event.pointerId); } catch (e) {}
     });
 
@@ -549,7 +514,6 @@
 
       var dx = event.clientX - drag.x;
       var dy = event.clientY - drag.y;
-
       drag.x = event.clientX;
       drag.y = event.clientY;
 
@@ -558,7 +522,6 @@
           0,
           Math.min(window.innerWidth - 60, settings.joystickX + dx)
         );
-
         settings.joystickY = Math.max(
           0,
           Math.min(window.innerHeight - 60, settings.joystickY - dy)
@@ -568,7 +531,6 @@
           0,
           Math.min(window.innerWidth - 60, settings.buttonsX - dx)
         );
-
         settings.buttonsY = Math.max(
           0,
           Math.min(window.innerHeight - 60, settings.buttonsY - dy)
@@ -580,7 +542,6 @@
     });
 
     function done() { drag = null; }
-
     element.addEventListener('pointerup', done);
     element.addEventListener('pointercancel', done);
   }
@@ -589,11 +550,11 @@
   makeDraggable(actionGroup, 'buttons');
 
   function mount() {
-    var root = document.body || document.documentElement;
+    var targetRoot = document.body || document.documentElement;
 
-    if (!bubble.isConnected) root.appendChild(bubble);
-    if (!controls.isConnected) root.appendChild(controls);
-    if (!settingsPanel.isConnected) root.appendChild(settingsPanel);
+    if (!bubble.isConnected) targetRoot.appendChild(bubble);
+    if (!controls.isConnected) targetRoot.appendChild(controls);
+    if (!settingsPanel.isConnected) targetRoot.appendChild(settingsPanel);
 
     updateLayout();
     syncSettingsUI();
@@ -613,12 +574,10 @@
       0,
       Math.min(window.innerWidth - 60, settings.joystickX)
     );
-
     settings.buttonsX = Math.max(
       0,
       Math.min(window.innerWidth - 60, settings.buttonsX)
     );
-
     updateLayout();
     saveSettings();
   });
