@@ -139,6 +139,18 @@ create policy "members send messages" on public.messages for insert to authentic
  (conversation_id is not null and exists(select 1 from public.conversation_members cm where cm.conversation_id=messages.conversation_id and cm.user_id=auth.uid()))
 ));
 
+-- Explicit browser-role grants; RLS above remains the access-control boundary.
+grant usage on schema public to authenticated;
+grant select, insert, update on public.profiles to authenticated;
+grant select, insert, update on public.friend_requests to authenticated;
+grant select on public.friendships to authenticated;
+grant select on public.conversations to authenticated;
+grant select on public.conversation_members to authenticated;
+grant select, insert, update on public.servers to authenticated;
+grant select, insert on public.server_members to authenticated;
+grant select, insert on public.channels to authenticated;
+grant select, insert on public.messages to authenticated;
+
 create or replace function public.nullcord_start_dm(other_user uuid)
 returns uuid language plpgsql security definer set search_path=public as $$
 declare cid uuid;
