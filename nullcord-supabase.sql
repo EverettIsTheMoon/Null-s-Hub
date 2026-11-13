@@ -67,6 +67,16 @@ create index if not exists messages_channel_time on public.messages(channel_id,c
 create index if not exists messages_conversation_time on public.messages(conversation_id,created_at);
 create index if not exists server_members_user on public.server_members(user_id);
 
+-- SECURITY DEFINER membership helpers avoid recursive RLS checks on membership tables.
+create or replace function public.nullcord_is_server_member(target_server uuid)
+returns boolean language sql stable security definer set search_path=public set row_security=off as $
+ select exists(select 1 from public.server_members where server_id=target_server and user_id=auth.uid())
+$;
+create or replace function public.nullcord_is_conversation_member(target_conversation uuid)
+returns boolean language sql stable security definer set search_path=public set row_security=off as $
+ select exists(select 1 from public.conversation_members where conversation_id=target_conversation and user_id=auth.uid())
+$;
+
 alter table public.profiles enable row level security;
 alter table public.friend_requests enable row level security;
 alter table public.friendships enable row level security;
@@ -95,26 +105,26 @@ drop policy if exists "users read own friendships" on public.friendships;
 create policy "users read own friendships" on public.friendships for select to authenticated using(user_id=auth.uid() or friend_id=auth.uid());
 
 drop policy if exists "members read conversations" on public.conversations;
-create policy "members read conversations" on public.conversations for select to authenticated using(exists(select 1 from public.conversation_members cm where cm.conversation_id=id and cm.user_id=auth.uid()));
+create policy "members read conversations" on public.conversations for select to authenticated using(public.nullcord_is_conversation_member(id));
 drop policy if exists "members read conversation membership" on public.conversation_members;
-create policy "members read conversation membership" on public.conversation_members for select to authenticated using(exists(select 1 from public.conversation_members mine where mine.conversation_id=conversation_id and mine.user_id=auth.uid()));
+create policy "members read conversation membership" on public.conversation_members for select to authenticated using(public.nullcord_is_conversation_member(conversation_id));
 
 drop policy if exists "server members read server" on public.servers;
-create policy "server members read server" on public.servers for select to authenticated using(exists(select 1 from public.server_members sm where sm.server_id=id and sm.user_id=auth.uid()));
+create policy "server members read server" on public.servers for select to authenticated using(public.nullcord_is_server_member(id));
 drop policy if exists "signed in users create servers" on public.servers;
 create policy "signed in users create servers" on public.servers for insert to authenticated with check(owner_id=auth.uid());
 drop policy if exists "owner updates server" on public.servers;
 create policy "owner updates server" on public.servers for update to authenticated using(owner_id=auth.uid()) with check(owner_id=auth.uid());
 
 drop policy if exists "members see server members" on public.server_members;
-create policy "members see server members" on public.server_members for select to authenticated using(exists(select 1 from public.server_members mine where mine.server_id=server_id and mine.user_id=auth.uid()));
+create policy "members see server members" on public.server_members for select to authenticated using(public.nullcord_is_server_member(server_id));
 drop policy if exists "server owner adds first member" on public.server_members;
 create policy "server owner adds first member" on public.server_members for insert to authenticated with check(user_id=auth.uid() and exists(select 1 from public.servers s where s.id=server_id and s.owner_id=auth.uid()));
 
 drop policy if exists "members read channels" on public.channels;
-create policy "members read channels" on public.channels for select to authenticated using(exists(select 1 from public.server_members sm where sm.server_id=channels.server_id and sm.user_id=auth.uid()));
+create policy "members read channels" on public.channels for select to authenticated using(public.nullcord_is_server_member(channels.server_id));
 drop policy if exists "members create channels" on public.channels;
-create policy "members create channels" on public.channels for insert to authenticated with check(created_by=auth.uid() and exists(select 1 from public.server_members sm where sm.server_id=channels.server_id and sm.user_id=auth.uid()));
+create policy "members create channels" on public.channels for insert to authenticated with check(created_by=auth.uid() and public.nullcord_is_server_member(channels.server_id));
 
 drop policy if exists "members read messages" on public.messages;
 create policy "members read messages" on public.messages for select to authenticated using(
@@ -178,7 +188,7 @@ begin
  return sid;
 end $$;
 
-grant execute on function public.nullcord_start_dm(uuid) to authenticated;
+grant execute on function public.nullcord_is_server_member(uuid) to authenticated;\ngrant execute on function public.nullcord_is_conversation_member(uuid) to authenticated;\ngrant execute on function public.nullcord_start_dm(uuid) to authenticated;
 grant execute on function public.nullcord_accept_friend(uuid) to authenticated;
 grant execute on function public.nullcord_create_server(text) to authenticated;
 grant execute on function public.nullcord_join_server(text) to authenticated;
