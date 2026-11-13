@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#65c7f2"/><stop offset="1" stop-color="#e9f8ff"/></linearGradient><linearGradient id="snow" x2="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#a8d5ec"/></linearGradient></defs>
+<rect width="512" height="512" fill="url(#sky)"/>
+<circle cx="398" cy="104" r="48" fill="#fff4c8"/>
+<path d="M0 290 118 128 190 232 278 92 512 316V512H0Z" fill="#eaf7ff"/>
+<path d="m0 350 130-155 75 100 115-170 192 210v177H0Z" fill="#a8d4e8"/>
+<path d="m0 382 150-92 90 60 115-105 157 100v172H0Z" fill="url(#snow)"/>
+<path d="M0 430q90-65 180-12t170-10 162 0v104H0Z" fill="#fff"/>
+<path d="M176 325 294 299l80 31-21 25-119 15-73-20Z" fill="#ef5b35" stroke="#243b55" stroke-width="9" stroke-linejoin="round"/>
+<path d="m205 334 84-17 40 15-95 23Z" fill="#ffd166"/>
+<circle cx="250" cy="281" r="25" fill="#243b55"/><path d="m230 305 53-8 27 39-72 12Z" fill="#ff6b35"/>
+<path d="m252 346-31 62m69-68 41 55" stroke="#243b55" stroke-width="15" stroke-linecap="round"/>
+<path d="M95 438q70-20 128 0t140-2 120 0" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" opacity=".8"/>
+<g fill="#fff"><circle cx="80" cy="92" r="5"/><circle cx="135" cy="60" r="4"/><circle cx="462" cy="222" r="6"/><circle cx="44" cy="250" r="4"/><circle cx="330" cy="62" r="5"/></g>
+<text x="256" y="480" font-family="Arial,sans-serif" font-size="34" font-weight="900" text-anchor="middle" fill="#18334d" stroke="#fff" stroke-width="2" paint-order="stroke">SNOW RIDER 3D</text>
+</svg>
