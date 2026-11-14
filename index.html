@@ -1703,8 +1703,14 @@ function launchTikTok() {
         launchGameInBlankTab(target, 'TikTok');
         return;
     }
-    const w = window.open(target, '_blank', 'noopener');
-    if (!w) alert('Your browser blocked the new tab. Allow pop-ups for this page and try again.');
+    const w = window.open(target, '_blank');
+    if (!w) {
+        alert('Your browser blocked the new tab. Allow pop-ups for this page and try again.');
+    } else {
+        // Keep the new tab isolated without using the noopener feature string,
+        // which makes window.open() return null even when it succeeds.
+        w.opener = null;
+    }
 }
 
 // Wrap the hub itself in an about:blank tab, exactly like the games do.
