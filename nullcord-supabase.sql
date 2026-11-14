@@ -69,13 +69,21 @@ create index if not exists server_members_user on public.server_members(user_id)
 
 -- SECURITY DEFINER membership helpers avoid recursive RLS checks on membership tables.
 create or replace function public.nullcord_is_server_member(target_server uuid)
-returns boolean language sql stable security definer set search_path=public set row_security=off as $
+returns boolean
+language sql stable security definer
+set search_path = public
+set row_security = off
+as $nullcord_server_member$
  select exists(select 1 from public.server_members where server_id=target_server and user_id=auth.uid())
-$;
+$nullcord_server_member$;
 create or replace function public.nullcord_is_conversation_member(target_conversation uuid)
-returns boolean language sql stable security definer set search_path=public set row_security=off as $
+returns boolean
+language sql stable security definer
+set search_path = public
+set row_security = off
+as $nullcord_conversation_member$
  select exists(select 1 from public.conversation_members where conversation_id=target_conversation and user_id=auth.uid())
-$;
+$nullcord_conversation_member$;
 
 alter table public.profiles enable row level security;
 alter table public.friend_requests enable row level security;
