@@ -456,7 +456,8 @@ async function ncNotifyIncomingMessage(row){
  const {data,error}=await sb.from("messages").select("id,body,audio_url,created_at,user_id,channel_id,conversation_id,profiles(username,display_name,avatar_url)").eq("id",row.id).maybeSingle();
  if(error||!data||data.user_id===user?.id)return;
  const isCurrent=(active.type==="channel"&&data.channel_id===active.id)||(active.type==="dm"&&data.conversation_id===active.id);
- if(isCurrent&&document.visibilityState==="visible")return;
+ // Only suppress a toast when the user is actively looking at this exact chat.
+ if(isCurrent&&document.visibilityState==="visible"&&document.hasFocus())return;
  let context="New message";
  if(data.channel_id){
   const c=channels.find(x=>x.id===data.channel_id);context=c?"#"+c.name:"Server message";
@@ -470,11 +471,38 @@ async function ncNotifyIncomingMessage(row){
  if("Notification" in window&&Notification.permission==="granted"){
   try{new Notification(sender,{body,icon:data.profiles?.avatar_url||undefined,tag:"nullcord-"+data.id,renotify:false})}catch(e){}
  }
- if(document.visibilityState==="visible"&&$("nullcordApp").classList.contains("open"))ncShowInAppNotification(data,context);
+ // In-page notifications do not depend on the browser Notification API or its permission.
+ if($("nullcordApp")?.classList.contains("open"))ncShowInAppNotification(data,context);
+}
+
+// Supabase Realtime can be unavailable/disabled in some deployments. Poll messages as
+// a fallback so notifications still arrive when the realtime websocket does not.
+let ncNotificationCursor=null,ncNotificationPoll=null,ncNotificationPollBusy=false;
+async function ncPollIncomingMessages(){
+ if(!user||!ncNotificationCursor||ncNotificationPollBusy)return;
+ ncNotificationPollBusy=true;
+ try{
+  const {data,error}=await sb.from("messages")
+   .select("id,body,audio_url,created_at,user_id,channel_id,conversation_id")
+   .gt("created_at",ncNotificationCursor)
+   .neq("user_id",user.id)
+   .order("created_at",{ascending:true})
+   .limit(100);
+  if(error)throw error;
+  for(const row of data||[]){
+   if(row.created_at&&row.created_at>ncNotificationCursor)ncNotificationCursor=row.created_at;
+   await ncNotifyIncomingMessage(row);
+  }
+ }catch(e){console.warn("Nullcord notification polling failed:",e?.message||e)}
+ finally{ncNotificationPollBusy=false}
 }
 
 function subscribe(){
  ncUpdateNotificationButton();
+ // Start from now so old chat history is not replayed as notifications.
+ ncNotificationCursor=new Date().toISOString();
+ if(ncNotificationPoll)clearInterval(ncNotificationPoll);
+ ncNotificationPoll=setInterval(ncPollIncomingMessages,2500);
  if(statusChannel)sb.removeChannel(statusChannel);
  statusChannel=sb.channel("nc-online-presence",{config:{presence:{key:user.id}}});
  statusChannel.on("presence",{event:"sync"},()=>{voiceStatuses={};const state=statusChannel.presenceState();Object.keys(state).forEach(uid=>{const p=state[uid][0]||{};voiceStatuses[uid]=p.voice_channel||null});if(window.ncProfileViewing)ncOpenProfile(window.ncProfileViewing)});
