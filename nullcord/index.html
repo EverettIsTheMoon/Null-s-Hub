@@ -263,7 +263,7 @@ window.ncSetRole=async(uid,role)=>{const {error}=await sb.rpc("nullcord_set_role
 window.ncOpenDM=async friendId=>{
  const {data,error}=await sb.rpc("nullcord_start_dm",{other_user:friendId});
  if(error){toast(error.message);return}
- active={type:"dm",id:data};activePeerId=friendId;currentMessages=[];$("ncBack").style.display="";$("ncCallButton").style.display="";const f=friends.find(x=>x.id===friendId);$("ncTopTitle").textContent=f?.display_name||f?.username||"Direct message";setComposer(true,"Message @"+(f?.username||"friend"));renderSidebar();await loadMessages();$("ncMembers").classList.remove("show");
+ active={type:"dm",id:data};activePeerId=friendId;ncOpenProfile(friendId);currentMessages=[];$("ncBack").style.display="";$("ncCallButton").style.display="";const f=friends.find(x=>x.id===friendId);$("ncTopTitle").textContent=f?.display_name||f?.username||"Direct message";setComposer(true,"Message @"+(f?.username||"friend"));renderSidebar();await loadMessages();$("ncMembers").classList.remove("show");
 };
 async function loadMessages(silent=false){
  const target={...active};if(!user||!(target.type==="channel"||target.type==="dm")||!target.id)return;
@@ -298,7 +298,7 @@ window.ncOpenProfile=async uid=>{
  const joined=p.created_at?new Date(p.created_at).toLocaleDateString(undefined,{month:"long",year:"numeric"}):"";
  $("ncProfilePanel").innerHTML='<div class="nc-profile-banner"></div><div class="nc-profile-avatar">'+(p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="">':esc(initials(n)))+'</div><div class="nc-profile-name">'+esc(n)+'</div><div class="nc-profile-user">@'+esc(p.username||"user")+'</div><div class="nc-profile-bio">'+(p.bio?esc(p.bio):'<span class="nc-muted">No bio yet.</span>')+'</div><div class="nc-profile-meta">'+(joined?"Member since "+esc(joined):"Nullcord member")+'</div>'+(uid!==user.id?'<button class="nc-primary nc-profile-action" onclick="ncOpenDM(\''+uid+'\')">Message</button>':'<button class="nc-secondary nc-profile-action" onclick="ncOpenSettings()">Edit profile</button>');
 };
-$("ncMessages").addEventListener("click",e=>{const n=e.target.closest(".nc-msg-name");if(!n)return;const i=[...$("ncMessages").querySelectorAll(".nc-msg-name")].indexOf(n),m=currentMessages[i];if(m)ncOpenProfile(m.user_id)});
+$("ncMessages").addEventListener("click",e=>{const n=e.target.closest(".nc-msg-name,.nc-msg .nc-avatar");if(!n)return;const row=n.closest(".nc-msg"),i=[...$("ncMessages").querySelectorAll(".nc-msg")].indexOf(row),m=currentMessages[i];if(m)ncOpenProfile(m.user_id)});
 $("ncMemberList").addEventListener("click",e=>{const row=e.target.closest(".nc-member");if(row&&row.dataset.uid)ncOpenProfile(row.dataset.uid)});
 
 
