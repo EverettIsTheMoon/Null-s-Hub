@@ -170,7 +170,7 @@ select.nc-field{cursor:pointer}
 <body>
 <div id="nullcordApp" aria-label="Nullcord chat application">
   <div id="ncServers"><button class="nc-server active" title="Direct messages" onclick="ncShowHome()">✦</button><div class="nc-sep"></div><div id="ncServerIcons"></div><button class="nc-server" title="Create a server" onclick="ncOpenModal('server')">＋</button><button class="nc-server" title="Join a server" onclick="ncOpenModal('join')">↗</button><div style="flex:1"></div><button class="nc-server" title="Close Nullcord" onclick="closeNullcord()">×</button></div>
-  <aside id="ncSide"><div id="ncSideHead"><input id="ncQuickFind" class="nc-field" style="margin:0;height:34px;font-size:12px;background:#101114;border-color:#303139" placeholder="Find or start a conversation" oninput="ncFilterSidebar(this.value)"><button class="nc-icon-btn" title="New message" onclick="ncOpenModal('friend')">＋</button></div><div id="ncSideBody"><div id="ncSideContent"></div></div><div id="ncMe"><div class="nc-avatar" id="ncMyAvatar">?</div><div id="ncMeText"><div id="ncMeName">Not signed in</div><div id="ncMeStatus">Connect to chat</div></div><button class="nc-icon-btn" title="Settings" onclick="ncAccountAction()">⚙</button></div></aside>
+  <aside id="ncSide"><div id="ncSideHead"><span id="ncSideTitle" style="display:none">Messages</span><input id="ncQuickFind" class="nc-field" style="margin:0;height:34px;font-size:12px;background:#101114;border-color:#303139" placeholder="Find or start a conversation" oninput="ncFilterSidebar(this.value)"><button class="nc-icon-btn" title="New message" onclick="ncOpenModal('friend')">＋</button></div><div id="ncSideBody"><div id="ncSideContent"></div></div><div id="ncMe"><div class="nc-avatar" id="ncMyAvatar">?</div><div id="ncMeText"><div id="ncMeName">Not signed in</div><div id="ncMeStatus">Connect to chat</div></div><button class="nc-icon-btn" title="Settings" onclick="ncAccountAction()">⚙</button></div></aside>
   <main id="ncMain"><div id="ncTop"><button class="nc-icon-btn" id="ncBack" onclick="ncShowHome()" style="display:none">‹</button><span id="ncTopTitle">Welcome to Nullcord</span><button class="nc-icon-btn" id="ncCallButton" title="Start voice call" onclick="ncStartCall()" style="display:none">☎</button><button class="nc-icon-btn" id="ncVcShareButton" title="Share screen in this server voice channel" onclick="ncToggleVoiceScreenShare()" style="display:none">▣ Share screen</button><button class="nc-icon-btn" title="Members" onclick="document.getElementById('ncMembers').classList.toggle('show')">♙</button></div><div id="ncMessages"><div class="nc-welcome"><div class="nc-big">✦</div><h2>Welcome to Nullcord</h2><p>Your space. Your people. Your conversations.<br>Sign in or create an account to get started.</p><button class="nc-primary" onclick="ncOpenModal('auth')">Sign in / Register</button></div></div><div id="ncComposerWrap"><div class="nc-muted" id="ncComposerHint" style="padding:0 0 8px 3px">Choose a conversation to start chatting</div><div id="ncComposer"><textarea id="ncInput" rows="1" placeholder="Message..." disabled></textarea><button class="nc-secondary nc-tool" id="ncImageBtn" title="Upload image" disabled onclick="document.getElementById(&quot;ncImageFile&quot;).click()">＋</button><input id="ncImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden><button class="nc-secondary nc-tool" id="ncGifBtn" title="Search GIFs" disabled onclick="ncOpenGifPicker()">GIF</button><button class="nc-secondary" id="ncMic" title="Record a voice message (click to start, click again to send)" disabled onclick="ncToggleRecord()">🎤</button><button class="nc-secondary" id="ncMicCancel" title="Cancel recording" style="display:none" onclick="ncCancelRecord()">✕</button><button class="nc-primary" id="ncSend" disabled onclick="ncSendMessage()">Send</button></div></div></main>
   <aside id="ncMembers"><div id="ncProfilePanel"><div class="nc-profile-empty">Select someone to view their profile.</div></div><div id="ncMemberList"></div></aside>
   <div class="nc-modal" id="ncModal"><div class="nc-dialog"><h2 id="ncModalTitle">Nullcord</h2><p id="ncModalDesc"></p><div id="ncModalFields"></div><div class="nc-dialog-actions"><button class="nc-secondary" onclick="ncCloseModal()">Cancel</button><button class="nc-primary" id="ncModalSubmit">Continue</button></div></div></div>
@@ -209,14 +209,43 @@ const isStaff=()=>isAdmin()||myRole==="mod";
 window.openNullcord=()=>{document.getElementById("nullcordApp").classList.add("open");if(!sb){toast("Supabase library failed to load.");return}init()};
 window.closeNullcord=()=>{if(window.parent!==window&&window.parent.closeNullcord){window.parent.closeNullcord()}else{$("nullcordApp").classList.remove("open")}};
 function setComposer(on,hint){$("ncInput").disabled=!on;$("ncSend").disabled=!on;$("ncMic").disabled=!on;$("ncImageBtn").disabled=!on;$("ncGifBtn").disabled=!on;if(hint!==undefined)$("ncComposerHint").textContent=hint}
-window.ncShowHome=()=>{if(vc)leaveVoice(true);$("ncVcShareButton").style.display="none";$("ncCallButton").style.display="none";activePeerId=null;active={type:"home",id:null};$("ncSideTitle").textContent="Messages";$("ncBack").style.display="none";$("ncTopTitle").textContent="Direct Messages";setComposer(false,"Choose a conversation to start chatting");renderSidebar();welcome()};
+window.ncShowHome=()=>{if(vc)leaveVoice(true);$("ncVcShareButton").style.display="none";$("ncCallButton").style.display="none";activePeerId=null;active={type:"home",id:null};if($("ncSideTitle"))$("ncSideTitle").textContent="Messages";$("ncBack").style.display="none";$("ncTopTitle").textContent="Direct Messages";setComposer(false,"Choose a conversation to start chatting");renderSidebar();welcome()};
 function welcome(){ $("ncMessages").innerHTML='<div class="nc-welcome"><div class="nc-big">✦</div><h2>Welcome to Nullcord</h2><p>Pick a friend or a server channel to start talking.</p></div>'; }
 function avatar(who){const name=typeof who==="object"?(who.display_name||who.username||"U"):who;const url=typeof who==="object"?who.avatar_url:null;return '<div class="nc-avatar">'+(url?'<img src="'+esc(url)+'" alt="">':esc(initials(name)))+'</div>'}
 function setMe(){const a=$("ncMyAvatar");a.innerHTML=profile?.avatar_url?'<img src="'+esc(profile.avatar_url)+'" alt="">':esc(initials(profile?.display_name||profile?.username||user?.email));$("ncMeName").textContent=profile?.display_name||profile?.username||user?.email||"Not signed in";$("ncMeStatus").textContent=user?"Online":"Signed out"}
 async function applyAuthUser(nextUser){
  const nextId=nextUser?.id||null,oldId=user?.id||null;
- if(!nextId){if(user){await ncHangup(true);await leaveVoice(true);if(realtime)sb.removeChannel(realtime);if(callChannel)sb.removeChannel(callChannel)}user=null;profile=null;friends=[];servers=[];requests=[];activePeerId=null;active={type:"home",id:null};setMe();$("ncServerIcons").innerHTML="";$("ncSideContent").innerHTML='<div class="nc-welcome" style="padding:20px 8px"><p>Sign in to find friends and chat.</p><button class="nc-primary" onclick="ncOpenModal(\'auth\')">Sign in</button></div>';welcome();return}
- user=nextUser;if(oldId!==nextId||!profile){profile=null;await loadProfile();await refreshAll();subscribe();subscribeCalls()}setMe();
+ if(!nextId){
+  if(user){
+   await ncHangup(true);
+   await leaveVoice(true);
+   if(realtime)sb.removeChannel(realtime);
+   if(callChannel)sb.removeChannel(callChannel);
+   if(statusChannel)sb.removeChannel(statusChannel);
+  }
+  user=null;profile=null;friends=[];servers=[];requests=[];activePeerId=null;active={type:"home",id:null};
+  setMe();$("ncServerIcons").innerHTML="";
+  $("ncSideContent").innerHTML='<div class="nc-welcome" style="padding:20px 8px"><p>Sign in to find friends and chat.</p><button class="nc-primary" onclick="ncOpenModal(\'auth\')">Sign in</button></div>';
+  welcome();return;
+ }
+ user=nextUser;
+ setMe();
+ if(oldId!==nextId||!profile){
+  profile=null;
+  try{
+   await loadProfile();
+   setMe();
+   await refreshAll();
+   subscribe();
+   subscribeCalls();
+  }catch(err){
+   setMe();
+   console.error("Nullcord account initialization failed:",err);
+   toast("Signed in, but Nullcord couldn't finish loading: "+(err?.message||"Unknown error"));
+   return;
+  }
+ }
+ setMe();
 }
 async function init(){
  if(!authListener){const listener=sb.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>applyAuthUser(session?.user||null),0)});authListener=listener.data?.subscription||true}
@@ -241,7 +270,7 @@ function renderSidebar(){
  $("ncServerIcons").innerHTML=servers.map(s=>'<button class="nc-server '+(active.server===s.id?"active":"")+'" title="'+esc(s.name)+'" onclick="ncOpenServer(\''+s.id+'\')">'+esc(initials(s.name))+'</button>').join("");
  if(active.server){
  const s=servers.find(x=>x.id===active.server);
- $("ncSideTitle").textContent=s?.name||"Server";
+ if($("ncSideTitle"))$("ncSideTitle").textContent=s?.name||"Server";
  content.innerHTML='<div class="nc-side-label">Text channels</div><div id="ncChannelList"></div><div class="nc-side-label">Voice channels</div><div id="ncVoiceList"></div>'+(isAdmin()?'<button class="nc-side-item" onclick="ncCreateChannel(\'text\')">＋ Create text channel</button><button class="nc-side-item" onclick="ncCreateChannel(\'voice\')">＋ Create voice channel</button>':'')+'<div class="nc-side-label">Invite</div><button class="nc-side-item" onclick="ncInviteFriend()">＋ Invite a friend</button><button class="nc-side-item" onclick="ncCopyInvite()">🔗 Copy invite code</button>';
  renderChannelList();
  return;
@@ -276,9 +305,9 @@ function subscribe(){
 }
 window.ncOpenServer=async id=>{if(vc&&vc.id!==id)await leaveVoice(true);$("ncVcShareButton").style.display="none";activePeerId=null;$("ncCallButton").style.display="none";active={type:"server",id:null,server:id};myRole="member";$("ncBack").style.display="";$("ncTopTitle").textContent=servers.find(s=>s.id===id)?.name||"Server";setComposer(false,"Pick a channel");$("ncMembers").classList.remove("show");welcome();renderSidebar();await loadChannels()};
 async function loadChannels(){
- const sid=active.server;if(!sid)return;
+ const sid=active.server;if(!sid||!user)return;
  const [ch,me]=await Promise.all([sb.from("channels").select("*").eq("server_id",sid).order("created_at"),sb.from("server_members").select("role").eq("server_id",sid).eq("user_id",user.id).maybeSingle()]);
- if(ch.error){toast(ch.error.message+" (did you run nullcord_setup.sql?)");return}
+ if(ch.error){channels=[];renderSidebar();toast("Couldn't load server channels: "+ch.error.message);return}
  channels=ch.data||[];myRole=me.data?.role||"member";renderSidebar();
 }
 window.ncOpenChannel=async id=>{const c=channels.find(x=>x.id===id);if(!c)return;if(vc)await leaveVoice(true);$("ncVcShareButton").style.display="none";$("ncVcRemoteVideo").style.display="none";active={type:"channel",id,server:active.server};currentMessages=[];$("ncTopTitle").textContent="# "+c.name;const can=!c.admin_only||isStaff();setComposer(can,can?"Message #"+c.name:"🔒 Only mods and admins can post in #"+c.name);renderChannelList();await loadMessages();loadMembers()};
