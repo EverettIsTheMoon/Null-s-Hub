@@ -1862,7 +1862,8 @@ window.ncAcceptCall=async()=>{if(!incomingOffer||!callPeer)return;const from=cal
 window.ncDeclineCall=async()=>{if(callPeer)await sendCallSignal(callPeer,{kind:"hangup"});$("ncIncomingCall").hidden=true;$("ncSoundCall").pause();incomingOffer=null;callPeer=null;callState="idle"};
 window.ncToggleMute=()=>{callMuted=!callMuted;(localStream?.getAudioTracks()||[]).forEach(t=>t.enabled=!callMuted);$("ncMuteButton").textContent=callMuted?"Unmute":"Mute"};
 window.ncHangup=async(silent=false)=>{if(callPeer&&!silent)await sendCallSignal(callPeer,{kind:"hangup"});$("ncSoundCall").pause();$("ncSoundCall").currentTime=0;$("ncIncomingCall").hidden=true;$("ncCallBar").hidden=true;$("ncRemoteAudio").srcObject=null;if(callPc){callPc.close();callPc=null}if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null}incomingOffer=null;pendingIce=[];callPeer=null;callMuted=false;callState="idle";$("ncMuteButton").textContent="Mute"};
-\n})();
+
+})();
 
         // Shared panic-key handler: used on the hub and injected into games
         function handlePanicKey(event) {
