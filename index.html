@@ -1854,14 +1854,14 @@ window.ncSaveSettings=async()=>{const display_name=$("ncDisplayName").value.trim
 window.ncSignOut=async()=>{if(!confirm("Sign out of Nullcord?"))return;await ncHangup(true);await sb.auth.signOut();user=null;profile=null;friends=[];servers=[];ncShowHome();setMe();ncCloseSettings();toast("Signed out.")};
 $("ncAvatarFile").addEventListener("change",e=>{const f=e.target.files?.[0];if(!f)return;const u=URL.createObjectURL(f);$("ncAvatarPreview").innerHTML='<img src="'+u+'" alt="">'});
 function playNcSound(id){const a=$(id);if(!a)return;try{a.currentTime=0;const p=a.play();if(p?.catch)p.catch(()=>{})}catch(e){}}
-async function subscribeCalls(){if(callChannel)sb.removeChannel(callChannel);callChannel=sb.channel("nullcord-call-"+user.id).on("broadcast",{event:"signal"},async({payload})=>{if(!payload||payload.to!==user.id||payload.from===user.id)return;if(payload.kind==="offer"){if(callState!=="idle"){sendCallSignal(payload.from,{kind:"busy"});return}callPeer=payload.from;incomingOffer=payload.description;$("ncIncomingName").textContent=payload.name||"A friend";$("ncIncomingCall").hidden=false;playNcSound("ncSoundCall")}else if(payload.kind==="answer"&&callPc){await callPc.setRemoteDescription(payload.description);$("ncCallStatus").textContent="Voice connected"}else if(payload.kind==="ice"&&callPc&&payload.candidate){try{await callPc.addIceCandidate(payload.candidate)}catch(e){}}else if(payload.kind==="hangup"||payload.kind==="busy"){await ncHangup(true);if(payload.kind==="busy")toast("That person is already on a call.")}}).subscribe()}
-async function sendCallSignal(to,data){const ch=sb.channel("nullcord-call-"+to);await ch.send({type:"broadcast",event:"signal",payload:{...data,from:user.id,to}});sb.removeChannel(ch)}
+async function subscribeCalls(){if(callChannel)sb.removeChannel(callChannel);callChannel=sb.channel("nullcord-call-"+user.id).on("broadcast",{event:"signal"},async({payload})=>{if(!payload||payload.to!==user.id||payload.from===user.id)return;if(payload.kind==="offer"){if(callState!=="idle"){sendCallSignal(payload.from,{kind:"busy"});return}callPeer=payload.from;incomingOffer=payload.description;$("ncIncomingName").textContent=payload.name||"A friend";$("ncIncomingCall").hidden=false;playNcSound("ncSoundCall")}else if(payload.kind==="answer"&&callPc){await callPc.setRemoteDescription(payload.description);$("ncCallStatus").textContent="Voice connected"}else if(payload.kind==="ice"&&payload.candidate){if(callPc?.remoteDescription){try{await callPc.addIceCandidate(payload.candidate)}catch(e){}}else pendingIce.push(payload.candidate)}else if(payload.kind==="hangup"||payload.kind==="busy"){await ncHangup(true);if(payload.kind==="busy")toast("That person is already on a call.")}}).subscribe()}
+async function sendCallSignal(to,data){const ch=sb.channel("nullcord-call-"+to);try{const status=await new Promise((resolve,reject)=>{ch.subscribe(state=>{if(state==="SUBSCRIBED")resolve(state);else if(state==="CHANNEL_ERROR"||state==="TIMED_OUT")reject(new Error("Call signalling channel failed: "+state))})});if(status!=="SUBSCRIBED")throw new Error("Call signalling channel is not ready");const result=await ch.send({type:"broadcast",event:"signal",payload:{...data,from:user.id,to}});if(result!=="ok")throw new Error("Call signal was not delivered")}finally{setTimeout(()=>sb.removeChannel(ch),250)}}
 async function makePeer(peerId){callPc=new RTCPeerConnection({iceServers:[{urls:"stun:stun.l.google.com:19302"}]});callPc.onicecandidate=e=>{if(e.candidate)sendCallSignal(peerId,{kind:"ice",candidate:e.candidate})};callPc.ontrack=e=>{$("ncRemoteAudio").srcObject=e.streams[0];$("ncRemoteAudio").play().catch(()=>{});$("ncCallStatus").textContent="Voice connected";playNcSound("ncSoundJoin")};localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});localStream.getTracks().forEach(t=>callPc.addTrack(t,localStream));$("ncCallBar").hidden=false;callState="active";$("ncCallStatus").textContent="Connecting…"}
 window.ncStartCall=async()=>{if(active.type!=="dm"||!active.id||!activePeerId){toast("Open a direct message first.");return}if(!navigator.mediaDevices?.getUserMedia||!window.RTCPeerConnection){toast("Voice calling is not supported by this browser.");return}if(!window.isSecureContext){toast("Voice calls require HTTPS.");return}if(callState!=="idle"){toast("You're already in a call.");return}const f=friends.find(x=>x.id===activePeerId);callPeer=activePeerId;try{await makePeer(callPeer);const offer=await callPc.createOffer();await callPc.setLocalDescription(offer);await sendCallSignal(callPeer,{kind:"offer",description:offer,name:profile?.display_name||profile?.username||"Friend"});$("ncCallStatus").textContent="Calling "+(f?.display_name||f?.username||"friend")+"…";playNcSound("ncSoundCall")}catch(e){toast("Could not start call: "+e.message);await ncHangup(true)}};
-window.ncAcceptCall=async()=>{if(!incomingOffer||!callPeer)return;const from=callPeer;$("ncIncomingCall").hidden=true;$("ncSoundCall").pause();try{await makePeer(from);await callPc.setRemoteDescription(incomingOffer);const answer=await callPc.createAnswer();await callPc.setLocalDescription(answer);await sendCallSignal(from,{kind:"answer",description:answer});incomingOffer=null;playNcSound("ncSoundJoin")}catch(e){toast("Could not join call: "+e.message);await ncHangup(true)}};
+window.ncAcceptCall=async()=>{if(!incomingOffer||!callPeer)return;const from=callPeer;$("ncIncomingCall").hidden=true;$("ncSoundCall").pause();try{await makePeer(from);await callPc.setRemoteDescription(incomingOffer);for(const candidate of pendingIce.splice(0)){try{await callPc.addIceCandidate(candidate)}catch(e){}}const answer=await callPc.createAnswer();await callPc.setLocalDescription(answer);await sendCallSignal(from,{kind:"answer",description:answer});incomingOffer=null;playNcSound("ncSoundJoin")}catch(e){toast("Could not join call: "+e.message);await ncHangup(true)}};
 window.ncDeclineCall=async()=>{if(callPeer)await sendCallSignal(callPeer,{kind:"hangup"});$("ncIncomingCall").hidden=true;$("ncSoundCall").pause();incomingOffer=null;callPeer=null;callState="idle"};
 window.ncToggleMute=()=>{callMuted=!callMuted;(localStream?.getAudioTracks()||[]).forEach(t=>t.enabled=!callMuted);$("ncMuteButton").textContent=callMuted?"Unmute":"Mute"};
-window.ncHangup=async(silent=false)=>{if(callPeer&&!silent)await sendCallSignal(callPeer,{kind:"hangup"});$("ncSoundCall").pause();$("ncSoundCall").currentTime=0;$("ncIncomingCall").hidden=true;$("ncCallBar").hidden=true;$("ncRemoteAudio").srcObject=null;if(callPc){callPc.close();callPc=null}if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null}incomingOffer=null;callPeer=null;callMuted=false;callState="idle";$("ncMuteButton").textContent="Mute"};
+window.ncHangup=async(silent=false)=>{if(callPeer&&!silent)await sendCallSignal(callPeer,{kind:"hangup"});$("ncSoundCall").pause();$("ncSoundCall").currentTime=0;$("ncIncomingCall").hidden=true;$("ncCallBar").hidden=true;$("ncRemoteAudio").srcObject=null;if(callPc){callPc.close();callPc=null}if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null}incomingOffer=null;pendingIce=[];callPeer=null;callMuted=false;callState="idle";$("ncMuteButton").textContent="Mute"};
 \n})();
 
         // Shared panic-key handler: used on the hub and injected into games
@@ -1943,6 +1943,8 @@ window.ncHangup=async(silent=false)=>{if(callPeer&&!silent)await sendCallSignal(
 #ncMobileMenu{display:none}
 @media(max-width:720px){#ncSide{width:190px}#ncMembers{display:none!important}#ncServers{width:58px}.nc-server{width:42px;height:42px}#ncMessages{padding:16px 12px}#ncComposerWrap{padding:0 10px 12px}#ncTop{padding:0 12px}}
 @media(max-width:480px){#ncServers{width:52px}#ncSide{width:145px}#ncSideHead{padding:12px 9px;font-size:13px}.nc-side-item{font-size:12px;padding:8px 6px;gap:5px}#ncMe{padding:7px}#ncMe .nc-avatar{width:28px;height:28px}}
+/* Remove the page's top navigation / shortcut strip. */
+.marquee,.site-note{display:none!important}
 </style>
 <div id="nullcordApp" aria-label="Nullcord chat application">
   <div id="ncServers"><button class="nc-server active" title="Direct messages" onclick="ncShowHome()">✦</button><div class="nc-sep"></div><div id="ncServerIcons"></div><button class="nc-server" title="Create a server" onclick="ncOpenModal('server')">＋</button><button class="nc-server" title="Join a server" onclick="ncOpenModal('join')">↗</button><div style="flex:1"></div><button class="nc-server" title="Close Nullcord" onclick="closeNullcord()">×</button></div>
@@ -1967,7 +1969,7 @@ window.ncHangup=async(silent=false)=>{if(callPeer&&!silent)await sendCallSignal(
 const URL="https://aujkhiljakaxkakidkbi.supabase.co";
 const KEY="sb_publishable_4y09p5yrlXGOD3hrKSQ5tQ_ICtxcPvB";
 const sb=window.supabase?window.supabase.createClient(URL,KEY):null;
-let user=null,profile=null,activePeerId=null,active={type:"home",id:null},servers=[],friends=[],requests=[],channels=[],currentMessages=[],realtime=null,callChannel=null,callPc=null,localStream=null,incomingOffer=null,callPeer=null,callMuted=false,callState="idle";
+let user=null,profile=null,activePeerId=null,active={type:"home",id:null},servers=[],friends=[],requests=[],channels=[],currentMessages=[],realtime=null,callChannel=null,callPc=null,localStream=null,incomingOffer=null,callPeer=null,callMuted=false,callState="idle",authListener=null,messagePoll=null,pendingIce=[];
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const initials=s=>String(s||"?").trim().slice(0,1).toUpperCase();
@@ -1978,10 +1980,14 @@ window.ncShowHome=()=>{activePeerId=null;$("ncCallButton").style.display="none";
 function welcome(){ $("ncMessages").innerHTML='<div class="nc-welcome"><div class="nc-big">✦</div><h2>Welcome to Nullcord</h2><p>Pick a friend or a server channel to start talking.</p></div>'; }
 function avatar(who){const name=typeof who==="object"?(who.display_name||who.username||"U"):who;const url=typeof who==="object"?who.avatar_url:null;return '<div class="nc-avatar">'+(url?'<img src="'+esc(url)+'" alt="">':esc(initials(name)))+'</div>'}
 function setMe(){const a=$("ncMyAvatar");a.innerHTML=profile?.avatar_url?'<img src="'+esc(profile.avatar_url)+'" alt="">':esc(initials(profile?.display_name||profile?.username||user?.email));$("ncMeName").textContent=profile?.display_name||profile?.username||user?.email||"Not signed in";$("ncMeStatus").textContent=user?"Online":"Signed out"}
+async function applyAuthUser(nextUser){
+ const nextId=nextUser?.id||null,oldId=user?.id||null;
+ if(!nextId){if(user){await ncHangup(true);if(realtime)sb.removeChannel(realtime);if(callChannel)sb.removeChannel(callChannel)}user=null;profile=null;friends=[];servers=[];requests=[];activePeerId=null;active={type:"home",id:null};setMe();$("ncSideContent").innerHTML='<div class="nc-welcome" style="padding:20px 8px"><p>Sign in to find friends and chat.</p><button class="nc-primary" onclick="ncOpenModal(\'auth\')">Sign in</button></div>';welcome();return}
+ user=nextUser;if(oldId!==nextId||!profile){profile=null;await loadProfile();await refreshAll();subscribe();subscribeCalls()}setMe();
+}
 async function init(){
- const {data:{session}}=await sb.auth.getSession();user=session?.user||null;
- if(!user){setMe();$("ncSideContent").innerHTML='<div class="nc-welcome" style="padding:20px 8px"><p>Sign in to find friends and chat.</p><button class="nc-primary" onclick="ncOpenModal(\'auth\')">Sign in</button></div>';welcome();return}
- await loadProfile();await refreshAll();subscribe();subscribeCalls();setMe();
+ if(!authListener){const listener=sb.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>applyAuthUser(session?.user||null),0)});authListener=listener.data?.subscription||true}
+ const {data,error}=await sb.auth.getSession();if(error){toast("Couldn't restore sign-in: "+error.message);return}await applyAuthUser(data?.session?.user||null);
 }
 async function loadProfile(){
  let {data}=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();profile=data;
@@ -2002,7 +2008,7 @@ function renderSidebar(){
  if(active.type==="server"){
  const s=servers.find(x=>x.id===active.id);
  $("ncSideTitle").textContent=s?.name||"Server";
- content.innerHTML='<div class="nc-side-label">Text channels</div><div id="ncChannelList"></div><button class="nc-side-item" onclick="ncCreateChannel()">＋ Create channel</button><div class="nc-side-label">Invite</div><button class="nc-side-item" onclick="ncCopyInvite()">🔗 Copy invite code</button>';
+ content.innerHTML='<div class="nc-side-label">Text channels</div><div id="ncChannelList"></div><button class="nc-side-item" onclick="ncCreateChannel()">＋ Create channel</button><div class="nc-side-label">Invite</div><button class="nc-side-item" onclick="ncInviteFriend()">＋ Invite a friend</button><button class="nc-side-item" onclick="ncCopyInvite()">🔗 Copy invite code</button>';
  loadChannels();
  return;
  }
@@ -2021,6 +2027,8 @@ function subscribe(){
  .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},payload=>{if((active.type==="channel"&&payload.new.channel_id===active.id)||(active.type==="dm"&&payload.new.conversation_id===active.id)){if(payload.new.user_id!==user.id)playNcSound("ncSoundMessage");loadMessages()}})
  .on("postgres_changes",{event:"INSERT",schema:"public",table:"friend_requests",filter:"recipient_id=eq."+user.id},()=>refreshAll())
  .subscribe();
+ if(messagePoll)clearInterval(messagePoll);
+ messagePoll=setInterval(()=>{if($("nullcordApp").classList.contains("open")&&user&&(active.type==="channel"||active.type==="dm"))loadMessages(true)},2200);
 }
 window.ncOpenServer=async id=>{activePeerId=null;$("ncCallButton").style.display="none";active={type:"server",id};renderSidebar();$("ncBack").style.display="";$("ncTopTitle").textContent=servers.find(s=>s.id===id)?.name||"Server";$("ncInput").disabled=true;$("ncSend").disabled=true;welcome()};
 async function loadChannels(){
@@ -2040,10 +2048,12 @@ window.ncOpenDM=async friendId=>{
  if(error){toast(error.message);return}
  active={type:"dm",id:data};activePeerId=friendId;$("ncBack").style.display="";$("ncCallButton").style.display="";const f=friends.find(x=>x.id===friendId);$("ncTopTitle").textContent=f?.display_name||f?.username||"Direct message";$("ncInput").disabled=false;$("ncSend").disabled=false;$("ncComposerHint").textContent="Message @"+(f?.username||"friend");await loadMessages();$("ncMembers").classList.remove("show");
 };
-async function loadMessages(){
+async function loadMessages(silent=false){
+ const target={...active};if(!user||!(target.type==="channel"||target.type==="dm")||!target.id)return;
  let q=sb.from("messages").select("id,body,created_at,user_id,profiles(username,display_name)").order("created_at",{ascending:true}).limit(100);
- q=active.type==="channel"?q.eq("channel_id",active.id):q.eq("conversation_id",active.id);
- const {data,error}=await q;if(error){toast(error.message);return}currentMessages=data||[];
+ q=target.type==="channel"?q.eq("channel_id",target.id):q.eq("conversation_id",target.id);
+ const {data,error}=await q;if(error){if(!silent)toast(error.message);return}if(active.id!==target.id||active.type!==target.type)return;
+ const next=data||[],oldIds=new Set(currentMessages.map(m=>m.id));if(silent&&next.some(m=>!oldIds.has(m.id)&&m.user_id!==user.id))playNcSound("ncSoundMessage");currentMessages=next;
  $("ncMessages").innerHTML=currentMessages.map(m=>'<div class="nc-msg">'+avatar(m.profiles?.username||"U")+'<div><div class="nc-msg-meta"><span class="nc-msg-name">'+esc(m.profiles?.display_name||m.profiles?.username||"Member")+'</span><span class="nc-msg-time">'+new Date(m.created_at).toLocaleString()+'</span></div><div class="nc-msg-text">'+esc(m.body)+'</div></div></div>').join("")||'<div class="nc-welcome"><h2>It is quiet in here...</h2><p>Send the first message.</p></div>';
  $("ncMessages").scrollTop=$("ncMessages").scrollHeight;
 }
@@ -2063,10 +2073,11 @@ window.ncOpenModal=kind=>{
  if(kind==="friend"){title="Add a friend";desc="Enter their exact username.";markup='<label>Username</label><input class="nc-field" id="ncFriendName" placeholder="friendname">';handler=async()=>{const name=$("ncFriendName").value.trim().replace(/^@/,"");if(!name)return;const {data,error}=await sb.from("profiles").select("id").eq("username",name).maybeSingle();if(error||!data){toast("Couldn't find that username.");return}const r=await sb.from("friend_requests").insert({sender_id:user.id,recipient_id:data.id});if(r.error)toast(r.error.message);else toast("Friend request sent!");ncCloseModal()};}
  if(kind==="server"){title="Create a server";desc="Start a new space and invite your friends.";markup='<label>Server name</label><input class="nc-field" id="ncServerName" placeholder="My server" maxlength="40">';handler=async()=>{const name=$("ncServerName").value.trim();if(!name)return;const {data,error}=await sb.rpc("nullcord_create_server",{server_name:name});if(error){toast(error.message);return}await refreshAll();ncCloseModal();ncOpenServer(data);toast("Server created!")};}
  if(kind==="join"){title="Join a server";desc="Paste an invite code shared by a server member.";markup='<label>Invite code</label><input class="nc-field" id="ncInvite" placeholder="invite code">';handler=async()=>{const code=$("ncInvite").value.trim();const {data,error}=await sb.rpc("nullcord_join_server",{code});if(error){toast(error.message);return}await refreshAll();ncCloseModal();ncOpenServer(data);toast("Joined server!")};}
+ if(kind==="serverInvite"){const server=servers.find(x=>x.id===active.id);if(!server){toast("Open a server first.");return}title="Invite a friend";desc="Send this server's invite code directly to a friend in a DM.";markup='<label>Choose friend</label><select class="nc-field" id="ncInviteFriendSelect">'+friends.map(f=>'<option value="'+esc(f.id)+'">'+esc(f.display_name||f.username)+'</option>').join("")+'</select><div class="nc-muted" style="margin-top:8px">Invite code: '+esc(server.invite_code)+'</div>';handler=async()=>{const friendId=$("ncInviteFriendSelect").value;if(!friendId){toast("Add a friend first.");return}const {data:conversationId,error:dmError}=await sb.rpc("nullcord_start_dm",{other_user:friendId});if(dmError){toast(dmError.message);return}const body='You have been invited to join '+server.name+' on Nullcord!\\nInvite code: '+server.invite_code+'\\nUse the Join with invite button in Nullcord to join.';const {error}=await sb.from("messages").insert({conversation_id:conversationId,user_id:user.id,body});if(error){toast(error.message);return}ncCloseModal();toast("Server invite sent to your friend!")};}
  $("ncModalTitle").textContent=title;$("ncModalDesc").textContent=desc;fields.innerHTML=markup;
  const submit=$("ncModalSubmit");
  if(kind==="auth"){window.ncAuthMode="signin";submit.textContent="Sign in";submit.onclick=handler;const toggle=document.createElement("button");toggle.className="nc-secondary";toggle.style.marginRight="auto";toggle.textContent="Create account";toggle.onclick=()=>{window.ncAuthMode=window.ncAuthMode==="signin"?"signup":"signin";submit.textContent=window.ncAuthMode==="signin"?"Sign in":"Create account";toggle.textContent=window.ncAuthMode==="signin"?"Create account":"Back to sign in"};$("ncModal").querySelector(".nc-dialog-actions").prepend(toggle);submit.textContent="Sign in";}
- else{submit.textContent=kind==="friend"?"Send request":kind==="server"?"Create server":"Join server";submit.onclick=handler}
+ else{submit.textContent=kind==="friend"?"Send request":kind==="server"?"Create server":kind==="serverInvite"?"Send invite":"Join server";submit.onclick=handler}
  $("ncModal").classList.add("show");
 };
 window.ncCloseModal=()=>{$("ncModal").classList.remove("show");$("ncModal").querySelectorAll(".nc-dialog-actions button").forEach((b,i)=>{if(i===0&&b.classList.contains("nc-secondary")&&b.textContent==="Create account")b.remove()})};
@@ -2074,6 +2085,7 @@ window.ncAccountAction=()=>{if(user)ncOpenSettings();else ncOpenModal("auth")};
 window.ncAcceptFriend=async id=>{const {error}=await sb.rpc("nullcord_accept_friend",{request_id:id});if(error)toast(error.message);else{toast("Friend added!");await refreshAll()}};
 window.ncCreateChannel=async()=>{const name=prompt("Channel name?");if(!name)return;const {error}=await sb.from("channels").insert({server_id:active.id,name:name.toLowerCase().replace(/[^a-z0-9-]/g,"-").slice(0,40),created_by:user.id});if(error)toast(error.message);else loadChannels()};
 window.ncCopyInvite=async()=>{const s=servers.find(x=>x.id===active.id);if(!s)return;try{await navigator.clipboard.writeText(s.invite_code);toast("Invite code copied")}catch(e){prompt("Copy this invite code:",s.invite_code)}};
+window.ncInviteFriend=()=>{if(!friends.length){toast("Add a friend before sending a server invite.");return}ncOpenModal("serverInvite")};
 window.ncAccountAction=window.ncAccountAction;
 })();
 </script>
