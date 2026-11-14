@@ -274,7 +274,7 @@ async function loadMessages(silent=false){
  if(silent&&next.length===currentMessages.length&&next.every(m=>oldIds.has(m.id)))return;
  if(silent&&next.some(m=>!oldIds.has(m.id)&&m.user_id!==user.id))playNcSound("ncSoundMessage");currentMessages=next;
  const box=$("ncMessages"),stick=box.scrollHeight-box.scrollTop-box.clientHeight<120||!silent;
- box.innerHTML=currentMessages.map(m=>'<div class="nc-msg">'+avatar(m.profiles||"U")+'<div style="min-width:0"><div class="nc-msg-meta"><span class="nc-msg-name">'+esc(m.profiles?.display_name||m.profiles?.username||"Member")+'</span><span class="nc-msg-time">'+new Date(m.created_at).toLocaleString()+'</span></div>'+(m.audio_url?'<audio controls preload="metadata" src="'+esc(m.audio_url)+'"></audio>':'<div class="nc-msg-text">'+esc(m.body)+'</div>')+'</div></div>').join("")||'<div class="nc-welcome"><h2>It is quiet in here...</h2><p>Send the first message.</p></div>';
+ box.innerHTML=currentMessages.map(m=>{let body="";try{if(m.body&&m.body.startsWith("NC_MEDIA:")){const x=JSON.parse(m.body.slice(9));if(x.url&&/^https:\/\//i.test(x.url))body=x.kind==="gif"?'<img class="nc-media" src="'+esc(x.url)+'" alt="GIF"><div class="nc-gif-label">GIF · Tenor</div>':'<img class="nc-media" src="'+esc(x.url)+'" alt="Shared image" loading="lazy">'}}catch(e){}if(!body)body=m.audio_url?'<audio controls preload="metadata" src="'+esc(m.audio_url)+'"></audio>':'<div class="nc-msg-text">'+esc(m.body)+'</div>';return '<div class="nc-msg">'+avatar(m.profiles||"U")+'<div style="min-width:0"><div class="nc-msg-meta"><span class="nc-msg-name">'+esc(m.profiles?.display_name||m.profiles?.username||"Member")+'</span><span class="nc-msg-time">'+new Date(m.created_at).toLocaleString()+'</span></div>'+body+'</div></div>'}).join("")||'<div class="nc-welcome"><h2>It is quiet in here...</h2><p>Send the first message.</p></div>';
  if(stick)box.scrollTop=box.scrollHeight;
 }
 window.ncSendMessage=async()=>{
@@ -287,6 +287,56 @@ window.ncSendMessage=async()=>{
  $("ncSend").disabled=false;
 };
 $("ncInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();ncSendMessage()}});
+
+
+window.ncOpenProfile=async uid=>{
+ if(!uid||!sb)return;
+ $("ncProfilePanel").innerHTML='<div class="nc-profile-empty">Loading profile…</div>';
+ const {data,error}=await sb.from("profiles").select("id,username,display_name,bio,avatar_url,created_at").eq("id",uid).maybeSingle();
+ if(error||!data){$("ncProfilePanel").innerHTML='<div class="nc-profile-empty">Profile unavailable.</div>';return}
+ const p=data,n=p.display_name||p.username||"User";
+ const joined=p.created_at?new Date(p.created_at).toLocaleDateString(undefined,{month:"long",year:"numeric"}):"";
+ $("ncProfilePanel").innerHTML='<div class="nc-profile-banner"></div><div class="nc-profile-avatar">'+(p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="">':esc(initials(n)))+'</div><div class="nc-profile-name">'+esc(n)+'</div><div class="nc-profile-user">@'+esc(p.username||"user")+'</div><div class="nc-profile-bio">'+(p.bio?esc(p.bio):'<span class="nc-muted">No bio yet.</span>')+'</div><div class="nc-profile-meta">'+(joined?"Member since "+esc(joined):"Nullcord member")+'</div>'+(uid!==user.id?'<button class="nc-primary nc-profile-action" onclick="ncOpenDM(\''+uid+'\')">Message</button>':'<button class="nc-secondary nc-profile-action" onclick="ncOpenSettings()">Edit profile</button>');
+};
+$("ncMessages").addEventListener("click",e=>{const n=e.target.closest(".nc-msg-name");if(!n)return;const i=[...$("ncMessages").querySelectorAll(".nc-msg-name")].indexOf(n),m=currentMessages[i];if(m)ncOpenProfile(m.user_id)});
+$("ncMemberList").addEventListener("click",e=>{const row=e.target.closest(".nc-member");if(row&&row.dataset.uid)ncOpenProfile(row.dataset.uid)});
+
+
+$("ncImageFile").addEventListener("change",async e=>{
+ const f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;
+ if(!f.type.startsWith("image/")){toast("Choose an image file.");return}
+ if(f.size>12*1024*1024){toast("Images must be under 12 MB.");return}
+ if(!user||!active.id){toast("Open a conversation first.");return}
+ const ext=(f.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
+ const path=user.id+"/media/"+Date.now()+"."+ext;toast("Uploading image…");
+ const up=await sb.storage.from("voice").upload(path,f,{upsert:false,contentType:f.type});
+ if(up.error){toast("Image upload failed: "+up.error.message);return}
+ await sendMediaMessage("image",sb.storage.from("voice").getPublicUrl(path).data.publicUrl);
+});
+async function sendMediaMessage(kind,url){
+ if(!user||!active.id)return;
+ const row={user_id:user.id,body:"NC_MEDIA:"+JSON.stringify({kind,url})};
+ if(active.type==="channel")row.channel_id=active.id;else if(active.type==="dm")row.conversation_id=active.id;else return;
+ const {error}=await sb.from("messages").insert(row);
+ if(error)toast("Couldn't send media: "+error.message);else{toast(kind==="gif"?"GIF sent":"Image sent");await loadMessages()}
+}
+window.ncOpenGifPicker=()=>{
+ if(!$("ncGifModal")){
+  const el=document.createElement("div");el.id="ncGifModal";el.className="nc-modal";
+  el.innerHTML='<div class="nc-dialog" style="width:min(620px,100%)"><h2>Find a GIF</h2><p>Search Tenor and tap a GIF to send it.</p><div class="nc-gif-search"><input class="nc-field" id="ncGifQuery" placeholder="Search GIFs…" style="margin:0"><button class="nc-primary" onclick="ncSearchGifs()">Search</button></div><div id="ncGifResults" class="nc-gif-grid"></div><div class="nc-dialog-actions"><button class="nc-secondary" onclick="document.getElementById(\'ncGifModal\').classList.remove(\'show\')">Close</button></div></div>';
+  $("nullcordApp").appendChild(el);$("ncGifQuery").addEventListener("keydown",e=>{if(e.key==="Enter")ncSearchGifs()});
+ }
+ $("ncGifModal").classList.add("show");$("ncGifQuery").focus();
+};
+window.ncSearchGifs=async()=>{
+ const q=$("ncGifQuery").value.trim();if(!q)return;const box=$("ncGifResults");box.innerHTML='<div class="nc-muted">Searching Tenor…</div>';
+ try{
+  const u="https://tenor.googleapis.com/v2/search?q="+encodeURIComponent(q)+"&key=LIVDSRZULELA&client_key=nullcord&limit=24&media_filter=tinygif,gif";
+  const r=await fetch(u);if(!r.ok)throw new Error("Tenor returned "+r.status);const data=await r.json();
+  box.innerHTML=(data.results||[]).map(g=>{const m=g.media_formats||{},a=m.tinygif&&m.tinygif.url,b=m.gif&&m.gif.url;if(!a&&!b)return "";const full=b||a;return '<button class="nc-gif-result" onclick="ncChooseGif(\''+encodeURIComponent(full)+'\')"><img src="'+esc(a||b)+'" alt="GIF" loading="lazy"></button>'}).join("")||'<div class="nc-muted">No GIFs found.</div>';
+ }catch(e){box.innerHTML='<div class="nc-muted">GIF search unavailable. Try again later.</div>';toast("GIF search failed: "+e.message)}
+};
+window.ncChooseGif=async encoded=>{const u=decodeURIComponent(encoded);if(!/^https:\/\//i.test(u))return;$("ncGifModal").classList.remove("show");await sendMediaMessage("gif",u)};
 
 /* ---------- Voice messages ---------- */
 window.ncToggleRecord=async()=>{
