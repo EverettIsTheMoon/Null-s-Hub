@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="dark" data-theme="glass">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -45,11 +45,6 @@
         font-weight: 400;
         font-display: swap;
     }
-    body, body * {
-        font-family:"Pusab", sans-serif !important;
-        font-weight:400 !important;
-        letter-spacing:.06em !important;
-    }
 :root, [data-theme="dark"] {
     --bg:#171815; --panel:#20211e; --line:#3c3b35; --amber:#ca7253; --teal:#78968d; --muted:#aaa394;
     --text:#e9e2d5; --text-strong:#eee7da; --text-soft:#bcb4a5;
@@ -76,6 +71,46 @@
     --btn-hover-bg:#152037; --input-border:#2c3d5c; --line-strong:#33456a; --btn-border:#33456a;
     --nav-idle:#8aa0c4; --pill-hover-border:#33456a; --shelf-count:#7f93b5; --nav-color:#c3d3ee; --nav-hover:#eaf2ff;
     --logo-bg:#0f1830; --btn-amber-text:#eaf2ff; --btn-text:#c3d3ee; --btn-hover-text:#eaf2ff; --pill-hover-text:#eaf2ff;
+}
+[data-theme="glass"] {
+    color-scheme:light;
+    --bg:#edf3f6; --panel:#fbfcfd; --line:#d5dfe4; --amber:#397a91; --teal:#4c7f72; --muted:#60727b;
+    --text:#25373f; --text-strong:#1d3038; --text-soft:#50636c;
+    --amber-strong:#397a91; --amber-strong-hover:#2f687d; --amber-border:#6b9aaa; --amber-light:#4b8498; --amber-focus:#2f687d;
+    --hero-bg:#e2ebef; --note-bg:#e0e9ed; --note-text:#52666f; --footer-bg:#e3ecef; --thumb-bg:#dce7eb;
+    --btn-hover-bg:#e4edf0; --input-border:#c8d5db; --line-strong:#b7c8cf; --btn-border:#c2d0d6;
+    --nav-idle:#61747c; --pill-hover-border:#8ca8b2; --shelf-count:#657982; --nav-color:#354b55; --nav-hover:#203942;
+    --logo-bg:#f8fafb; --btn-amber-text:#fff; --btn-text:#344c56; --btn-hover-text:#203942; --pill-hover-text:#203942;
+    --glass-surface:#f9fbfc; --glass-border:#d1dde2;
+}
+[data-theme="glass"] body {
+    background:var(--bg);
+}
+[data-theme="glass"] .marquee,
+[data-theme="glass"] .catalog-card,
+[data-theme="glass"] .hero-art,
+[data-theme="glass"] .settings-panel,
+[data-theme="glass"] .search-input,
+[data-theme="glass"] .site-note,
+[data-theme="glass"] footer,
+[data-theme="glass"] .theme-btn,
+[data-theme="glass"] .disguise-option {
+    background:var(--glass-surface);
+    border-color:var(--glass-border);
+    box-shadow:0 3px 12px rgba(32,61,73,.07);
+}
+[data-theme="glass"] .catalog-card:hover {
+    border-color:var(--amber-border);
+    box-shadow:0 6px 16px rgba(32,61,73,.12);
+}
+[data-theme="glass"] .card-body {
+    background:rgba(248,251,252,.96);
+}
+[data-theme="glass"] .settings-overlay {
+    background:rgba(24,43,52,.42);
+}
+[data-theme="glass"] #scrollMessage {
+    background:#fbfcfd;
 }
 /* theme-aware fixes for Tailwind utility colors used in the markup */
 #searchBar { color: var(--text) !important; }
@@ -331,6 +366,48 @@ nav[class*="text-slate"] { color: var(--nav-color); }
         border:1px solid var(--line-strong); border-top:3px solid var(--amber);
         border-radius:6px; box-shadow:0 24px 60px rgba(0,0,0,.5);
     }
+    .credits-overlay {
+        position:fixed; inset:0; z-index:99990; display:none;
+        align-items:center; justify-content:center; padding:20px;
+        background:rgba(24,39,46,.58); backdrop-filter:blur(2px);
+    }
+    .credits-overlay.is-open { display:flex; }
+    .credits-panel {
+        display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+        width:min(760px,100%); min-height:390px; padding:0; color:#263a43;
+        background:#fbfcfd; border:1px solid #cbd8de; border-radius:9px;
+        box-shadow:0 18px 48px rgba(12,31,40,.28); overflow:hidden;
+    }
+    .credits-photo { min-width:0; min-height:390px; overflow:hidden; background:#dce7eb; }
+    .credits-photo img {
+        display:block; width:100%; height:100%; min-height:390px;
+        object-fit:cover; object-position:85% center;
+    }
+    .credits-content { display:flex; flex-direction:column; justify-content:center; padding:34px 32px; }
+    .credits-panel h2 { margin:0; color:#203740; font:700 26px/1.2 Georgia, "Times New Roman", serif; }
+    .credits-names { margin:18px 0 20px; padding:0; list-style:none; border-top:1px solid #dce5e9; }
+    .credits-names li { padding:12px 2px; color:#304750; border-bottom:1px solid #dce5e9; }
+    .credits-back { align-self:flex-start; min-width:96px; }
+    #creditsAudioStatus { margin:12px 0 0; color:#8d3b38; font-size:12px; line-height:1.5; }
+    #creditsAudioStatus[hidden] { display:none; }
+    #creditsLauncher {
+        position:fixed; right:22px; bottom:100px; z-index:9998;
+        min-width:110px; min-height:42px; padding:10px 16px;
+        border:1px solid #b9c9d0; border-radius:8px;
+        background:#f8fafb; color:#314b56;
+        box-shadow:0 3px 10px rgba(28,66,82,.12);
+        font:600 13px/1 ui-sans-serif,system-ui,sans-serif; cursor:pointer;
+        transition:background .12s,border-color .12s,transform .12s;
+    }
+    #creditsLauncher:hover { background:#e9f0f3; border-color:#8faab5; transform:translateY(-1px); }
+    #creditsLauncher:focus-visible, .credits-back:focus-visible { outline:3px solid var(--amber-focus); outline-offset:3px; }
+    @media(max-width:600px) {
+        #creditsLauncher { right:14px; bottom:78px; min-width:110px; min-height:42px; }
+        .credits-panel { grid-template-columns:1fr; max-height:90vh; overflow-y:auto; }
+        .credits-photo { min-height:0; height:min(34vh,240px); }
+        .credits-photo img { min-height:0; }
+        .credits-content { padding:24px 22px; }
+    }
     .settings-head {
         display:flex; align-items:center; justify-content:space-between;
         padding:16px 20px; border-bottom:1px solid var(--line);
@@ -360,7 +437,7 @@ nav[class*="text-slate"] { color: var(--nav-color); }
         letter-spacing:.08em; text-transform:uppercase; color:var(--amber);
     }
     .settings-hint { margin:0 0 12px; font-size:12px; line-height:1.5; color:var(--text-soft); }
-    .theme-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+    .theme-row { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
     .theme-btn {
         display:flex; flex-direction:column; align-items:center; gap:8px;
         padding:12px 8px; cursor:pointer; border-radius:5px;
@@ -377,6 +454,7 @@ nav[class*="text-slate"] { color: var(--nav-color); }
     .sw-dark  { background:linear-gradient(135deg,#171815 0 50%,#ca7253 50% 100%); }
     .sw-light { background:linear-gradient(135deg,#f4f1ea 0 50%,#b8552f 50% 100%); }
     .sw-blue  { background:linear-gradient(135deg,#0b1220 0 50%,#4f8ef7 50% 100%); }
+    .sw-glass { background:linear-gradient(135deg,#eaf8ff 0 50%,#68bde2 50% 100%); }
     .panic-toggle-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .switch { position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0; }
     .switch input { opacity:0; width:0; height:0; }
@@ -468,7 +546,7 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                 <a href="#categories">Browse by type</a>
                 <a href="https://forms.gle/heNFYBkbisCNd5zh7" target="_blank" rel="noopener noreferrer">Request a game</a>
                 <a href="https://github.com/EverettIsTheMoon/Null-s-Hub#readme" target="_blank" rel="noopener noreferrer">README</a>
-                <button type="button" onclick="openNullcord()" style="color:#8b9cff!important">Nullcord ✦</button>
+                <button type="button" onclick="openApps()">Apps</button>
                 <button onclick="cloakSelf()">Cloak</button>
                 <button onclick="openSettings()">Settings</button>
             </nav>
@@ -496,14 +574,15 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                     <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="sports" onclick="setCategory('sports',this)">Sports</button>
                     <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="arcade" onclick="setCategory('arcade',this)">Arcade</button>
                     <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="simulation" onclick="setCategory('simulation',this)">Simulation</button>
-                    <span class="ml-auto text-[10px] font-bold uppercase tracking-widest text-slate-500"><span id="gameCount">35 games</span></span>
+                    <button type="button" class="category-pill rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-wider" data-category="tools" onclick="setCategory('tools',this)">Tools</button>
+                    <span class="ml-auto text-[10px] font-bold uppercase tracking-widest text-slate-500"><span id="gameCount">44 games</span></span>
                 </div>
 
                 <div id="hero" class="catalog-hero">
                         <div class="hero-copy">
-                            <p class="eyebrow">IF YOU LIKE IT, GIVE CREDITS TO ME</p>
-                            <h1 class="hero-title">Enjoy the games! give some requests down below</h1>
-                            <p class="hero-copy-text">:)</p>
+                            <p class="eyebrow">NULL'S HUB</p>
+                            <h1 class="hero-title">Pick a game and jump in.</h1>
+                            <p class="hero-copy-text">Browse the collection, then send a request if something's missing.</p>
                             <div class="hero-actions">
                                 <a class="btn btn-amber" href="https://forms.gle/heNFYBkbisCNd5zh7" target="_blank" rel="noopener noreferrer">Request a game ↗</a>
                                 <a href="#gameGrid" class="btn">Browse the games</a>
@@ -714,7 +793,8 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                     <!-- SCP-096 Monster Maze Card -->
                     <div class="game-card catalog-card" data-name="SCP-096 Monster Maze Horror Multiplayer" data-category="horror">
                         <div class="card-thumb">
-                            <svg class="catalog-logo" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A gaunt, screaming SCP-096 looming in a blood-red maze">
+                            <img class="game-logo scp-cover" src="games/SCP-096/scp-096-cover.png" alt="SCP-096 from the attached image">
+                            <svg class="catalog-logo" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A gaunt, screaming SCP-096 looming in a blood-red maze" style="display:none">
                                 <defs>
                                     <radialGradient id="scp-glow" cx="0" cy="0" r="1" gradientTransform="matrix(0 145 -145 0 100 80)" gradientUnits="userSpaceOnUse">
                                         <stop stop-color="#521c25"/>
@@ -1324,6 +1404,46 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                         <a href="games/Slope/slope.html" aria-label="Play Slope" class="card-play">▶ Play</a>
                     </div>
 
+                    <!-- Simple Soundboard Card -->
+                    <div class="game-card catalog-card" data-name="Simple Soundboard Sounds Audio" data-category="tools">
+                        <div class="card-thumb">
+                            <svg class="catalog-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sound bars on a blue glass background">
+                                <defs><linearGradient id="soundboard-bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b9eaff"/><stop offset="1" stop-color="#4ca7d2"/></linearGradient></defs>
+                                <rect width="200" height="200" fill="url(#soundboard-bg)"/>
+                                <circle cx="100" cy="100" r="67" fill="#effaff" fill-opacity=".72" stroke="#fff" stroke-opacity=".9" stroke-width="3"/>
+                                <path d="M56 110V90m22 37V73m22 56V71m22 53V76m22 39V88" stroke="#167da8" stroke-width="9" stroke-linecap="round"/>
+                                <path d="M37 151h126" stroke="#167da8" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">Simple Soundboard</h3>
+                            <span class="card-cat">Tools</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Play the sound clips you added.</p>
+                        </div>
+                        <a href="games/Simple-Soundboard-master/index.html" aria-label="Open Simple Soundboard" class="card-play">▶ Open</a>
+                    </div>
+
+                    <!-- 1v1.LOL Card -->
+                    <div class="game-card catalog-card" data-name="1v1.LOL Multiplayer Shooter Build Fight" data-category="shooter">
+                        <div class="card-thumb">
+                            <svg class="catalog-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Blue arena with a central crosshair">
+                                <defs><linearGradient id="onevone-bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#172d47"/><stop offset="1" stop-color="#397eae"/></linearGradient></defs>
+                                <rect width="200" height="200" fill="url(#onevone-bg)"/>
+                                <path d="M0 152 100 92l100 60M0 178l100-60 100 60M34 0v200m44-200v200m44-200v200m44-200v200" fill="none" stroke="#c4eaff" stroke-opacity=".22" stroke-width="2"/>
+                                <circle cx="100" cy="92" r="37" fill="#d9f3ff" fill-opacity=".12" stroke="#d9f3ff" stroke-width="3"/>
+                                <path d="M100 42v29m0 42v29M50 92h29m42 0h29" stroke="#e9f8ff" stroke-width="5" stroke-linecap="round"/>
+                                <circle cx="100" cy="92" r="7" fill="#e9f8ff"/>
+                                <text x="100" y="185" fill="#e9f8ff" font-size="21" font-family="system-ui,sans-serif" font-weight="800" text-anchor="middle">1v1.LOL</text>
+                            </svg>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">1v1.LOL</h3>
+                            <span class="card-cat">Shooter</span>
+                            <p class="card-tag" style="margin-top:8px; font-size:10px; color: var(--muted); letter-spacing:.02em;">Build, aim, and battle another player.</p>
+                        </div>
+                        <a href="https://1v1.lol/" target="_blank" rel="noopener noreferrer" aria-label="Play 1v1.LOL on its website" class="card-play">▶ Play</a>
+                    </div>
+
 
 
 
@@ -1347,6 +1467,25 @@ nav[class*="text-slate"] { color: var(--nav-color); }
     </footer>
 
     <div id="scrollMessage" role="status" aria-live="polite"></div>
+
+    <button id="creditsLauncher" type="button" onclick="openCredits()" aria-haspopup="dialog" aria-controls="creditsOverlay">Credits</button>
+    <div class="credits-overlay" id="creditsOverlay" role="dialog" aria-modal="true" aria-labelledby="creditsTitle" aria-hidden="true">
+        <div class="credits-panel">
+            <div class="credits-photo">
+                <img src="assets/credits-photo.jpg" alt="A photograph of Null's Hub open in the browser">
+            </div>
+            <div class="credits-content">
+                <h2 id="creditsTitle" tabindex="-1">Credits</h2>
+                <ul class="credits-names">
+                    <li>Copilot</li>
+                    <li>Everett Moon</li>
+                </ul>
+                <button type="button" class="btn btn-amber credits-back" id="creditsBackButton" onclick="closeCredits()">Back</button>
+                <p id="creditsAudioStatus" role="status" aria-live="polite" hidden></p>
+            </div>
+        </div>
+    </div>
+    <audio id="creditsAudio" src="sounds/Freak%20On%20a%20Leash.mp3" preload="none"></audio>
 
     <!-- ===== Settings modal ===== -->
     <div class="settings-overlay" id="settingsOverlay" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
@@ -1374,6 +1513,9 @@ nav[class*="text-slate"] { color: var(--nav-color); }
                             </button>
                             <button type="button" class="theme-btn" data-theme-choice="blue" onclick="setTheme('blue')">
                                 <span class="theme-swatch sw-blue"></span>Blue
+                            </button>
+                            <button type="button" class="theme-btn" data-theme-choice="glass" onclick="setTheme('glass')">
+                                <span class="theme-swatch sw-glass"></span>Soft Blue
                             </button>
                         </div>
                     </div>
@@ -1640,10 +1782,10 @@ nav[class*="text-slate"] { color: var(--nav-color); }
 
         /* ===================== Settings: theme ===================== */
         const THEME_KEY = 'nullhub_theme';
-        const VALID_THEMES = ['dark', 'light', 'blue'];
+        const VALID_THEMES = ['dark', 'light', 'blue', 'glass'];
 
         function applyTheme(theme) {
-            if (!VALID_THEMES.includes(theme)) theme = 'dark';
+            if (!VALID_THEMES.includes(theme)) theme = 'glass';
             document.documentElement.setAttribute('data-theme', theme);
             document.querySelectorAll('.theme-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-theme-choice') === theme);
@@ -1764,9 +1906,47 @@ nav[class*="text-slate"] { color: var(--nav-color); }
         document.getElementById('settingsOverlay').addEventListener('click', event => {
             if (event.target.id === 'settingsOverlay') closeSettings();
         });
+        const creditsOverlay = document.getElementById('creditsOverlay');
+        const creditsAudio = document.getElementById('creditsAudio');
+        const creditsAudioStatus = document.getElementById('creditsAudioStatus');
+
+        function openCredits() {
+            creditsAudioStatus.hidden = true;
+            creditsOverlay.classList.add('is-open');
+            creditsOverlay.setAttribute('aria-hidden', 'false');
+            document.getElementById('creditsTitle').focus();
+            creditsAudio.currentTime = 0;
+            const playAttempt = creditsAudio.play();
+            if (playAttempt) {
+                playAttempt.catch(error => {
+                    if (!creditsOverlay.classList.contains('is-open')) return;
+                    creditsAudioStatus.textContent = 'Could not play the credits audio. Check that the MP3 is available and playback is allowed.';
+                    creditsAudioStatus.hidden = false;
+                    console.error('Could not play credits audio.', error);
+                });
+            }
+        }
+
+        function closeCredits() {
+            creditsAudio.pause();
+            creditsAudio.currentTime = 0;
+            creditsOverlay.classList.remove('is-open');
+            creditsAudioStatus.hidden = true;
+            document.getElementById('creditsLauncher').focus();
+            creditsOverlay.setAttribute('aria-hidden', 'true');
+        }
+
+        creditsOverlay.addEventListener('click', event => {
+            if (event.target === creditsOverlay) closeCredits();
+        });
         // Close on Escape
         document.addEventListener('keydown', event => {
-            if (event.key === 'Escape') closeSettings();
+            if (event.key !== 'Escape') return;
+            if (creditsOverlay.classList.contains('is-open')) {
+                closeCredits();
+                return;
+            }
+            closeSettings();
         });
 
         /* ===================== Settings: panic key ===================== */
@@ -1843,8 +2023,8 @@ nav[class*="text-slate"] { color: var(--nav-color); }
 
         // Apply saved theme on load
         (function initSettings() {
-            let saved = 'dark';
-            try { saved = localStorage.getItem(THEME_KEY) || 'dark'; } catch (e) {}
+            let saved = 'glass';
+            try { saved = localStorage.getItem(THEME_KEY) || 'glass'; } catch (e) {}
             applyTheme(saved);
             refreshSettingsUI();
         
@@ -1866,18 +2046,54 @@ nav[class*="text-slate"] { color: var(--nav-color); }
     </script>
 
 <style>
-/* Hide the old site navigation; keep a standalone Nullcord launcher. */
+/* Keep the old site navigation hidden while exposing a compact Apps launcher. */
 .marquee,.site-note{display:none!important}
-#nullcordLauncher{position:fixed;right:24px;bottom:24px;z-index:9998;border:1px solid #7164c8;background:#292342;color:#eeeaff;padding:12px 18px;border-radius:999px;font:700 13px Inter,system-ui,sans-serif;letter-spacing:.04em;box-shadow:0 8px 28px #0008;cursor:pointer;transition:transform .15s,background .15s}
-#nullcordLauncher:hover{background:#3a315d;transform:translateY(-2px)}
-@media(max-width:600px){#nullcordLauncher{right:14px;bottom:14px;padding:11px 15px}}
+#appsLauncher{position:fixed;right:22px;bottom:22px;z-index:9998;display:flex;align-items:center;justify-content:center;gap:8px;min-width:124px;min-height:48px;border:1px solid var(--amber-border);background:var(--panel);color:var(--text-strong);padding:12px 18px;border-radius:10px;font:700 14px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:normal;box-shadow:0 5px 16px rgba(22,51,45,.18);cursor:pointer;transition:transform .12s,background .12s,box-shadow .12s}
+#appsLauncher:hover{background:var(--btn-hover-bg);transform:translateY(-2px);box-shadow:0 8px 20px rgba(22,51,45,.22)}
+#appsLauncher:focus-visible,.apps-entry:focus-visible,.apps-close:focus-visible{outline:3px solid var(--amber-focus);outline-offset:3px}
+#appsPanel{position:fixed;right:22px;bottom:82px;z-index:9998;width:min(340px,calc(100vw - 28px));max-height:70vh;overflow-y:auto;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);box-shadow:0 16px 40px rgba(22,51,45,.22)}
+#appsPanel[hidden]{display:none}
+.apps-panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.apps-panel-head h2{margin:0;color:var(--text-strong);font:700 18px/1.2 Georgia,"Times New Roman",serif}
+.apps-close{width:32px;height:32px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font-size:18px;cursor:pointer}
+.apps-list{display:grid;gap:8px}
+.apps-entry{display:flex;align-items:center;gap:12px;width:100%;padding:11px;text-align:left;text-decoration:none;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--text);font:inherit;cursor:pointer;transition:border-color .12s,transform .12s}
+.apps-entry:hover{border-color:var(--amber-border);transform:translateY(-1px)}
+.apps-entry-icon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:10px;background:var(--btn-hover-bg);color:var(--amber);font-size:22px;font-weight:700}
+.apps-entry-copy{display:grid;gap:4px;min-width:0}
+.apps-entry-copy strong{color:var(--text-strong);font-size:14px}
+.apps-entry-copy small{color:var(--muted);font-size:12px;line-height:1.35}
+@media(max-width:600px){#appsLauncher{right:14px;bottom:14px;min-width:112px;min-height:44px;padding:11px 16px}#appsPanel{right:14px;bottom:70px}}
 #nullcordFrame{display:none;position:fixed;inset:0;width:100%;height:100%;border:0;z-index:99999;background:#111214}
 </style>
-<button id="nullcordLauncher" type="button" onclick="openNullcord()" aria-label="Open Nullcord">Nullcord ✦</button>
+<button id="appsLauncher" type="button" onclick="toggleApps()" aria-controls="appsPanel" aria-expanded="false" aria-label="Open Apps">▦ Apps</button>
+<section id="appsPanel" aria-label="Apps" hidden>
+    <div class="apps-panel-head">
+        <h2>Apps</h2>
+        <button class="apps-close" type="button" onclick="closeApps()" aria-label="Close Apps">×</button>
+    </div>
+    <div class="apps-list">
+        <button class="apps-entry" type="button" onclick="openNullcord()">
+            <span class="apps-entry-icon" aria-hidden="true">✦</span>
+            <span class="apps-entry-copy"><strong>Nullcord</strong><small>Open your chat app</small></span>
+        </button>
+        <button class="apps-entry" type="button" aria-label="Open the official TikTok website in a new tab" onclick="closeApps();launchGameInBlankTab('https://shrill-salad-b361.hollowvr88.workers.dev/','TikTok')">
+            <span class="apps-entry-icon" aria-hidden="true">♪</span>
+            <span class="apps-entry-copy"><strong>TikTok</strong><small>Open the official TikTok website ↗</small></span>
+        </button>
+    </div>
+</section>
 <iframe id="nullcordFrame" title="Nullcord" src="nullcord/index.html" allow="microphone; autoplay; clipboard-read; clipboard-write; display-capture"></iframe>
 <script>
-window.openNullcord=()=>{document.getElementById("nullcordFrame").style.display="block"};
-window.closeNullcord=()=>{document.getElementById("nullcordFrame").style.display="none"};
+const appsPanel=document.getElementById("appsPanel");
+const appsLauncher=document.getElementById("appsLauncher");
+window.openApps=()=>{appsPanel.hidden=false;appsLauncher.setAttribute("aria-expanded","true")};
+window.closeApps=()=>{appsPanel.hidden=true;appsLauncher.setAttribute("aria-expanded","false")};
+window.toggleApps=()=>{if(appsPanel.hidden)window.openApps();else window.closeApps()};
+window.openNullcord=()=>{window.closeApps();document.getElementById("nullcordFrame").style.display="block"};
+window.closeNullcord=()=>{document.getElementById("nullcordFrame").style.display="none";appsLauncher.focus()};
+document.addEventListener("click",event=>{if(!appsPanel.contains(event.target)&&!appsLauncher.contains(event.target))window.closeApps()});
+document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!appsPanel.hidden)window.closeApps()});
 </script>
 
 </body>
