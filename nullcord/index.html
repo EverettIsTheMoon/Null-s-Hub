@@ -411,11 +411,13 @@ function renderChannelList(){
 let ncSeenNotificationIds=new Set();
 function ncUpdateNotificationButton(){
  const b=$("ncEnableNotifications");if(!b)return;
- const supported="Notification" in window;
- if(!supported){b.textContent="Notifications unavailable";b.disabled=true;return}
- if(Notification.permission==="granted"){b.textContent="Notifications on";b.classList.add("enabled")}
- else if(Notification.permission==="denied"){b.textContent="Notifications blocked";b.classList.remove("enabled")}
- else{b.textContent="Enable notifications";b.classList.remove("enabled")}
+ // In-app alerts are the primary notification system and work without browser permission.
+ b.disabled=false;
+ b.textContent="In-app alerts on";
+ b.classList.add("enabled");
+ b.title=("Notification" in window)
+  ?"In-app alerts are active. Click to optionally enable browser notifications."
+  :"In-app alerts are active. Browser notifications are unavailable in this page context.";
 }
 window.ncRequestNotifications=async()=>{
  const b=$("ncEnableNotifications");
