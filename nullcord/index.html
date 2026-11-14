@@ -165,7 +165,7 @@ const URL="https://aujkhiljakaxkakidkbi.supabase.co";
 const KEY="sb_publishable_4y09p5yrlXGOD3hrKSQ5tQ_ICtxcPvB";
 const sb=window.supabase?window.supabase.createClient(URL,KEY):null;
 const ICE={iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"}]};
-let user=null,profile=null,activePeerId=null,active={type:"home",id:null},servers=[],friends=[],requests=[],channels=[],currentMessages=[],realtime=null,callChannel=null,callPc=null,localStream=null,incomingOffer=null,callPeer=null,callMuted=false,callState="idle",authListener=null,messagePoll=null,pendingIce=[],myRole="member",sendChans={};
+let user=null,profile=null,activePeerId=null,active={type:"home",id:null},servers=[],friends=[],requests=[],channels=[],currentMessages=[],realtime=null,callChannel=null,callPc=null,localStream=null,screenStream=null,incomingOffer=null,callPeer=null,callMuted=false,callState="idle",authListener=null,messagePoll=null,pendingIce=[],myRole="member",sendChans={};
 let rec=null,recChunks=[],recCancelled=false,recStream=null;
 let vc=null; // voice channel state {id,chan,pcs:{},stream,muted}
 const $=id=>document.getElementById(id);
@@ -250,14 +250,14 @@ async function loadChannels(){
 }
 window.ncOpenChannel=async id=>{const c=channels.find(x=>x.id===id);if(!c)return;active={type:"channel",id,server:active.server};currentMessages=[];$("ncTopTitle").textContent="# "+c.name;const can=!c.admin_only||isStaff();setComposer(can,can?"Message #"+c.name:"🔒 Only mods and admins can post in #"+c.name);renderChannelList();await loadMessages();loadMembers()};
 async function loadMembers(){
- const sid=active.server;if(!sid){$("ncMembers").innerHTML="";return}
+ const sid=active.server;if(!sid){$("ncMemberList").innerHTML="";return}
  const {data}=await sb.from("server_members").select("user_id,role,profiles(id,username,display_name,avatar_url)").eq("server_id",sid);
  const s=servers.find(x=>x.id===sid);const list=data||[];
- $("ncMembers").innerHTML='<div class="nc-side-label">Members — '+list.length+'</div>'+list.map(x=>{
+ $("ncMemberList").innerHTML='<div class="nc-side-label">Members — '+list.length+'</div>'+list.map(x=>{
   const owner=s?.owner_id===x.user_id;const role=owner?"owner":(x.role||"member");
   let ctl="";
   if(!owner&&isAdmin()&&x.user_id!==user.id)ctl='<select onchange="ncSetRole(\''+x.user_id+'\',this.value)"><option value="member" '+(role==="member"?"selected":"")+'>Member</option><option value="mod" '+(role==="mod"?"selected":"")+'>Mod</option>'+(isOwner()?'<option value="admin" '+(role==="admin"?"selected":"")+'>Admin</option>':'')+'</select>';
-  return '<div class="nc-member">'+avatar(x.profiles||"?")+'<span>'+esc(x.profiles?.display_name||x.profiles?.username||"Member")+'</span>'+(role!=="member"?'<span class="nc-badge '+role+'">'+role+'</span>':'')+ctl+'</div>'}).join("");
+  return '<div class="nc-member" data-uid="'+x.user_id+'">'+avatar(x.profiles||"?")+'<span>'+esc(x.profiles?.display_name||x.profiles?.username||"Member")+'</span>'+(role!=="member"?'<span class="nc-badge '+role+'">'+role+'</span>':'')+ctl+'</div>'}).join("");
 }
 window.ncSetRole=async(uid,role)=>{const {error}=await sb.rpc("nullcord_set_role",{p_server:active.server,p_user:uid,p_role:role});if(error)toast(error.message);else toast("Role updated");loadMembers()};
 window.ncOpenDM=async friendId=>{
@@ -444,6 +444,7 @@ function subscribeCalls(){
  callChannel=sb.channel("nc-call-"+user.id,{config:{broadcast:{self:false}}}).on("broadcast",{event:"sig"},async({payload:p})=>{
   if(!p||p.from===user.id)return;
   if(p.kind==="offer"){
+    if(callState!=="idle"&&callPeer===p.from&&callPc&&p.renegotiate){try{await callPc.setRemoteDescription(p.sdp);const a=await callPc.createAnswer();await callPc.setLocalDescription(a);await signal(p.from,{kind:"answer",sdp:callPc.localDescription})}catch(e){toast("Screen-share negotiation failed: "+e.message)}return}
    if(callState!=="idle"){signal(p.from,{kind:"busy"});return}
    incomingOffer=p;callPeer=p.from;callState="ringing";pendingIce=[];
    $("ncIncomingName").textContent=p.fromName+" is calling…";$("ncIncomingCall").hidden=false;playNcSound("ncSoundCall");
@@ -461,13 +462,20 @@ function makeCallPc(peer){
  callPc=new RTCPeerConnection(ICE);
  localStream.getTracks().forEach(t=>callPc.addTrack(t,localStream));
  callPc.onicecandidate=e=>{if(e.candidate)signal(peer,{kind:"ice",candidate:e.candidate})};
- callPc.ontrack=e=>{$("ncRemoteAudio").srcObject=e.streams[0];$("ncRemoteAudio").play().catch(()=>{})};
+ callPc.ontrack=e=>{if(e.track.kind==="video"){const v=$("ncRemoteVideo");v.srcObject=e.streams[0];v.style.display="block";v.play().catch(()=>{})}else{$("ncRemoteAudio").srcObject=e.streams[0];$("ncRemoteAudio").play().catch(()=>{})}};
  callPc.onconnectionstatechange=()=>{const s=callPc?.connectionState;if(s==="connected"){stopSound("ncSoundCall");playNcSound("ncSoundJoin");$("ncCallStatus").textContent="In call";callState="active"}else if(s==="failed"||s==="disconnected"){$("ncCallStatus").textContent="Connection lost"}};
 }
 async function getMic(){
  if(!navigator.mediaDevices?.getUserMedia){toast("Microphone not available (needs https).");return null}
  try{return await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}})}catch(e){toast("Microphone permission denied.");return null}
 }
+async function ncRenegotiate(){if(!callPc||!callPeer)return;try{const o=await callPc.createOffer();await callPc.setLocalDescription(o);await signal(callPeer,{kind:"offer",sdp:callPc.localDescription,renegotiate:true})}catch(e){toast("Could not update call: "+e.message)}}
+window.ncToggleScreenShare=async()=>{
+ if(!callPc||callState==="idle"){toast("Start a voice call first.");return}
+ if(screenStream){screenStream.getTracks().forEach(t=>t.stop());screenStream=null;$("ncShareButton").textContent="Share screen";$("ncRemoteVideo").style.display="none";await ncRenegotiate();return}
+ if(!navigator.mediaDevices?.getDisplayMedia){toast("Screen sharing is not supported in this browser.");return}
+ try{screenStream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:15},audio:false});const track=screenStream.getVideoTracks()[0];if(!track)return;callPc.addTrack(track,screenStream);track.onended=()=>{if(screenStream){screenStream.getTracks().forEach(t=>t.stop());screenStream=null;$("ncShareButton").textContent="Share screen";ncRenegotiate()}};$("ncShareButton").textContent="Stop sharing";await ncRenegotiate()}catch(e){toast("Screen sharing cancelled or blocked: "+e.message)}
+};
 window.ncStartCall=async()=>{
  if(!activePeerId||callState!=="idle"){return}
  if(vc){toast("Leave your voice channel first.");return}
@@ -495,7 +503,7 @@ window.ncHangup=async(remote)=>{
  clearTimeout(ncStartCall.t);stopSound("ncSoundCall");
  if(!remote&&callPeer&&callState!=="idle"&&callState!=="ringing")signal(callPeer,{kind:"hangup"});
  try{callPc?.close()}catch(e){}callPc=null;
- localStream?.getTracks().forEach(t=>t.stop());localStream=null;
+ localStream?.getTracks().forEach(t=>t.stop());localStream=null;screenStream?.getTracks().forEach(t=>t.stop());screenStream=null;$("ncRemoteVideo").srcObject=null;$("ncRemoteVideo").style.display="none";$("ncShareButton").textContent="Share screen";
  $("ncRemoteAudio").srcObject=null;$("ncCallBar").hidden=true;$("ncIncomingCall").hidden=true;
  callState="idle";callPeer=null;incomingOffer=null;pendingIce=[];
 };
