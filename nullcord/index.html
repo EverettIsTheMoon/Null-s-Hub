@@ -102,21 +102,56 @@ select.nc-field{cursor:pointer}
 #ncMobileMenu{display:none}
 @media(max-width:720px){#ncSide{width:190px}#ncMembers{display:none!important}#ncServers{width:58px}.nc-server{width:42px;height:42px}#ncMessages{padding:16px 12px}#ncComposerWrap{padding:0 10px 12px}#ncTop{padding:0 12px}}
 @media(max-width:480px){#ncServers{width:52px}#ncSide{width:145px}#ncSideHead{padding:12px 9px;font-size:13px}.nc-side-item{font-size:12px;padding:8px 6px;gap:5px}#ncMe{padding:7px}#ncMe .nc-avatar{width:28px;height:28px}}
+
+#ncServers{width:66px;background:#111214;padding:12px 0}
+#ncSide{width:248px;background:#191a1f}
+#ncSideHead{height:62px;border-color:#292a31;box-shadow:none}
+#ncMain{background:#202127}
+#ncTop{height:62px;border-color:#30313a;box-shadow:none;padding:0 22px}
+#ncMessages{padding:24px clamp(16px,3vw,42px);gap:15px}
+.nc-msg{padding:4px 0}
+.nc-msg-name{cursor:pointer}
+.nc-msg-name:hover{text-decoration:underline}
+.nc-side-item{border-radius:8px;padding:9px 11px}
+.nc-side-item:hover,.nc-side-item.active{background:#30323b}
+#ncComposerWrap{padding:0 24px 22px}
+#ncComposer{background:#30323b;border:1px solid #3a3c46;border-radius:12px;padding:12px}
+#ncMembers{display:block;width:270px;background:#191a1f;border-left:1px solid #2b2c33;padding:16px 12px;overflow:auto}
+#ncProfilePanel{padding:0 0 16px;border-bottom:1px solid #30313a;margin-bottom:14px}
+.nc-profile-banner{height:104px;border-radius:10px;background:linear-gradient(135deg,#36bdd1,#5865f2);margin-bottom:-38px}
+.nc-profile-avatar{position:relative;margin-left:16px;width:76px;height:76px;border:6px solid #191a1f;border-radius:50%;overflow:hidden;background:#5865f2;color:white;display:grid;place-items:center;font-size:25px;font-weight:800}
+.nc-profile-avatar img{width:100%;height:100%;object-fit:cover}
+.nc-profile-name{font-size:19px;font-weight:800;color:#f2f3f5;margin:10px 8px 0}
+.nc-profile-user{color:#aeb2bd;font-size:12px;margin:2px 8px 12px}
+.nc-profile-bio{font-size:13px;color:#d4d6dd;line-height:1.5;background:#24262d;border-radius:8px;padding:12px;margin:10px 4px}
+.nc-profile-meta{font-size:11px;color:#9da1ad;margin:8px}
+.nc-profile-empty{color:#989ba6;font-size:12px;padding:16px 8px}
+.nc-profile-action{margin:8px 4px;width:calc(100% - 8px)}
+.nc-member{cursor:pointer;border-radius:8px;padding:8px}
+.nc-member:hover{background:#2b2d35}
+.nc-tool{font-size:12px;font-weight:800;min-width:38px}
+.nc-media{display:block;max-width:min(440px,100%);max-height:360px;border-radius:10px;margin-top:8px;object-fit:contain;background:#111}
+.nc-gif-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:55vh;overflow:auto}
+.nc-gif-result{border:0;background:#24262d;padding:0;border-radius:8px;overflow:hidden;cursor:pointer}
+.nc-gif-result img{width:100%;height:120px;object-fit:cover;display:block}
+.nc-callbar{bottom:20px}
+@media(max-width:850px){#ncMembers{display:none!important}#ncSide{width:205px}}
+@media(max-width:600px){#ncServers{width:50px}#ncSide{width:155px}#ncComposerWrap{padding:0 9px 12px}#ncMessages{padding:14px 10px}#ncTop{padding:0 10px}#ncRemoteVideo{width:88vw;right:6vw;bottom:120px}}
 </style>
 </head>
 <body>
 <div id="nullcordApp" aria-label="Nullcord chat application">
   <div id="ncServers"><button class="nc-server active" title="Direct messages" onclick="ncShowHome()">✦</button><div class="nc-sep"></div><div id="ncServerIcons"></div><button class="nc-server" title="Create a server" onclick="ncOpenModal('server')">＋</button><button class="nc-server" title="Join a server" onclick="ncOpenModal('join')">↗</button><div style="flex:1"></div><button class="nc-server" title="Close Nullcord" onclick="closeNullcord()">×</button></div>
   <aside id="ncSide"><div id="ncSideHead"><span id="ncSideTitle">Messages</span><button class="nc-icon-btn" title="New message" onclick="ncOpenModal('friend')">＋</button></div><div id="ncSideBody"><div id="ncSideContent"></div></div><div id="ncMe"><div class="nc-avatar" id="ncMyAvatar">?</div><div id="ncMeText"><div id="ncMeName">Not signed in</div><div id="ncMeStatus">Connect to chat</div></div><button class="nc-icon-btn" title="Settings" onclick="ncAccountAction()">⚙</button></div></aside>
-  <main id="ncMain"><div id="ncTop"><button class="nc-icon-btn" id="ncBack" onclick="ncShowHome()" style="display:none">‹</button><span id="ncTopTitle">Welcome to Nullcord</span><button class="nc-icon-btn" id="ncCallButton" title="Start voice call" onclick="ncStartCall()" style="display:none">☎</button><button class="nc-icon-btn" title="Members" onclick="document.getElementById('ncMembers').classList.toggle('show')">♙</button></div><div id="ncMessages"><div class="nc-welcome"><div class="nc-big">✦</div><h2>Welcome to Nullcord</h2><p>Your space. Your people. Your conversations.<br>Sign in or create an account to get started.</p><button class="nc-primary" onclick="ncOpenModal('auth')">Sign in / Register</button></div></div><div id="ncComposerWrap"><div class="nc-muted" id="ncComposerHint" style="padding:0 0 8px 3px">Choose a conversation to start chatting</div><div id="ncComposer"><textarea id="ncInput" rows="1" placeholder="Message..." disabled></textarea><button class="nc-secondary" id="ncMic" title="Record a voice message (click to start, click again to send)" disabled onclick="ncToggleRecord()">🎤</button><button class="nc-secondary" id="ncMicCancel" title="Cancel recording" style="display:none" onclick="ncCancelRecord()">✕</button><button class="nc-primary" id="ncSend" disabled onclick="ncSendMessage()">Send</button></div></div></main>
-  <aside id="ncMembers"></aside>
+  <main id="ncMain"><div id="ncTop"><button class="nc-icon-btn" id="ncBack" onclick="ncShowHome()" style="display:none">‹</button><span id="ncTopTitle">Welcome to Nullcord</span><button class="nc-icon-btn" id="ncCallButton" title="Start voice call" onclick="ncStartCall()" style="display:none">☎</button><button class="nc-icon-btn" title="Members" onclick="document.getElementById('ncMembers').classList.toggle('show')">♙</button></div><div id="ncMessages"><div class="nc-welcome"><div class="nc-big">✦</div><h2>Welcome to Nullcord</h2><p>Your space. Your people. Your conversations.<br>Sign in or create an account to get started.</p><button class="nc-primary" onclick="ncOpenModal('auth')">Sign in / Register</button></div></div><div id="ncComposerWrap"><div class="nc-muted" id="ncComposerHint" style="padding:0 0 8px 3px">Choose a conversation to start chatting</div><div id="ncComposer"><textarea id="ncInput" rows="1" placeholder="Message..." disabled></textarea><button class="nc-secondary nc-tool" id="ncImageBtn" title="Upload image" disabled onclick="document.getElementById(&quot;ncImageFile&quot;).click()">＋</button><input id="ncImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden><button class="nc-secondary nc-tool" id="ncGifBtn" title="Search GIFs" disabled onclick="ncOpenGifPicker()">GIF</button><button class="nc-secondary" id="ncMic" title="Record a voice message (click to start, click again to send)" disabled onclick="ncToggleRecord()">🎤</button><button class="nc-secondary" id="ncMicCancel" title="Cancel recording" style="display:none" onclick="ncCancelRecord()">✕</button><button class="nc-primary" id="ncSend" disabled onclick="ncSendMessage()">Send</button></div></div></main>
+  <aside id="ncMembers"><div id="ncProfilePanel"><div class="nc-profile-empty">Select someone to view their profile.</div></div><div id="ncMemberList"></div></aside>
   <div class="nc-modal" id="ncModal"><div class="nc-dialog"><h2 id="ncModalTitle">Nullcord</h2><p id="ncModalDesc"></p><div id="ncModalFields"></div><div class="nc-dialog-actions"><button class="nc-secondary" onclick="ncCloseModal()">Cancel</button><button class="nc-primary" id="ncModalSubmit">Continue</button></div></div></div>
   <div id="ncToast"></div>
 
   <div class="nc-modal" id="ncSettingsModal"><div class="nc-dialog nc-settings-dialog"><h2>Profile & Settings</h2><p>Customize your Nullcord profile.</p><div class="nc-settings-grid"><div><div class="nc-profile-preview" id="ncAvatarPreview">?</div><label style="margin-top:10px">Profile picture</label><input id="ncAvatarFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="nc-field" style="padding:7px;font-size:11px"></div><div><label>Display name</label><input id="ncDisplayName" class="nc-field" maxlength="32" placeholder="Display name"><label>Username</label><input id="ncProfileUsername" class="nc-field" maxlength="24" placeholder="username"><label>Bio</label><textarea id="ncBio" class="nc-field" maxlength="190" rows="4" placeholder="A little about you..."></textarea></div></div><div class="nc-dialog-actions" style="justify-content:space-between"><button class="nc-secondary" onclick="ncSignOut()">Sign out</button><div style="display:flex;gap:8px"><button class="nc-secondary" onclick="ncCloseSettings()">Cancel</button><button class="nc-primary" id="ncSaveBtn" onclick="ncSaveSettings()">Save profile</button></div></div></div></div>
   <div class="nc-call-incoming" id="ncIncomingCall" hidden><strong>Incoming voice call</strong><div id="ncIncomingName" style="margin-top:5px;color:#b5bac1">Someone is calling...</div><div class="nc-call-actions"><button class="nc-primary" onclick="ncAcceptCall()">Accept</button><button class="nc-secondary" onclick="ncDeclineCall()">Decline</button></div></div>
-  <div class="nc-callbar" id="ncCallBar" hidden><span id="ncCallStatus">Connecting…</span><span style="flex:1"></span><button class="nc-secondary" id="ncMuteButton" onclick="ncToggleMute()">Mute</button><button class="nc-danger" onclick="ncHangup()">End call</button></div>
-  <audio id="ncRemoteAudio" autoplay playsinline></audio>
+  <div class="nc-callbar" id="ncCallBar" hidden><span id="ncCallStatus">Connecting…</span><span style="flex:1"></span><button class="nc-secondary" id="ncMuteButton" onclick="ncToggleMute()">Mute</button><button class="nc-secondary" id="ncShareButton" onclick="ncToggleScreenShare()">Share screen</button><button class="nc-danger" onclick="ncHangup()">End call</button></div>
+  <audio id="ncRemoteAudio" autoplay playsinline></audio><video id="ncRemoteVideo" autoplay playsinline controls style="display:none;position:absolute;right:18px;bottom:150px;z-index:24;width:min(420px,42vw);max-height:42vh;background:#000;border-radius:12px"></video>
   <div id="ncVcAudio" style="display:none"></div>
   <audio id="ncSoundCall" src="../Sounds/call.mp3" preload="auto" loop></audio>
   <audio id="ncSoundMessage" src="../Sounds/recievemessage.mp3" preload="auto"></audio>
