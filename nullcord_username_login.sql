@@ -37,7 +37,7 @@ set
   updated_at = now()
 from public.profiles p
 where p.id = u.id
-  and u.email is distinct from lower(p.username) || '@login.nullcord.invalid';
+  and u.email is distinct from (lower(p.username) || '@login.nullcord.invalid');
 
 commit;
 
