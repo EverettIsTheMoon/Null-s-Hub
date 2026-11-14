@@ -1,9 +1,8 @@
-
 {
   "name": "nulls-hub",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "node inject-panic.js"
+    "build": "node -e \"console.log('Static site: no build step required.')\""
   }
 }
