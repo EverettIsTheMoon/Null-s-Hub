@@ -473,6 +473,8 @@ async function leaveVoice(silent){
 }
 window.addEventListener("beforeunload",()=>{try{vc&&vc.chan.untrack()}catch(e){}});
 })();
+/* auto-open when loaded as its own page / inside the hub iframe */
+(function(){var go=function(){if(window.openNullcord)window.openNullcord()};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",go);else go()})();
 </script>
 </body>
 </html>
