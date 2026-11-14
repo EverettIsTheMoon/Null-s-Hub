@@ -2018,7 +2018,7 @@ function renderSidebar(){
 function subscribe(){
  if(realtime)sb.removeChannel(realtime);
  realtime=sb.channel("nullcord-live-"+user.id)
- .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},payload=>{if(active.type==="channel"&&payload.new.channel_id===active.id||active.type==="dm"&&payload.new.conversation_id===active.id)loadMessages()})
+ .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},payload=>{if((active.type==="channel"&&payload.new.channel_id===active.id)||(active.type==="dm"&&payload.new.conversation_id===active.id)){if(payload.new.user_id!==user.id)playNcSound("ncSoundMessage");loadMessages()}})
  .on("postgres_changes",{event:"INSERT",schema:"public",table:"friend_requests",filter:"recipient_id=eq."+user.id},()=>refreshAll())
  .subscribe();
 }
