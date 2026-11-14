@@ -1944,9 +1944,13 @@ window.ncHangup=async(silent=false)=>{if(callPeer&&!silent)await sendCallSignal(
 #ncMobileMenu{display:none}
 @media(max-width:720px){#ncSide{width:190px}#ncMembers{display:none!important}#ncServers{width:58px}.nc-server{width:42px;height:42px}#ncMessages{padding:16px 12px}#ncComposerWrap{padding:0 10px 12px}#ncTop{padding:0 12px}}
 @media(max-width:480px){#ncServers{width:52px}#ncSide{width:145px}#ncSideHead{padding:12px 9px;font-size:13px}.nc-side-item{font-size:12px;padding:8px 6px;gap:5px}#ncMe{padding:7px}#ncMe .nc-avatar{width:28px;height:28px}}
-/* Remove the page's top navigation / shortcut strip. */
+/* Keep the cluttered header hidden, but leave Nullcord accessible. */
 .marquee,.site-note{display:none!important}
+#nullcordLauncher{position:fixed;right:24px;bottom:24px;z-index:9998;border:1px solid #7164c8;background:#292342;color:#eeeaff;padding:12px 18px;border-radius:999px;font:700 13px Inter,system-ui,sans-serif;letter-spacing:.04em;box-shadow:0 8px 28px #0008;cursor:pointer;transition:transform .15s,background .15s}
+#nullcordLauncher:hover{background:#3a315d;transform:translateY(-2px)}
+@media(max-width:600px){#nullcordLauncher{right:14px;bottom:14px;padding:11px 15px}}
 </style>
+<button id="nullcordLauncher" type="button" onclick="openNullcord()" aria-label="Open Nullcord">Nullcord ✦</button>
 <div id="nullcordApp" aria-label="Nullcord chat application">
   <div id="ncServers"><button class="nc-server active" title="Direct messages" onclick="ncShowHome()">✦</button><div class="nc-sep"></div><div id="ncServerIcons"></div><button class="nc-server" title="Create a server" onclick="ncOpenModal('server')">＋</button><button class="nc-server" title="Join a server" onclick="ncOpenModal('join')">↗</button><div style="flex:1"></div><button class="nc-server" title="Close Nullcord" onclick="closeNullcord()">×</button></div>
   <aside id="ncSide"><div id="ncSideHead"><span id="ncSideTitle">Messages</span><button class="nc-icon-btn" title="New message" onclick="ncOpenModal('friend')">＋</button></div><div id="ncSideBody"><div id="ncSideContent"></div></div><div id="ncMe"><div class="nc-avatar" id="ncMyAvatar">?</div><div id="ncMeText"><div id="ncMeName">Not signed in</div><div id="ncMeStatus">Connect to chat</div></div><button class="nc-icon-btn" title="Account" onclick="ncAccountAction()">⚙</button></div></aside>
