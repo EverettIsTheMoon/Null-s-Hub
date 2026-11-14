@@ -421,7 +421,29 @@ nav[class*="text-slate"] { color: var(--nav-color); }
         .settings-tab { padding-inline:7px; font-size:11px; }
         .settings-body { padding-inline:14px; }
     }
-    </style>
+    
+#nullcordApp .nc-msg{animation:ncMsgIn .22s ease both}
+#nullcordApp .nc-dialog{animation:ncDialogIn .2s cubic-bezier(.2,.8,.2,1) both}
+#nullcordApp .nc-side-item{transition:background .16s,transform .16s}
+#nullcordApp .nc-side-item:hover{transform:translateX(2px)}
+#nullcordApp .nc-primary,#nullcordApp .nc-icon-btn,#nullcordApp .nc-server{transition:transform .15s,filter .15s}
+#nullcordApp .nc-primary:hover,#nullcordApp .nc-icon-btn:hover,#nullcordApp .nc-server:hover{filter:brightness(1.14);transform:translateY(-1px)}
+#nullcordApp .nc-avatar{overflow:hidden;flex:none}
+#nullcordApp .nc-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.nc-settings-dialog{width:min(540px,94vw);max-height:88vh;overflow:auto}
+.nc-settings-grid{display:grid;grid-template-columns:105px 1fr;gap:18px;align-items:start}
+.nc-profile-preview{width:88px;height:88px;border-radius:50%;background:#5865f2;display:grid;place-items:center;overflow:hidden;font-size:30px;font-weight:800}
+.nc-profile-preview img{width:100%;height:100%;object-fit:cover}
+.nc-call-incoming{position:absolute;z-index:35;top:18px;left:50%;transform:translateX(-50%);width:min(380px,92vw);padding:18px;background:#232428;border:1px solid #ffffff20;border-radius:14px;box-shadow:0 15px 55px #000a;animation:ncDialogIn .2s ease}
+.nc-callbar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#202225;border-top:1px solid #ffffff12}
+.nc-callbar[hidden],.nc-call-incoming[hidden]{display:none!important}
+.nc-call-actions{display:flex;gap:8px;margin-top:12px}
+.nc-call-actions button{flex:1}
+@keyframes ncMsgIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ncDialogIn{from{opacity:0;transform:translateY(9px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){#nullcordApp *,#nullcordApp *:before,#nullcordApp *:after{animation:none!important;transition:none!important}}
+@media(max-width:520px){.nc-settings-grid{grid-template-columns:1fr}.nc-profile-preview{width:76px;height:76px}}
+</style>
 
 
 
@@ -1825,7 +1847,22 @@ nav[class*="text-slate"] { color: var(--nav-color); }
             try { saved = localStorage.getItem(THEME_KEY) || 'dark'; } catch (e) {}
             applyTheme(saved);
             refreshSettingsUI();
-        })();
+        
+window.ncOpenSettings=()=>{if(!user){ncOpenModal("auth");return}$("ncDisplayName").value=profile?.display_name||profile?.username||"";$("ncProfileUsername").value=profile?.username||"";$("ncBio").value=profile?.bio||"";$("ncAvatarPreview").innerHTML=profile?.avatar_url?'<img src="'+esc(profile.avatar_url)+'" alt="">':esc(initials(profile?.username));$("ncAvatarFile").value="";$("ncSettingsModal").classList.add("show")};
+window.ncCloseSettings=()=>$("ncSettingsModal").classList.remove("show");
+window.ncSaveSettings=async()=>{const display_name=$("ncDisplayName").value.trim().slice(0,32),username=$("ncProfileUsername").value.trim().toLowerCase().replace(/[^a-z0-9_]/g,"").slice(0,24),bio=$("ncBio").value.trim().slice(0,190);if(!username){toast("Username cannot be empty.");return}let avatar_url=profile?.avatar_url||null;const file=$("ncAvatarFile").files?.[0];if(file){if(file.size>5*1024*1024){toast("Profile pictures must be 5 MB or smaller.");return}if(!/^image\/(png|jpeg|webp|gif)$/.test(file.type)){toast("Choose a PNG, JPG, WebP, or GIF image.");return}const ext={"image/png":"png","image/jpeg":"jpg","image/webp":"webp","image/gif":"gif"}[file.type],path=user.id+"/avatar-"+Date.now()+"."+ext;const up=await sb.storage.from("nullcord-avatars").upload(path,file,{upsert:true,contentType:file.type});if(up.error){toast(up.error.message);return}avatar_url=sb.storage.from("nullcord-avatars").getPublicUrl(path).data.publicUrl}const {data,error}=await sb.from("profiles").update({display_name,username,bio,avatar_url}).eq("id",user.id).select().single();if(error){toast(error.message);return}profile=data;setMe();await refreshAll();ncCloseSettings();toast("Profile saved!")};
+window.ncSignOut=async()=>{if(!confirm("Sign out of Nullcord?"))return;await ncHangup(true);await sb.auth.signOut();user=null;profile=null;friends=[];servers=[];ncShowHome();setMe();ncCloseSettings();toast("Signed out.")};
+$("ncAvatarFile").addEventListener("change",e=>{const f=e.target.files?.[0];if(!f)return;const u=URL.createObjectURL(f);$("ncAvatarPreview").innerHTML='<img src="'+u+'" alt="">'});
+function playNcSound(id){const a=$(id);if(!a)return;try{a.currentTime=0;const p=a.play();if(p?.catch)p.catch(()=>{})}catch(e){}}
+async function subscribeCalls(){if(callChannel)sb.removeChannel(callChannel);callChannel=sb.channel("nullcord-call-"+user.id).on("broadcast",{event:"signal"},async({payload})=>{if(!payload||payload.to!==user.id||payload.from===user.id)return;if(payload.kind==="offer"){if(callState!=="idle"){sendCallSignal(payload.from,{kind:"busy"});return}callPeer=payload.from;incomingOffer=payload.description;$("ncIncomingName").textContent=payload.name||"A friend";$("ncIncomingCall").hidden=false;playNcSound("ncSoundCall")}else if(payload.kind==="answer"&&callPc){await callPc.setRemoteDescription(payload.description);$("ncCallStatus").textContent="Voice connected"}else if(payload.kind==="ice"&&callPc&&payload.candidate){try{await callPc.addIceCandidate(payload.candidate)}catch(e){}}else if(payload.kind==="hangup"||payload.kind==="busy"){await ncHangup(true);if(payload.kind==="busy")toast("That person is already on a call.")}}).subscribe()}
+async function sendCallSignal(to,data){const ch=sb.channel("nullcord-call-"+to);await ch.send({type:"broadcast",event:"signal",payload:{...data,from:user.id,to}});sb.removeChannel(ch)}
+async function makePeer(peerId){callPc=new RTCPeerConnection({iceServers:[{urls:"stun:stun.l.google.com:19302"}]});callPc.onicecandidate=e=>{if(e.candidate)sendCallSignal(peerId,{kind:"ice",candidate:e.candidate})};callPc.ontrack=e=>{$("ncRemoteAudio").srcObject=e.streams[0];$("ncRemoteAudio").play().catch(()=>{});$("ncCallStatus").textContent="Voice connected";playNcSound("ncSoundJoin")};localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});localStream.getTracks().forEach(t=>callPc.addTrack(t,localStream));$("ncCallBar").hidden=false;callState="active";$("ncCallStatus").textContent="Connecting…"}
+window.ncStartCall=async()=>{if(active.type!=="dm"||!active.id){toast("Open a direct message first.");return}if(!navigator.mediaDevices?.getUserMedia||!window.RTCPeerConnection){toast("Voice calling is not supported by this browser.");return}if(!window.isSecureContext){toast("Voice calls require HTTPS.");return}if(callState!=="idle"){toast("You're already in a call.");return}const f=friends.find(x=>x.id===active.id);callPeer=active.id;try{await makePeer(callPeer);const offer=await callPc.createOffer();await callPc.setLocalDescription(offer);await sendCallSignal(callPeer,{kind:"offer",description:offer,name:profile?.display_name||profile?.username||"Friend"});$("ncCallStatus").textContent="Calling "+(f?.display_name||f?.username||"friend")+"…";playNcSound("ncSoundCall")}catch(e){toast("Could not start call: "+e.message);await ncHangup(true)}};
+window.ncAcceptCall=async()=>{if(!incomingOffer||!callPeer)return;const from=callPeer;$("ncIncomingCall").hidden=true;$("ncSoundCall").pause();try{await makePeer(from);await callPc.setRemoteDescription(incomingOffer);const answer=await callPc.createAnswer();await callPc.setLocalDescription(answer);await sendCallSignal(from,{kind:"answer",description:answer});incomingOffer=null;playNcSound("ncSoundJoin")}catch(e){toast("Could not join call: "+e.message);await ncHangup(true)}};
+window.ncDeclineCall=async()=>{if(callPeer)await sendCallSignal(callPeer,{kind:"hangup"});$("ncIncomingCall").hidden=true;$("ncSoundCall").pause();incomingOffer=null;callPeer=null;callState="idle"};
+window.ncToggleMute=()=>{callMuted=!callMuted;(localStream?.getAudioTracks()||[]).forEach(t=>t.enabled=!callMuted);$("ncMuteButton").textContent=callMuted?"Unmute":"Mute"};
+window.ncHangup=async(silent=false)=>{if(callPeer&&!silent)await sendCallSignal(callPeer,{kind:"hangup"});$("ncSoundCall").pause();$("ncSoundCall").currentTime=0;$("ncIncomingCall").hidden=true;$("ncCallBar").hidden=true;$("ncRemoteAudio").srcObject=null;if(callPc){callPc.close();callPc=null}if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null}incomingOffer=null;callPeer=null;callMuted=false;callState="idle";$("ncMuteButton").textContent="Mute"};
+\n})();
 
         // Shared panic-key handler: used on the hub and injected into games
         function handlePanicKey(event) {
@@ -1910,10 +1947,18 @@ nav[class*="text-slate"] { color: var(--nav-color); }
 <div id="nullcordApp" aria-label="Nullcord chat application">
   <div id="ncServers"><button class="nc-server active" title="Direct messages" onclick="ncShowHome()">✦</button><div class="nc-sep"></div><div id="ncServerIcons"></div><button class="nc-server" title="Create a server" onclick="ncOpenModal('server')">＋</button><button class="nc-server" title="Join a server" onclick="ncOpenModal('join')">↗</button><div style="flex:1"></div><button class="nc-server" title="Close Nullcord" onclick="closeNullcord()">×</button></div>
   <aside id="ncSide"><div id="ncSideHead"><span id="ncSideTitle">Messages</span><button class="nc-icon-btn" title="New message" onclick="ncOpenModal('friend')">＋</button></div><div id="ncSideBody"><div id="ncSideContent"></div></div><div id="ncMe"><div class="nc-avatar" id="ncMyAvatar">?</div><div id="ncMeText"><div id="ncMeName">Not signed in</div><div id="ncMeStatus">Connect to chat</div></div><button class="nc-icon-btn" title="Account" onclick="ncAccountAction()">⚙</button></div></aside>
-  <main id="ncMain"><div id="ncTop"><button class="nc-icon-btn" id="ncBack" onclick="ncShowHome()" style="display:none">‹</button><span id="ncTopTitle">Welcome to Nullcord</span><button class="nc-icon-btn" title="Members" onclick="document.getElementById('ncMembers').classList.toggle('show')">♙</button></div><div id="ncMessages"><div class="nc-welcome"><div class="nc-big">✦</div><h2>Welcome to Nullcord</h2><p>Your space. Your people. Your conversations.<br>Sign in or create an account to get started.</p><button class="nc-primary" onclick="ncOpenModal('auth')">Sign in / Register</button></div></div><div id="ncComposerWrap"><div class="nc-muted" id="ncComposerHint" style="padding:0 0 8px 3px">Choose a conversation to start chatting</div><div id="ncComposer"><textarea id="ncInput" rows="1" placeholder="Message..." disabled></textarea><button class="nc-primary" id="ncSend" disabled onclick="ncSendMessage()">Send</button></div></div></main>
+  <main id="ncMain"><div id="ncTop"><button class="nc-icon-btn" id="ncBack" onclick="ncShowHome()" style="display:none">‹</button><span id="ncTopTitle">Welcome to Nullcord</span><button class="nc-icon-btn" id="ncCallButton" title="Start voice call" onclick="ncStartCall()" style="display:none">☎</button><button class="nc-icon-btn" title="Members" onclick="document.getElementById('ncMembers').classList.toggle('show')">♙</button></div><div id="ncMessages"><div class="nc-welcome"><div class="nc-big">✦</div><h2>Welcome to Nullcord</h2><p>Your space. Your people. Your conversations.<br>Sign in or create an account to get started.</p><button class="nc-primary" onclick="ncOpenModal('auth')">Sign in / Register</button></div></div><div id="ncComposerWrap"><div class="nc-muted" id="ncComposerHint" style="padding:0 0 8px 3px">Choose a conversation to start chatting</div><div id="ncComposer"><textarea id="ncInput" rows="1" placeholder="Message..." disabled></textarea><button class="nc-primary" id="ncSend" disabled onclick="ncSendMessage()">Send</button></div></div></main>
   <aside id="ncMembers"></aside>
   <div class="nc-modal" id="ncModal"><div class="nc-dialog"><h2 id="ncModalTitle">Nullcord</h2><p id="ncModalDesc"></p><div id="ncModalFields"></div><div class="nc-dialog-actions"><button class="nc-secondary" onclick="ncCloseModal()">Cancel</button><button class="nc-primary" id="ncModalSubmit">Continue</button></div></div></div>
   <div id="ncToast"></div>
+
+  <div class="nc-modal" id="ncSettingsModal"><div class="nc-dialog nc-settings-dialog"><h2>Profile & Settings</h2><p>Customize your Nullcord profile.</p><div class="nc-settings-grid"><div><div class="nc-profile-preview" id="ncAvatarPreview">?</div><label style="margin-top:10px">Profile picture</label><input id="ncAvatarFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="nc-field" style="padding:7px;font-size:11px"></div><div><label>Display name</label><input id="ncDisplayName" class="nc-field" maxlength="32" placeholder="Display name"><label>Username</label><input id="ncProfileUsername" class="nc-field" maxlength="24" placeholder="username"><label>Bio</label><textarea id="ncBio" class="nc-field" maxlength="190" rows="4" placeholder="A little about you..."></textarea></div></div><div class="nc-dialog-actions" style="justify-content:space-between"><button class="nc-secondary" onclick="ncSignOut()">Sign out</button><div style="display:flex;gap:8px"><button class="nc-secondary" onclick="ncCloseSettings()">Cancel</button><button class="nc-primary" onclick="ncSaveSettings()">Save profile</button></div></div></div></div>
+  <div class="nc-call-incoming" id="ncIncomingCall" hidden><strong>Incoming voice call</strong><div id="ncIncomingName" style="margin-top:5px;color:#b5bac1">Someone is calling...</div><div class="nc-call-actions"><button class="nc-primary" onclick="ncAcceptCall()">Accept</button><button class="nc-secondary" onclick="ncDeclineCall()">Decline</button></div></div>
+  <div class="nc-callbar" id="ncCallBar" hidden><span id="ncCallStatus">Connecting…</span><span style="flex:1"></span><button class="nc-secondary" id="ncMuteButton" onclick="ncToggleMute()">Mute</button><button class="nc-secondary" onclick="ncHangup()">End call</button></div>
+  <audio id="ncRemoteAudio" autoplay playsinline></audio>
+  <audio id="ncSoundCall" src="Sounds/call.mp3" preload="auto" loop></audio>
+  <audio id="ncSoundMessage" src="Sounds/recievemessage.mp3" preload="auto"></audio>
+  <audio id="ncSoundJoin" src="Sounds/joincall.mp3" preload="auto"></audio>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -1922,7 +1967,7 @@ nav[class*="text-slate"] { color: var(--nav-color); }
 const URL="https://aujkhiljakaxkakidkbi.supabase.co";
 const KEY="sb_publishable_4y09p5yrlXGOD3hrKSQ5tQ_ICtxcPvB";
 const sb=window.supabase?window.supabase.createClient(URL,KEY):null;
-let user=null,profile=null,active={type:"home",id:null},servers=[],friends=[],requests=[],channels=[],currentMessages=[],realtime=null;
+let user=null,profile=null,active={type:"home",id:null},servers=[],friends=[],requests=[],channels=[],currentMessages=[],realtime=null,callChannel=null,callPc=null,localStream=null,incomingOffer=null,callPeer=null,callMuted=false,callState="idle";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const initials=s=>String(s||"?").trim().slice(0,1).toUpperCase();
@@ -1931,12 +1976,12 @@ window.openNullcord=()=>{$("nullcordApp").classList.add("open");document.body.st
 window.closeNullcord=()=>{$("nullcordApp").classList.remove("open");document.body.style.overflow=""};
 window.ncShowHome=()=>{active={type:"home",id:null};$("ncSideTitle").textContent="Messages";$("ncBack").style.display="none";$("ncTopTitle").textContent="Direct Messages";$("ncComposerHint").textContent="Choose a conversation to start chatting";$("ncInput").disabled=true;$("ncSend").disabled=true;renderSidebar();welcome()};
 function welcome(){ $("ncMessages").innerHTML='<div class="nc-welcome"><div class="nc-big">✦</div><h2>Welcome to Nullcord</h2><p>Pick a friend or a server channel to start talking.</p></div>'; }
-function avatar(name){return '<div class="nc-avatar">'+esc(initials(name))+'</div>'}
-function setMe(){ $("ncMyAvatar").textContent=initials(profile?.username||user?.email);$("ncMeName").textContent=profile?.username||user?.email||"Not signed in";$("ncMeStatus").textContent=user?"Online":"Signed out"}
+function avatar(who){const name=typeof who==="object"?(who.display_name||who.username||"U"):who;const url=typeof who==="object"?who.avatar_url:null;return '<div class="nc-avatar">'+(url?'<img src="'+esc(url)+'" alt="">':esc(initials(name)))+'</div>'}
+function setMe(){const a=$("ncMyAvatar");a.innerHTML=profile?.avatar_url?'<img src="'+esc(profile.avatar_url)+'" alt="">':esc(initials(profile?.display_name||profile?.username||user?.email));$("ncMeName").textContent=profile?.display_name||profile?.username||user?.email||"Not signed in";$("ncMeStatus").textContent=user?"Online":"Signed out"}
 async function init(){
  const {data:{session}}=await sb.auth.getSession();user=session?.user||null;
  if(!user){setMe();$("ncSideContent").innerHTML='<div class="nc-welcome" style="padding:20px 8px"><p>Sign in to find friends and chat.</p><button class="nc-primary" onclick="ncOpenModal(\'auth\')">Sign in</button></div>';welcome();return}
- await loadProfile();await refreshAll();subscribe();setMe();
+ await loadProfile();await refreshAll();subscribe();subscribeCalls();setMe();
 }
 async function loadProfile(){
  let {data}=await sb.from("profiles").select("*").eq("id",user.id).maybeSingle();profile=data;
@@ -1993,7 +2038,7 @@ async function loadMembers(){
 window.ncOpenDM=async friendId=>{
  const {data,error}=await sb.rpc("nullcord_start_dm",{other_user:friendId});
  if(error){toast(error.message);return}
- active={type:"dm",id:data};$("ncBack").style.display="";const f=friends.find(x=>x.id===friendId);$("ncTopTitle").textContent=f?.display_name||f?.username||"Direct message";$("ncInput").disabled=false;$("ncSend").disabled=false;$("ncComposerHint").textContent="Message @"+(f?.username||"friend");await loadMessages();$("ncMembers").classList.remove("show");
+ active={type:"dm",id:data};$("ncBack").style.display="";$("ncCallButton").style.display="";const f=friends.find(x=>x.id===friendId);$("ncTopTitle").textContent=f?.display_name||f?.username||"Direct message";$("ncInput").disabled=false;$("ncSend").disabled=false;$("ncComposerHint").textContent="Message @"+(f?.username||"friend");await loadMessages();$("ncMembers").classList.remove("show");
 };
 async function loadMessages(){
  let q=sb.from("messages").select("id,body,created_at,user_id,profiles(username,display_name)").order("created_at",{ascending:true}).limit(100);
@@ -2025,7 +2070,7 @@ window.ncOpenModal=kind=>{
  $("ncModal").classList.add("show");
 };
 window.ncCloseModal=()=>{$("ncModal").classList.remove("show");$("ncModal").querySelectorAll(".nc-dialog-actions button").forEach((b,i)=>{if(i===0&&b.classList.contains("nc-secondary")&&b.textContent==="Create account")b.remove()})};
-window.ncAccountAction=async()=>{if(user){if(confirm("Sign out of Nullcord?")){await sb.auth.signOut();user=null;profile=null;friends=[];servers=[];ncShowHome();setMe();toast("Signed out.")}}else ncOpenModal("auth")};
+window.ncAccountAction=()=>{if(user)ncOpenSettings();else ncOpenModal("auth")};
 window.ncAcceptFriend=async id=>{const {error}=await sb.rpc("nullcord_accept_friend",{request_id:id});if(error)toast(error.message);else{toast("Friend added!");await refreshAll()}};
 window.ncCreateChannel=async()=>{const name=prompt("Channel name?");if(!name)return;const {error}=await sb.from("channels").insert({server_id:active.id,name:name.toLowerCase().replace(/[^a-z0-9-]/g,"-").slice(0,40),created_by:user.id});if(error)toast(error.message);else loadChannels()};
 window.ncCopyInvite=async()=>{const s=servers.find(x=>x.id===active.id);if(!s)return;try{await navigator.clipboard.writeText(s.invite_code);toast("Invite code copied")}catch(e){prompt("Copy this invite code:",s.invite_code)}};
