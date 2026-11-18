@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Don't Stop — Night Drive</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03050a;color:#eee;font-family:system-ui,sans-serif;touch-action:none}canvas{display:block;width:100%;height:100%}
+#hud{position:fixed;top:14px;left:14px;font:700 14px monospace;line-height:1.7;text-shadow:0 2px 8px #000;pointer-events:none}
+#distance{color:#ff7777}#overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:radial-gradient(ellipse,#16151aee,#020308f5)}
+h1{font-size:clamp(48px,10vw,100px);line-height:.9;margin:0 0 18px;color:#e32b35;letter-spacing:.05em;text-shadow:0 0 30px #a00}p{max-width:560px;color:#c2c4ca;line-height:1.6}button{margin-top:20px;padding:14px 28px;border:1px solid #b42b36;border-radius:8px;background:#60151d;color:white;font-weight:800;font-size:16px;cursor:pointer}
+#controls{position:fixed;bottom:18px;left:0;right:0;display:flex;justify-content:space-between;padding:0 18px;pointer-events:none}
+.control{pointer-events:auto;width:88px;height:66px;border:1px solid #ffffff55;border-radius:12px;background:#141820bb;color:#fff;font-weight:800;font-size:20px}
+@media(min-width:800px){#controls{display:none}}
+</style></head><body>
+<canvas id="game"></canvas><div id="hud">SPEED <span id="speed">0</span> KM/H<br><span id="distance">DISTANCE 0 M</span><br>BEST <span id="best">0</span> M</div>
+<div id="controls"><button class="control" id="left">◀</button><button class="control" id="right">▶</button></div>
+<div id="overlay"><h1 id="heading">DON'T<br>STOP</h1><p id="message">Don't look back for long. Steer with A/D or ←/→. Hold W or ↑ to accelerate. Avoid obstacles. If you slow down, it catches up.</p><button id="start">TAP TO START</button></div>
+<script>
+(()=>{const c=document.getElementById('game'),x=c.getContext('2d'),$=id=>document.getElementById(id);let W,H,dpr,run=false,last=0,dist=0,speed=0,lane=0,monster=100,best=+(localStorage.ndbest||0),obs=[],keys={},touch=0,shake=0;
+$('best').textContent=best;
+function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;x.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
+function key(e,v){keys[e.key.toLowerCase()]=v;if(['ArrowLeft','ArrowRight','ArrowUp',' '].includes(e.key))e.preventDefault()}addEventListener('keydown',e=>key(e,1));addEventListener('keyup',e=>key(e,0));
+function hold(id,v){const b=$(id);b.onpointerdown=e=>{e.preventDefault();touch=v};b.onpointerup=b.onpointercancel=b.onpointerleave=()=>{if(touch===v)touch=0}}hold('left',-1);hold('right',1);
+function reset(){dist=0;speed=0;lane=0;monster=100;obs=[];shake=0;run=true;$('overlay').style.display='none';last=performance.now();requestAnimationFrame(frame)}
+function road(){const horizon=H*.34;const sway=Math.sin(dist*.001)*W*.025;const cx=W/2+sway;let near=H*1.35;x.fillStyle='#07100b';x.fillRect(0,0,W,H);let sky=x.createLinearGradient(0,0,0,horizon);sky.addColorStop(0,'#030714');sky.addColorStop(1,'#20243a');x.fillStyle=sky;x.fillRect(0,0,W,horizon);x.fillStyle='#cbd6f0';x.beginPath();x.arc(W*.78,H*.13,Math.min(W,H)*.055,0,7);x.fill();for(let i=0;i<70;i++){let sx=(i*137)%W,sy=(i*71)%(horizon*.8);x.fillStyle='rgba(220,230,255,.55)';x.fillRect(sx,sy,2,2)}
+x.fillStyle='#15171d';x.beginPath();x.moveTo(cx-W*.08,horizon);x.lineTo(cx+W*.08,horizon);x.lineTo(cx+W*.72,near);x.lineTo(cx-W*.72,near);x.closePath();x.fill();for(let k=-1;k<=1;k+=2){x.strokeStyle='#d3bd70';x.lineWidth=3;x.beginPath();x.moveTo(cx+k*W*.08,horizon);x.lineTo(cx+k*W*.72,near);x.stroke()}
+for(let i=0;i<12;i++){let z=(i/12+(dist*.0008)%1),y=horizon+z*z*(H-horizon),spread=W*(.08+z*.65);x.fillStyle='#10251a';x.beginPath();x.arc(cx-spread,y,10+z*25,0,7);x.arc(cx+spread,y,10+z*25,0,7);x.fill()}
+for(let i=0;i<8;i++){let z=(i/8+(dist*.002)%1);let y=horizon+z*z*(H-horizon);x.strokeStyle='rgba(255,255,255,.55)';x.lineWidth=2+z*4;x.beginPath();x.moveTo(cx-4-z*8,y);x.lineTo(cx+4+z*8,y);x.stroke()}
+return {cx,horizon};}
+function frame(now){if(!run)return;let dt=Math.min(.04,(now-last)/1000);last=now;const steer=(keys.a||keys.arrowleft?-1:0)+(keys.d||keys.arrowright?1:0)||touch;const gas=keys.w||keys.arrowup;speed=Math.max(0,Math.min(115,speed+(gas?36:-23)*dt));lane=Math.max(-1.6,Math.min(1.6,lane+steer*dt*(1.2+speed*.025)));dist+=speed*dt*.8;monster=Math.min(110,monster+(speed-68)*dt*.34);if(monster<0)monster=0;
+if(Math.random()<dt*(.4+speed/100)){obs.push({z:1,lane:Math.round((Math.random()*2-1)*1)/1})}obs.forEach(o=>o.z-=dt*(.22+speed/250));obs=obs.filter(o=>o.z>-.1);
+for(const o of obs){if(o.z<.13&&o.z>.07&&Math.abs(o.lane-lane)<.42){speed*=.55;o.z=-1;shake=8}}
+if(monster<8){run=false;best=Math.max(best,Math.floor(dist));localStorage.ndbest=best;$('best').textContent=best;$('heading').innerHTML='IT GOT<br>YOU';$('message').textContent='You made it '+Math.floor(dist)+' metres. Best: '+best+' m.';$('start').textContent='TRY AGAIN';$('overlay').style.display='flex'}
+const {cx,horizon}=road();for(const o of obs){if(o.z<=0)continue;let y=horizon+(1-o.z)**2*(H-horizon),xx=cx+o.lane*W*.22*(1-o.z);x.fillStyle='#b65a23';x.fillRect(xx-14-(1-o.z)*15,y-22-(1-o.z)*20,28+(1-o.z)*30,24+(1-o.z)*25)}
+// player car
+let px=cx+lane*W*.22,py=H*.82;x.fillStyle='#050609';x.beginPath();x.ellipse(px,py+22,42,10,0,0,7);x.fill();x.fillStyle='#9b1721';x.beginPath();x.moveTo(px-30,py+20);x.lineTo(px-22,py-12);x.lineTo(px-12,py-28);x.lineTo(px+12,py-28);x.lineTo(px+22,py-12);x.lineTo(px+30,py+20);x.closePath();x.fill();x.fillStyle='#e9c7b8';x.fillRect(px-20,py+6,9,5);x.fillRect(px+11,py+6,9,5);
+x.fillStyle='#d31520';x.shadowBlur=22;x.shadowColor='#f00';x.beginPath();x.arc(cx, H*.27,5+Math.sin(now*.012)*2,0,7);x.arc(cx+18,H*.27,5+Math.sin(now*.012)*2,0,7);x.fill();x.shadowBlur=0;
+$('speed').textContent=Math.round(speed);$('distance').textContent='DISTANCE '+Math.floor(dist)+' M';requestAnimationFrame(frame)}
+$('start').onclick=reset;road();})();
+</script></body></html>
