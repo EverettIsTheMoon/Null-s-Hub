@@ -27,14 +27,14 @@ p{margin:.3em 0;color:#aaa;max-width:30em}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 // ---------- AUDIO (put MP3s in ./sounds/) ----------
-const A=f=>{const c=[];['sounds/',''].forEach(d=>['mp3','wav','ogg'].forEach(e=>c.push(d+f+'.'+e)));let i=0;const a=new Audio(c[0]);a.preload='auto';a.addEventListener('error',()=>{if(++i<c.length){a.src=c[i];a.load()}});return a};
+const A=f=>{const c=[];['sounds/',''].forEach(d=>['mp3','wav','ogg'].forEach(e=>c.push(d+f+'.'+e)));let i=0;const a=new Audio(c[0]);a.preload='auto';a.dataset.available='pending';a.addEventListener('canplay',()=>{a.dataset.available='yes'},{once:true});a.addEventListener('error',()=>{if(++i<c.length){a.src=c[i];a.load()}else a.dataset.available='no'});return a};
 const land=[1,2,3,4].map(i=>A('land'+i)),crash=[1,2,3,4].map(i=>A('crash'+i));
 const drive=A('drive'),turn=A('turn'),mons=A('monsterambience'),js=A('monster');
 const warn=[100,50,25].map(n=>A('warn'+n));let ac,hb=0,fp=0,nitro=100,kb=0,tb=0,best=0;try{best=+localStorage.getItem('ndbest')||0}catch(e){}
 drive.loop=true;mons.loop=true;turn.loop=true;
 function thump(v){if(!ac)return;const o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime;o.frequency.setValueAtTime(70,n);o.frequency.exponentialRampToValueAtTime(34,n+.15);g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(v,n+.01);g.gain.exponentialRampToValueAtTime(.001,n+.22);o.connect(g);g.connect(ac.destination);o.start(n);o.stop(n+.25)}
 function beat(d){thump(.9*d);setTimeout(()=>thump(.6*d),170)}
-function sfx(arr,v){const a=arr[Math.random()*arr.length|0].cloneNode();a.volume=v;a.play().catch(()=>{})}
+function sfx(arr,v){const ready=arr.filter(a=>a.dataset.available==='yes'),pending=arr.filter(a=>a.dataset.available==='pending');const pool=ready.length?ready:pending;if(!pool.length)return;const a=pool[Math.random()*pool.length|0].cloneNode();a.volume=v;a.play().catch(()=>{})}
 const vol=(a,v)=>{a.volume=Math.max(0,Math.min(1,v))};
 
 // ---------- SCENE ----------
@@ -150,7 +150,7 @@ function groundH(){let h=0;for(const i of items)if(i.ramp&&Math.abs(P.x-i.x)<i.h
 function reset(){
  if(items)items.forEach(i=>i.g&&sc.remove(i.g));
  items=[];P={x:0,y:0,z:0,v:0,vx:0,vy:0,h:0,a:0};t=0;nz=40;n=0;rampCD=50;barCD=35;gasCD=250;shake=0;prevGh=0;air=false;M.d=110;M.s=0;M.w=[0,0,0];nitro=100;hb=0;ac=ac||new(window.AudioContext||window.webkitAudioContext)();car.add(cam);cp.visible=true;$('mir').style.display='';car.visible=true;M.g.visible=true;state='play';
- js.pause();drive.play().catch(()=>{});mons.play().catch(()=>{});
+ js.pause();js.currentTime=0;drive.play().catch(()=>{});mons.play().catch(()=>{});
 }
 // ---------- INPUT ----------
 let kl=0,kr=0,tl=0,tr=0,kw=0,ks=0,kh=0,tg=0,th=0;const $=id=>document.getElementById(id);
@@ -191,7 +191,7 @@ function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/
   lL.rotation.x=Math.sin(ph)*.9;lR.rotation.x=-Math.sin(ph)*.9;aL.rotation.x=1.2+Math.sin(ph+1)*.4;aR.rotation.x=1.2-Math.sin(ph+1)*.4;
   head.rotation.z=Math.sin(ph*.5)*.2;jaw.rotation.x=-(.25+.2*Math.sin(ph*2));
   vol(mons,Math.pow(Math.max(0,1-M.d/100),2.4)*1.2);
-  [100,50,25].forEach((n,k)=>{if(M.d<n&&!M.w[k]){M.w[k]=1;const a=warn[k];a.currentTime=0;a.volume=1;a.play().catch(()=>{});$('fl').style.opacity=.3}else if(M.d>n+12)M.w[k]=0});
+  [100,50,25].forEach((n,k)=>{if(M.d<n&&!M.w[k]){M.w[k]=1;sfx(warn,1);$('fl').style.opacity=.3}else if(M.d>n+12)M.w[k]=0});
   const dg=Math.max(0,1-M.d/80);hb-=dt;if(hb<=0&&dg>0){hb=1.1-dg*.75;beat(dg)}
   sc.fog.density=.016+dg*.005;$('vg').style.opacity=.35+dg*.65;
   const fk=dg>.35&&Math.random()<dg*.12;spots.forEach(s=>s.intensity=fk?.3:2.6);
@@ -215,7 +215,7 @@ function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/
   M.g.position.set(M.x,0,P.z+3);jaw.rotation.x=-(.2+.9*Math.min(1,st*3));head.rotation.z=(Math.random()-.5)*.3;ml.intensity=2.4+Math.random()*3;
   cam.position.set(M.x+(Math.random()-.5)*sh,4.2+(Math.random()-.5)*sh,P.z+3-.65-dist);cam.lookAt(M.x,4.15,P.z+3);
   $('fl').style.opacity=Math.random()<.3?.6:0;
-  if(st>2.4){state='dead';mons.pause();js.pause();ml.intensity=2.4;$('fl').style.opacity=0;$('t').textContent='IT GOT YOU';const dd=Math.round(-P.z),nbst=dd>best;if(nbst){best=dd;try{localStorage.setItem('ndbest',dd)}catch(e){}}$('m').innerHTML='You made it '+dd+' m.<br>'+(nbst?'NEW BEST!':'Best: '+best+' m');$('go').textContent='TAP TO TRY AGAIN';ov.style.display='flex';$('mir').style.display='';ov.onclick=()=>{ov.style.display='none';reset()}}
+  if(st>2.4){state='dead';mons.pause();ml.intensity=2.4;$('fl').style.opacity=0;$('t').textContent='IT GOT YOU';const dd=Math.round(-P.z),nbst=dd>best;if(nbst){best=dd;try{localStorage.setItem('ndbest',dd)}catch(e){}}$('m').innerHTML='You made it '+dd+' m.<br>'+(nbst?'NEW BEST!':'Best: '+best+' m');$('go').textContent='TAP TO TRY AGAIN';ov.style.display='flex';$('mir').style.display='';ov.onclick=()=>{ov.style.display='none';reset()}}
  }
  // render
  R.setViewport(0,0,innerWidth,innerHeight);R.setScissorTest(false);R.clear();R.render(sc,cam);
