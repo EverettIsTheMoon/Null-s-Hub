@@ -28,7 +28,7 @@ body[data-s=play] #mir,body[data-s=play] #hud,body[data-s=play] .b,body[data-s=p
 .screen.on{display:flex;animation:fin .35s ease}
 @keyframes fin{from{opacity:0}to{opacity:1}}
 #menu{background:radial-gradient(ellipse at center,rgba(0,0,0,.2),rgba(0,0,0,.8));backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
-#pause,#settings,#how{background:rgba(0,0,0,.5);backdrop-filter:blur(11px);-webkit-backdrop-filter:blur(11px)}
+#pause,#settings,#how,#maps{background:rgba(0,0,0,.5);backdrop-filter:blur(11px);-webkit-backdrop-filter:blur(11px)}
 #over{background:rgba(0,0,0,.9);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
 .title{font-size:min(14vmin,110px);margin:0;color:#d11;text-shadow:0 0 28px #700,0 0 4px #300;letter-spacing:.07em;animation:gl 4s infinite}
 @keyframes gl{0%,90%,100%{transform:none}91%{transform:translate(-5px,2px);text-shadow:5px 0 #0ff,-5px 0 #f0f}93%{transform:translate(4px,-2px);text-shadow:-5px 0 #0ff,5px 0 #f0f}95%{transform:none;opacity:.6}96%{opacity:1}}
@@ -40,7 +40,7 @@ h2{margin:0 0 .6em;color:#e33;letter-spacing:.15em;text-shadow:0 0 12px #600}
 .mode b{display:block;font-size:21px;color:#f55;letter-spacing:.1em}
 .mode i{display:block;color:#aaa;font-style:normal;font-size:13px;margin:4px 0 8px}
 .mode em{font-style:normal;font-size:12px;color:#8a8;font-family:monospace}
-.mode[data-m=slow] b{color:#fc4}.mode[data-m=fast] b{color:#f83}.mode[data-m=free] b{color:#6f9}
+.mode[data-m=easy] b{color:#6f9}.mode[data-m=normal] b{color:#fc4}.mode[data-m=hard] b{color:#f55}
 .row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
 .btn{background:rgba(20,0,0,.65);border:2px solid #600;border-radius:10px;color:#f77;padding:12px 26px;font:700 16px monospace;letter-spacing:.12em;cursor:pointer;transition:.15s;min-width:210px}
 .btn:hover{background:#400;border-color:#e22;color:#fff}
@@ -71,14 +71,19 @@ h2{margin:0 0 .6em;color:#e33;letter-spacing:.15em;text-shadow:0 0 12px #600}
 <div class="screen" id="menu">
  <h1 class="title">NIGHT DRIVE</h1>
  <div class="sub">DON'T STOP. DON'T LOOK BACK FOR LONG.</div>
- <div id="modes">
-  <button class="mode" data-m="normal"><b>NORMAL</b><i>The classic chase.</i><em id="b_normal"></em></button>
-  <button class="mode" data-m="slow"><b>SLOW</b><i>The monster is slow. Still deadly.</i><em id="b_slow"></em></button>
-  <button class="mode" data-m="fast"><b>FAST</b><i>Faster car. Faster monster.</i><em id="b_fast"></em></button>
-  <button class="mode" data-m="free"><b>FREE</b><i>No monster. Just the night.</i><em id="b_free"></em></button>
- </div>
+ <div class="row"><button class="btn" id="bMaps">CHOOSE A MAP</button></div>
  <div class="row"><button class="btn sm" id="bSet">SETTINGS</button><button class="btn sm" id="bHow">HOW TO PLAY</button></div>
  <div class="foot">ESC = PAUSE</div>
+</div>
+
+<div class="screen" id="maps">
+ <h2>CHOOSE YOUR MAP</h2>
+ <div id="modes">
+  <button class="mode" data-m="easy"><b>EASY</b><i>A mostly straight road with a few gentle turns.</i><em id="b_easy"></em></button>
+  <button class="mode" data-m="normal"><b>NORMAL</b><i>Winding roads. The monster hears you when you slow down.</i><em id="b_normal"></em></button>
+  <button class="mode" data-m="hard"><b>HARD</b><i>A twisting road packed with sharp turns and a relentless monster.</i><em id="b_hard"></em></button>
+ </div>
+ <button class="btn" id="mBack">BACK</button>
 </div>
 
 <div class="screen" id="how">
@@ -123,11 +128,10 @@ try{Object.assign(S,JSON.parse(localStorage.getItem('ndset')||'{}'))}catch(e){}
 const saveS=()=>{try{localStorage.setItem('ndset',JSON.stringify(S))}catch(e){}};
 // ---------- MODES ----------
 const MODES={
- normal:{n:'NORMAL',hint:"Outrun it. Don't stop.",monster:1,vb:55,ramp:.15,cap:15,acc:18,mon:.9,monRamp:.0006,monCap:.08,wob:5,sp:1,fog:.016},
- slow:{n:'SLOW',hint:'It is slower... but it never stops.',monster:1,vb:55,ramp:.15,cap:15,acc:18,mon:.66,monRamp:.0003,monCap:.05,wob:3,sp:1,fog:.016},
- fast:{n:'FAST',hint:'Faster car. Faster monster.',monster:1,vb:90,ramp:.2,cap:25,acc:30,mon:.94,monRamp:.0005,monCap:.05,wob:7,sp:1.5,fog:.013},
- free:{n:'FREE',hint:'No monster. Just the night.',monster:0,vb:60,ramp:.15,cap:15,acc:18,mon:0,monRamp:0,monCap:0,wob:0,sp:1,fog:.016}};
-let Mode=MODES.normal,modeKey='normal',best=0,paused=false,SC=null,curScr='',setFrom='menu';
+ easy:{n:'EASY',hint:'A mostly straight road. Keep driving.',monster:1,vb:58,ramp:.10,cap:10,acc:20,mon:.68,monRamp:.00025,monCap:.035,wob:2,sp:1,fog:.014},
+ normal:{n:'NORMAL',hint:'The monster can hear you when you slow down. Keep your speed up!',monster:1,vb:58,ramp:.15,cap:15,acc:19,mon:.82,monRamp:.0005,monCap:.06,wob:4,sp:1,fog:.016},
+ hard:{n:'HARD',hint:'Sharp turns everywhere. The monster is faster. Good luck.',monster:1,vb:64,ramp:.18,cap:20,acc:22,mon:.94,monRamp:.0007,monCap:.09,wob:7,sp:1.25,fog:.019}};
+ let Mode=MODES.normal,modeKey='normal',best=0,activeMapKey='normal',paused=false,SC=null,curScr='',setFrom='menu';
 const bk=k=>k==='normal'?'ndbest':'ndbest_'+k;
 const getBest=k=>{try{return +localStorage.getItem(bk(k))||0}catch(e){return 0}};
 
@@ -187,7 +191,12 @@ const roadT=cv(128,256,(x,w,h)=>{x.fillStyle='#17171a';x.fillRect(0,0,w,h);for(l
  x.strokeStyle='rgba(0,0,0,.5)';x.lineWidth=1;for(let i=0;i<6;i++){x.beginPath();let px=10+Math.random()*108,py=Math.random()*h;x.moveTo(px,py);for(let k=0;k<5;k++){px+=(Math.random()-.5)*16;py+=Math.random()*14;x.lineTo(px,py)}x.stroke()}
  x.fillStyle='#ddd';x.fillRect(4,0,4,h);x.fillRect(w-8,0,4,h);x.fillStyle='#d9a800';x.fillRect(61,0,6,128)});
 roadT.wrapS=roadT.wrapT=THREE.RepeatWrapping;roadT.repeat.set(1,75);
-function cx(z){const r=Math.min(1,Math.max(0,-z/250));return r*(30*Math.sin(z*.0061)+50*Math.sin(z*.0023))}
+function cx(z){
+ const r=Math.min(1,Math.max(0,-z/250));
+ if(activeMapKey==='easy') return r*(13*Math.sin(z*.0022)+5*Math.sin(z*.005));
+ if(activeMapKey==='hard') return r*(17*Math.sin(z*.015)+13*Math.sin(z*.027)+8*Math.sin(z*.041));
+ return r*(27*Math.sin(z*.0052)+19*Math.sin(z*.0105)+7*Math.sin(z*.016));
+}
 const roadG=new THREE.PlaneGeometry(12,600,2,150);roadG.rotateX(-Math.PI/2);
 const road=mesh(roadG,new THREE.MeshLambertMaterial({map:roadT}),0,0,0);
 const gravelM=L(0x1d1b17);const shLG=new THREE.PlaneGeometry(2.6,600,1,150),shRG=new THREE.PlaneGeometry(2.6,600,1,150);shLG.rotateX(-Math.PI/2);shRG.rotateX(-Math.PI/2);shLG.translate(-7.3,-.005,0);shRG.translate(7.3,-.005,0);
@@ -290,7 +299,7 @@ const skids=[];for(let i=0;i<260;i++){const m=new THREE.Mesh(skidG,skidM);m.visi
 const smoke=[];for(let i=0;i<36;i++){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:fogT,color:0xbbbbbb,transparent:true,opacity:0,depthWrite:false}));s.visible=false;s.userData={age:9,life:1,vx:0};sc.add(s);smoke.push(s)}
 function puff(x,z){const s=smoke[smI++%smoke.length],u=s.userData;u.age=0;u.life=.9+Math.random()*.5;u.vx=(Math.random()-.5)*2;s.position.set(x,.4,z);s.scale.set(1.5,1.2,1);s.visible=true}
 function smokeTick(dt){for(const s of smoke){if(!s.visible)continue;const u=s.userData;u.age+=dt;const k=u.age/u.life;if(k>=1){s.visible=false;continue}s.material.opacity=.38*(1-k);const q=1.5+k*5;s.scale.set(q,q*.8,1);s.position.y+=dt*.9;s.position.x+=u.vx*dt}}
-let items,P,t,nz,n,rampCD,barCD,gasCD,wreckCD,cabinCD,signCD,scarecrowCD,railCnt,railSide,state,st,shake,prevGh,air,bolt=0,nextBolt=20;
+let items,P,t,nz,n,rampCD,barCD,gasCD,wreckCD,cabinCD,signCD,scarecrowCD,railCnt,railSide,state,st,shake,prevGh,air,bolt=0,nextBolt=20,slowListen=0,heardSlow=false;
 function add(g,o){const c=cx(o.z);if(g)g.position.x+=c;if(o.x!==undefined)o.x+=c;if(o.lx!==undefined)o.lx+=c;o.g=g;items.push(o);return o}
 function cabin(z){const g=new THREE.Group(),side=Math.random()<.5?-1:1,x=side*(15+Math.random()*16),w=5+Math.random()*3,d=4.5+Math.random()*2,ry=-side*Math.PI/2,fx=-side*(w/2+.03);
  mesh(new Bx(w,3,d),mWall,0,1.5,0,g);mesh(new Co(Math.max(w,d)*.78,2.4,4),mRoof,0,4.2,0,g).rotation.y=Math.PI/4;
@@ -350,7 +359,7 @@ function updLamps(){const lamps=items.filter(i=>i.lamp&&i.lz<P.z+10).sort((a,b)=
  pool.forEach((l,k)=>{const o=lamps[k];if(o){l.position.set(o.lx,o.ly,o.lz);l.intensity=(o.strong?3:1.6)*(Mode.monster&&M.d<60&&Math.random()<.04?.15:1)}else l.intensity=0})}
 function build(){
  if(items)items.forEach(i=>i.g&&sc.remove(i.g));
- items=[];P={x:0,y:0,z:0,v:0,vx:0,vy:0,h:0,a:0};t=0;nz=40;n=0;rampCD=50*Mode.sp;barCD=35*Mode.sp;gasCD=250;wreckCD=90*Mode.sp;cabinCD=60;signCD=30;scarecrowCD=80;railCnt=0;railSide=1;shake=0;prevGh=0;air=false;bolt=0;nextBolt=15+Math.random()*15;
+ items=[];P={x:0,y:0,z:0,v:0,vx:0,vy:0,h:0,a:0};t=0;slowListen=0;heardSlow=false;nz=40;n=0;rampCD=50*Mode.sp;barCD=35*Mode.sp;gasCD=250;wreckCD=90*Mode.sp;cabinCD=60;signCD=30;scarecrowCD=80;railCnt=0;railSide=1;shake=0;prevGh=0;air=false;bolt=0;nextBolt=15+Math.random()*15;
  M.d=110;M.s=0;M.w=[0,0,0];M.x=0;hb=0;
  car.add(cam);cam.position.set(-.4,1.2,.3);cam.rotation.set(-.04,0,0);cam.fov=72;cam.updateProjectionMatrix();cp.visible=true;car.visible=true;
  M.g.visible=true;M.g.rotation.set(0,0,0);M.g.scale.setScalar(1.3);head.rotation.set(0,0,0);head.position.y=3.2;jaw.rotation.x=-.2;eg.scale.set(1.1,.55,1);ml.intensity=2.4;sl.intensity=0;
@@ -379,15 +388,16 @@ function setState(s){state=s;document.body.dataset.s=s}
 function toast(a,b){const e=$('toast');e.innerHTML=a+(b?'<small>'+b+'</small>':'');e.classList.remove('show');void e.offsetWidth;e.classList.add('show')}
 function refreshBests(){for(const k in MODES)$('b_'+k).textContent='BEST: '+getBest(k)+' m'}
 function clearInput(){kl=kr=kw=ks=kh=0;tg=th=0;for(const k in pp)delete pp[k];ptr()}
-function goMenu(){paused=false;Mode=MODES.normal;pauseAudio();js.currentTime=0;build();M.g.rotation.y=Math.PI;M.g.position.set(0,0,-24);M.x=0;clearInput();setState('menu');refreshBests();show('menu');updMusic()}
-function startGame(m){modeKey=m;Mode=MODES[m];best=getBest(m);paused=false;clearInput();build();M.g.visible=!!Mode.monster;setState('play');show('');
+function goMenu(){paused=false;Mode=MODES.normal;activeMapKey='normal';pauseAudio();js.currentTime=0;build();M.g.rotation.y=Math.PI;M.g.position.set(0,0,-24);M.x=0;clearInput();setState('menu');refreshBests();show('menu');updMusic()}
+function startGame(m){modeKey=m;activeMapKey=m;Mode=MODES[m];best=getBest(m);paused=false;clearInput();build();M.g.visible=!!Mode.monster;setState('play');show('');
  js.pause();js.currentTime=0;drive.play().catch(()=>{});if(Mode.monster)mons.play().catch(()=>{});
  $('bar').style.display=Mode.monster?'':'none';toast(Mode.n+' MODE',Mode.hint);updMusic()}
 function pauseGame(){if(state!=='play'||paused)return;paused=true;clearInput();pauseAudio();$('pInfo').textContent=Mode.n+' MODE  •  '+Math.round(-P.z)+' m';show('pause');updMusic()}
 function resumeGame(){if(!paused)return;paused=false;show('');resumeAudio();updMusic()}
-function escKey(){if(curScr==='settings'){show(setFrom);return}if(curScr==='how'){show('menu');return}if(paused){resumeGame();return}if(state==='play')pauseGame()}
+function escKey(){if(curScr==='settings'){show(setFrom);return}if(curScr==='how'||curScr==='maps'){show('menu');return}if(paused){resumeGame();return}if(state==='play')pauseGame()}
 addEventListener('blur',pauseGame);document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseGame()});
-document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>{initAudio();startGame(b.dataset.m);b.blur()});
+$('bMaps').onclick=()=>show('maps');$('mBack').onclick=()=>show('menu');
+ document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>{initAudio();startGame(b.dataset.m);b.blur()});
 $('bSet').onclick=()=>{setFrom='menu';show('settings')};$('bHow').onclick=()=>show('how');$('hBack').onclick=()=>show('menu');
 $('pb').onclick=()=>{pauseGame();$('pb').blur()};$('pRes').onclick=resumeGame;$('pSet').onclick=()=>{setFrom='pause';show('settings')};
 $('pRes2').onclick=()=>startGame(modeKey);$('pMenu').onclick=goMenu;$('oAgain').onclick=()=>startGame(modeKey);$('oMenu').onclick=goMenu;$('sBack').onclick=()=>show(setFrom);
@@ -465,7 +475,12 @@ function playTick(dt,now){
   if(Math.abs(P.x-i.x)<i.hw+1&&Math.abs(P.z-i.z)<i.hd+2){i.hit=1;sfx(crash,1);P.v*=.4;if(S.crash){shake=1;$('fl').style.background='#a00';$('fl').style.opacity=.5}P.x+=(P.x>i.x?1:-1)*1.2;if(i.bar)i.g.visible=false}}
  let dg=0;
  if(MO){
-  M.s+=(((Mode.mon+Math.min(t*Mode.monRamp,Mode.monCap))*vb+Mode.wob*Math.sin(t*.5)*Math.min(1,t/30))-M.s)*Math.min(1,dt*.6);M.d=Math.min(120,M.d+(P.v-M.s)*dt);
+  if(modeKey==='normal'){
+    if(P.v<38){slowListen+=dt;if(slowListen>1.25&&!heardSlow){heardSlow=true;toast('IT HEARD YOU','You slowed down. Get moving!');sfx(warn,1)}}
+    else if(P.v>49){slowListen=0;heardSlow=false}
+   }
+   const hearingBoost=(modeKey==='normal'&&heardSlow)?1.28:1;
+   M.s+=((((Mode.mon+Math.min(t*Mode.monRamp,Mode.monCap))*vb+Mode.wob*Math.sin(t*.5)*Math.min(1,t/30))*hearingBoost)-M.s)*Math.min(1,dt*.6);M.d=Math.min(120,M.d+(P.v-M.s)*dt);
   M.x+=((P.x-cx(P.z)+cx(P.z+M.d))-M.x)*Math.min(1,dt*2.5);
   const dg0=Math.max(0,1-M.d/80),ph=t*(5+M.s*.1);M.g.position.set(M.x,0,P.z+M.d);animM(ph,dt,dg0);
   M.g.visible=!(dg0>.45&&Math.random()<.035);if(dg0>.45&&Math.random()<.03)M.g.position.x+=(Math.random()-.5)*1.2;
